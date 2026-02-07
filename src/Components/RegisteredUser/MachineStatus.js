@@ -472,62 +472,71 @@ const [selectedJumpserverId, setSelectedJumpserverId] = useState("");
   }, [progressPercentage, isBackUpFail, isMobile, isRegenerateSSH]);
 
   const fetchJumpservers = async () => {
-  try {
-    setLoading(true);
-
-    const res = await instance.post("/jumpserver", {
-      user_id: smuser.id,
-    });
-
-    console.log("Jumpserver API response:", res.data);
-
-    if (res.data.success && res.data.jumpserver_vm) {
-      // backend returns SINGLE object → convert to array
-      setJumpservers([res.data.jumpserver_vm]);
-    } else {
-      setJumpservers([]);
-    }
-  } catch (e) {
-    console.error(e);
-    setJumpservers([]);
-  } finally {
-    setLoading(false);
-  }
-  };
-
-  const attachJumpserver = async () => {
-    if (!selectedJumpserverId) {
-      toast.error("Please select a jumpserver");
-      return;
-    }
-
     try {
       setLoading(true);
 
-      const payload = {
+      const res = await instance.post("/jumpserver", {
         user_id: smuser.id,
-        vm_id: monitorData.vm_id,
-        jumpserver_id: selectedJumpserverId,
-      };
+      });
 
-      const encrypted = await apiEncryptRequest(payload);
-      const res = await instance.post("/attach-jumpserver", encrypted);
-      const data = await decryptData(res.data);
+      console.log("RAW API RESPONSE >>>", res.data);
 
-      if (data.success) {
-        toast.success("Jumpserver attached successfully");
-        GetMyMachines();
-        setActiveButton("SSH");
+      if (res.data?.success && Array.isArray(res.data.jumpservers)) {
+        // normalize + enforce types
+        const list = res.data.jumpservers.map(js => ({
+          id: Number(js.id),            // DB id (IMPORTANT)
+          vm_id: js.vm_id,
+          vm_name: js.vm_name,
+          public_ip: js.public_ip,
+          vm_port: js.vm_port,
+          username: js.username,
+        }));
+
+        setJumpservers(list);
       } else {
-        toast.error(data.message || "Failed to attach jumpserver");
+        setJumpservers([]);
       }
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to attach jumpserver");
+    } catch (e) {
+      console.error("fetchJumpservers error", e);
+      setJumpservers([]);
     } finally {
       setLoading(false);
     }
   };
+
+    const attachJumpserver = async () => {
+      if (!selectedJumpserverId) {
+        toast.error("Please select a jumpserver");
+        return;
+      }
+
+      try {
+        setLoading(true);
+
+        const payload = {
+          user_id: smuser.id,
+          vm_id: monitorData.vm_id,
+          jumpserver_id: selectedJumpserverId,
+        };
+
+        const encrypted = await apiEncryptRequest(payload);
+        const res = await instance.post("/attach-jumpserver", encrypted);
+        const data = await decryptData(res.data);
+
+        if (data.success) {
+          toast.success("Jumpserver attached successfully");
+          GetMyMachines();
+          setActiveButton("SSH");
+        } else {
+          toast.error(data.message || "Failed to attach jumpserver");
+        }
+      } catch (err) {
+        console.error(err);
+        toast.error("Failed to attach jumpserver");
+      } finally {
+        setLoading(false);
+      }
+    };
 
   const handleButtonClick = (button) => {
     console.log("button", button);
@@ -3949,70 +3958,63 @@ const [selectedJumpserverId, setSelectedJumpserverId] = useState("");
           {activeButton === "ATTACH_JUMPSERVER" && (
             <div
               style={{
-                minHeight: "34rem",
+                marginTop: "40px",
+                minHeight: "20rem",
                 backgroundImage: `url("/images/blue-box-bg.svg")`,
                 backgroundSize: "cover",
-                top: "1rem",
                 marginLeft: "20px",
-                width: "90%",
-                // marginLeft: "25px",
-                // display: "flex",
-
-                padding: "1px 25px",
-                position: "relative",
-                backgroundColor: "#07528b", // Use backgroundColor instead of background
+                width: "100%",
+                padding: "25px",
+                backgroundColor: "#07528b",
                 borderRadius: "12px",
-                // flexWrap: "wrap",
+                overflow: "visible",
+                position: "relative",
+                zIndex: 10,
               }}
             >
-              <div>
-                <div
-                  style={{
-                    position: "relative",
-                    flexWrap: "wrap",
-                    zIndex: "1",
-                  }}
-                >
-                    {/* Select Jumpserver */}
-                    <div
-                      style={{
-                        marginTop: "20px",
-                        border: "2px solid white",
-                        borderRadius: "25px",
-                        padding: "10px",
-                      }}
-                    >
-                    <select
-                      value={selectedJumpserverId}
-                      onChange={(e) => setSelectedJumpserverId(e.target.value)}
-                      style={{
-                        width: "100%",
-                        height: "40px",
-                        borderRadius: "20px",
-                        padding: "0 15px",
-                      }}
-                    >
-                    <p style={{ color: "white" }}>
-                      Jumpservers loaded: {jumpservers.length}
-                    </p>
-                      <option value="">Select Jumpserver</option>
+              <h3 style={{ color: "white", marginBottom: "15px" }}>
+                Attach Jumpserver
+              </h3>
 
-                      {jumpservers.map((js) => (
-                        <option key={js.id} value={js.id}>
-                          {js.vm_name} ({js.public_ip})
-                        </option>
-                      ))}
-                    </select>
-                      <button
-                        disabled={!selectedJumpserverId}
-                        onClick={attachJumpserver}
-                      >
-                        Apply Jumpserver
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <p style={{ color: "white" }}>
+                Jumpservers loaded: {jumpservers.length}
+              </p>
+
+              <select
+                value={selectedJumpserverId}
+                onChange={(e) => setSelectedJumpserverId(Number(e.target.value))}
+                style={{
+                  width: "100%",
+                  height: "40px",
+                  borderRadius: "20px",
+                  padding: "0 15px",
+                  marginTop: "10px",
+                  position: "relative",
+                  zIndex: 1000,
+                }}
+              >
+                <option value="">Select Jumpserver</option>
+
+                {jumpservers.map((js) => (
+                  <option key={js.id} value={js.id}>
+                    {js.vm_name} ({js.public_ip})
+                  </option>
+                ))}
+              </select>
+
+              <button
+                disabled={!selectedJumpserverId}
+                onClick={attachJumpserver}
+                style={{
+                  marginTop: "15px",
+                  padding: "10px 20px",
+                  opacity: selectedJumpserverId ? 1 : 0.5,
+                  cursor: selectedJumpserverId ? "pointer" : "not-allowed",
+                }}
+              >
+                Apply Jumpserver
+              </button>
+            </div>
           )}
 
           {activeButton === "CREATE_USER" && (
@@ -7451,7 +7453,7 @@ const [selectedJumpserverId, setSelectedJumpserverId] = useState("");
                     >
                       SSH
                     </button>
-                    
+
                     <button
                       className={`btn ${activeButton === "ATTACH_JUMPSERVER" ? "active" : ""}`}
                       onClick={() => handleButtonClick("ATTACH_JUMPSERVER")}
@@ -7648,15 +7650,18 @@ const [selectedJumpserverId, setSelectedJumpserverId] = useState("");
                   {activeButton === "ATTACH_JUMPSERVER" && (
                     <div
                       style={{
-                        marginTop: "40px",
-                        minHeight: "20rem",
-                        backgroundImage: `url("/images/blue-box-bg.svg")`,
-                        backgroundSize: "cover",
-                        marginLeft: "20px",
-                        width: "90%",
-                        padding: "25px",
-                        backgroundColor: "#07528b",
-                        borderRadius: "12px",
+                          marginTop: "40px",
+                          minHeight: "20rem",
+                          backgroundImage: `url("/images/blue-box-bg.svg")`,
+                          backgroundSize: "cover",
+                          marginLeft: "20px",
+                          width: "90%",
+                          padding: "25px",
+                          backgroundColor: "#07528b",
+                          borderRadius: "12px",
+                          overflow: "visible", 
+                          position: "relative",
+                          zIndex: 10,
                       }}
                     >
                       <h3 style={{ color: "white" }}>Attach Jumpserver</h3>
@@ -7682,6 +7687,7 @@ const [selectedJumpserverId, setSelectedJumpserverId] = useState("");
                           <option value="">Select Jumpserver</option>
 
                           {jumpservers.map((js) => (
+                            console.log(js, "js"),
                             <option key={js.id} value={js.id}>
                               {js.vm_name} ({js.public_ip})
                             </option>
@@ -10828,8 +10834,6 @@ const [selectedJumpserverId, setSelectedJumpserverId] = useState("");
                       </div>
                     </div>
                   )}
-
-                
 
                   {activeButton === "Firewall Plans" && (
                     <div

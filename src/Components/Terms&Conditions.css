@@ -1,0 +1,9 @@
+.term-other-content .term-para-title {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #111;
+    margin-top: 1.5rem;
+}
+.term-other-content .term-para:not(:first-child) {
+    margin-top: 1rem;
+}

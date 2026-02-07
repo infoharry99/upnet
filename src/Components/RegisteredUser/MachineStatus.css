@@ -1,0 +1,558 @@
+.list-item-product-status {
+    position: relative;
+    margin-top: 2%;
+    /* margin-left: -50%; */
+    /* Ensure the element has a perspective for 3D effects */
+    perspective: 1000px;
+    /* Set the transform-style to preserve-3d for proper 3D rendering */
+    transform-style: preserve-3d;
+    /* Set a transition for smooth animation */
+    transition: transform 0.5s;
+}
+
+/* .card-product {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    perspective: 1000px;
+}
+
+.back-status {
+    margin-top: -200px;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    transition: transform 0.6s;
+    transform: rotateY(0deg);
+}
+
+.front-status {
+    position: relative;
+    width: 90%;
+    height: 100%;
+    backface-visibility: hidden;
+    transition: transform 0.6s;
+    transform: rotateY(0deg);
+    display: flex;
+}
+
+.front-status {
+    z-index: 2;
+    transform: rotateY(0deg);
+}
+
+.back-status {
+    transform: rotateY(180deg);
+}
+
+
+.flip-card {
+    perspective: 1000px;
+    margin-top: 150px;
+    transform-style: preserve-3d;
+    transition: transform 0.5s;
+}
+
+.flip-card-inner {
+    /* width: 200px;
+    height: 50px; 
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+    position: relative;
+}
+
+.flip-card-inner.flipped {
+    transform: rotateY(180deg);
+}
+
+.flip-card-front,
+.flip-card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 25px;
+}
+
+.flip-card-front {
+    /* background: linear-gradient(to right, #4b6cb7, #182848); 
+    z-index: 2;
+    transform: rotateY(0deg);
+}
+
+.flip-card-back {
+    /* background: linear-gradient(to right, #ff512f, #dd2476);  
+    transform: rotateY(180deg);
+} */
+
+.img-wrapper {
+    overflow: hidden;
+}
+
+img.hover-zoom:hover {
+    transform: scale(1.25);
+}
+
+.blinkStyle{
+  position: 'absolute';
+  top: '100%';
+  left: '0';
+  color: #fff ;
+  animation: 'blinker 1s linear infinite';
+};
+
+@keyframes blinker {
+    50% {
+        opacity: 0;
+    }
+}
+
+
+/* .flip-card-container-ip {
+    perspective: 1000px;
+    width: 100%;
+    height: 300px;
+}
+
+.flip-card-ip {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+    cursor: pointer;
+}
+
+.flip-card-ip.flipped-ip {
+    transform: rotateY(180deg);
+}
+
+.flip-card-front-ip,
+.flip-card-back-ip {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.flip-card-front-ip {
+    background-color: #ffffff;
+}
+
+.flip-card-back-ip {
+    background-color: #f0f0f0;
+    transform: rotateY(180deg);
+}
+
+
+.flip-card-container-http {
+    perspective: 1000px;
+    width: 100%;
+    height: 300px;
+}
+
+.flip-card-http {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+    cursor: pointer;
+}
+
+.flip-card-http.flipped-http {
+    transform: rotateY(180deg);
+}
+
+.flip-card-front-http,
+.flip-card-back-http {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    /* backface-visibility: hidden; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.flip-card-front-http {
+    background-color: #ffffff;
+}
+
+.flip-card-back-http {
+    background-color: #f0f0f0;
+    transform: rotateY(180deg);
+} */
+
+.button-group {
+    margin-bottom: 20px;
+    color: white;
+}
+
+.btn {
+    margin-right: 10px;
+    padding: 5px 15px;
+    background-color: #035189;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 20px;
+    font-weight: 600;
+    border-radius: 10px;
+}
+
+.btn.active {
+    background-color: #ff6600;
+    color: #fff;
+}
+
+.flip-view-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.flip-card-container {
+    width: 98%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 300px;
+}
+
+.flip-card {
+    background-color: transparent;
+    width: 100%;
+    height: 200px;
+    perspective: 1000px;
+}
+
+.flip-card-inner {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+}
+
+.flipped {
+    /* transform: rotateY(180deg); */
+}
+
+.flip-card-front,
+.flip-card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #333;
+    color: white;
+    border-radius: 10px;
+}
+
+.flip-card-back {
+    /* transform: rotateY(180deg); */
+}
+
+table td a {
+    font-weight: normal;
+    text-decoration: none;
+}
+
+table td a:hover {
+    font-weight: bold;
+    /* Try not to change the font-weight drastically */
+    text-decoration: underline;
+}
+
+table td {
+    padding: 10px;
+    text-align: center;
+}
+
+table td a {
+    display: inline-block;
+    /* Ensures the hover doesn't affect other elements */
+    width: 100%;
+    /* Prevents shifting */
+}
+
+
+table th,
+table td {
+    width: 150px;
+    /* Set a fixed width for columns */
+}
+
+table td.domain-name {
+    max-width: 250px;
+    /* Set a max width */
+    white-space: nowrap;
+    /* Prevent wrapping */
+    overflow: hidden;
+    /* Hide overflowed text */
+    text-overflow: ellipsis;
+    /* Add ellipsis for long text */
+}
+
+table td a:hover {
+    font-weight: bold;
+    text-decoration: underline;
+}
+
+
+table th,
+table td {
+    /* padding: 10px; */
+    text-align: center;
+    width: 150px;
+    /* Ensures all columns have the same width */
+}
+
+table td a {
+    font-weight: normal;
+    text-decoration: none;
+    display: inline-block;
+    width: 100%;
+    /* Prevents column resizing */
+}
+
+table td a:hover {
+    text-decoration: underline;
+    color: #f47c20;
+    /* Example color change on hover */
+}
+
+.table {
+    --bs-table-bg: transparent;
+    /* Disables the table background by setting it to transparent */
+}
+
+
+@media (max-width: 768px) {
+    .card {
+        width: 90%;
+        /* Cards take up 90% of the width on mobile */
+        margin: 10px 0;
+        /* Add space between cards */
+    }
+}
+
+@media (max-width: 480px) {
+    .card {
+        width: 100%;
+        /* Cards take up the full width on smaller mobile screens */
+    }
+}
+
+.custom-textarea::placeholder {
+    opacity: 0.3;
+    /* Set the opacity of the placeholder */
+   
+    /* Optional styling */
+    transition: opacity 0.3s ease;
+    /* Smooth transition */
+}
+
+.custom-textarea:hover::placeholder {
+    opacity: 0.5;
+    /* Change opacity on hover */
+}
+
+.progress-cont {
+    width: 40rem;
+}
+
+.progress {
+    height: 2.3rem;
+    border-radius: 2.25rem !important;
+    /* background-color: var(--light_color) !important; */
+}
+
+.progress {
+    display: -ms-flexbox;
+    display: flex;
+    height: 2rem;
+    overflow: hidden;
+    line-height: 0;
+    font-size: .75rem;
+    background-color: #e9ecef;
+    border-radius: .25rem;
+}
+
+.bg-primary {
+    background-color: var(--primary_color) !important;
+}
+
+.loading-text {
+    font-size: 24px;
+    font-weight: bold;
+    color: white;
+    text-align: center;
+    margin-top: 20px;
+}
+
+/* Style for the animated dots */
+.dots::after {
+    content: '';
+    display: inline-block;
+    width: 1ch;
+    /* To ensure each dot takes the same space */
+    text-align: left;
+    animation: dots 1.5s steps(4, end) infinite;
+    color: white;
+    padding: -0.0rem -0.0rem !important;
+}
+
+/* Keyframes for the running dots animation */
+@keyframes dots {
+    0% {
+        content: '.';
+    }
+
+    25% {
+        content: '..';
+    }
+
+    50% {
+        content: '...';
+    }
+
+    75% {
+        content: '....';
+    }
+
+    100% {
+        content: '';
+    }
+}
+
+.checkmark-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* Tick circle */
+.checkmark-circle {
+    stroke-dasharray: 166;
+    stroke-dashoffset: 166;
+    stroke-width: 2;
+    stroke-miterlimit: 10;
+    stroke: #4caf50;
+    fill: #4caf50;
+    animation: stroke 0.3s cubic-bezier(0.95, 0, 0.15, 1) forwards;
+}
+
+/* Checkmark container with green border */
+.checkmark {
+    width: 112px;
+    height: 112px;
+    border-radius: 50%;
+    display: block;
+    stroke-width: 3;
+    stroke: white;
+    stroke-miterlimit: 10;
+    box-shadow: inset 0px 0px 0px #4caf50;
+    background-color: #4caf50;
+    /* Green background */
+    border: 2px solid white;
+    /* Green border */
+    animation: fill 0.2s ease-in-out 0.9s forwards, scale 0.3s ease-in-out 0.3s both;
+}
+
+.checkmark-border {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 128px;
+    /* Adjusted to account for extra borders */
+    height: 128px;
+    border-radius: 50%;
+    background-color: white;
+    /* Outer white border */
+    border: 3px solid #4caf50;
+    /* Outer green border */
+}
+
+/* Checkmark path */
+.checkmark-check {
+    transform-origin: 50% 50%;
+    stroke-dasharray: 48;
+    stroke-dashoffset: 48;
+    animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards 0.7s;
+}
+
+/* Animations */
+@keyframes stroke {
+    100% {
+        stroke-dashoffset: 0;
+    }
+}
+
+@keyframes scale {
+
+    0%,
+    100% {
+        transform: none;
+    }
+
+    50% {
+        transform: scale3d(1.1, 1.1, 1);
+    }
+}
+
+@keyframes fill {
+    100% {
+        box-shadow: inset 0px 0px 0px 30px #4caf50;
+    }
+}
+
+.progress-container {
+    width: 50%;
+    height: 8px;
+    background-color: #e0e0e0;
+    border-radius: 4px;
+    margin-top: 20px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    width: 0;
+    height: 100%;
+    background-color: #4caf50;
+    animation: progress-animation 2s infinite;
+}
+
+@keyframes progress-animation {
+    0% {
+        width: 0;
+    }
+
+    50% {
+        width: 50%;
+    }
+
+    100% {
+        width: 100%;
+    }
+}

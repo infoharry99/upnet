@@ -1,0 +1,4 @@
+.zoomed-card {
+    transform: scale(1.1); /* Adjust the scale factor for the desired zoom level */
+    transition: transform 0.3s ease; /* Adjust the transition duration and timing function as needed */
+  }

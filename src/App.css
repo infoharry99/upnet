@@ -1,0 +1,188 @@
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+::placeholder {
+  color: white;
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+li {
+  list-style: none;
+}
+
+/* .loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.1); 
+  backdrop-filter: blur(5px);
+  display: flex;
+  justify-content: center;
+  align-items: center; 
+  z-index: 999999999999999999999999 !important;
+} */
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #ffffff;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+/* .mainOuterBox{
+  background: url(../../../assets/img/bg.svg);
+  }
+
+.upcoming{
+  width: 100%;
+  height: auto;
+  margin-top: 25px;
+
+
+}
+
+.upcoming img{
+  width: 100%;
+  min-height: 550px;
+  background-size: cover;
+  background-position: center;
+
+} */
+
+.crisp-client .cc-1brb6[data-full-view=true] .cc-1yy0g .cc-1m2mf {
+  bottom: 50px !important;
+  right: 14px !important;
+  z-index: 1 !important;
+}
+
+.crisp-client .cc-1brb6 .cc-1yy0g .cc-1no03 .cc-rfbfu .cc-1iwcs .cc-q205d, .crisp-client .cc-1brb6 .cc-1yy0g .cc-1no03 .cc-rfbfu .cc-1iwcs .cc-q205d .cc-13yzx {
+  position: absolute !important;
+  inset-inline: 0 !important;
+  top: 70px !important;
+}
+.crisp-client .cc-1brb6 .cc-1yy0g .cc-1no03 .cc-lso1a {
+  top: 100px !important;
+  position: relative !important;
+  z-index: 5 !important;
+}
+
+/* .cc-1no03 .cc-lso1a .cc-1gpay .cc-1euts .cc-9nfaa .cc-oktsw {
+  --mask-image: url(data:image/svg+xml;base64,PHN2ZyBoZWlnaHQ9IjgiIHdpZHRoPSI5IiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxwYXRoIGQ9Ik03LjUuN0wxIDcuM00xIC43bDYuNSA2LjYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2Utd2lkdGg9IjEuNCIvPjwvc3ZnPg==) !important;
+  -webkit-mask-image: var(--mask-image) !important;
+  mask-image: var(--mask-image) !important;
+  -webkit-mask-size: contain !important;
+  mask-size: contain !important;
+  -webkit-mask-repeat: no-repeat !important;
+  mask-repeat: no-repeat !important;
+  -webkit-mask-position: center !important;
+  mask-position: center !important;
+  
+  display: block !important;
+  
+} */
+@media (max-width: 576px) {
+  /* .crisp-client .cc-1brb6 .cc-1yy0g .cc-1no03 .cc-lso1a .cc-1gpay .cc-1euts .cc-9nfaa {
+    padding-block: 4px !important;
+    padding-inline: 6px 5px !important;
+    display: none !important;
+    position: absolute !important;
+    inset-inline-end: 12px !important;
+    top: 17px !important;
+    right: 25px !important;
+    border-radius: 5px !important;
+  }
+  .cc-oktsw {
+    width: 30px !important;
+    height: 15px !important;
+  }
+  
+  .crisp-client .cc-1brb6 .cc-1yy0g .cc-1m2mf {
+    z-index: 2 !important;
+    display: block !important;
+    bottom: 45px !important;
+    border-radius: 100% !important;
+  } */
+}
+
+
+
+@media (max-width: 576px) {
+  .go4109123758 {
+    bottom: none !important;
+  }
+
+  .go2072408551 {
+    display: flex;
+    align-items: center;
+    background: #fff;
+    color: #363636;
+    line-height: 1.3;
+    will-change: transform;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1), 0 3px 3px rgba(0, 0, 0, 0.05);
+    min-width: 350px;
+    max-width: 350px;
+    pointer-events: auto;
+    padding: 8px 10px;
+    border-radius: 8px;
+}
+
+
+}
+
+.go4109123758 {
+  top: 50px !important;
+  left: 48% !important;
+}
+
+.go2072408551 {
+  display: flex;
+  align-items: center;
+  background: #fff0 !important;
+  color: #363636;
+  line-height: 1.3;
+  will-change: transform;
+  box-shadow: none !important;
+  max-width: 350px;
+  pointer-events: auto;
+  padding: 8px 10px;
+  border-radius: 8px;
+  margin-right: 12rem;
+  
+}
+
+
+.apptoast-align {
+position: fixed;
+bottom: 2rem;
+z-index: 9999999999999999999999999999999999999999999;
+}

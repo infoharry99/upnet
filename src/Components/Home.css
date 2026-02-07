@@ -1,0 +1,123 @@
+
+  .slider-container {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+  }
+  
+  .slider {
+    display: flex;
+    flex-wrap: nowrap;
+    /* overflow-x: auto; */
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    height: 100px;
+  }
+  
+  .slide {
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 10px;
+  }
+  
+  /* img {
+    max-width: 100%;
+    height: auto;
+  } */
+  
+  .title {
+    font-size: 14px;
+    margin-top: 5px;
+  }
+  
+  .scroll-button {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(255, 255, 255, 0.5);
+    border: none;
+    color: black;
+    padding: 5px 10px;
+    cursor: pointer;
+  }
+  
+  .left {
+    left: 0;
+  }
+  
+  .right {
+    right: 0;
+  }
+
+
+@media (max-width: 576px) {
+  .page-control {
+    position: fixed;
+    top: 50%;
+    right: 5px; /* Adjust this value as needed */
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 1000;
+  }
+}
+
+@keyframes move {
+  0% {
+    transform: translateY(10px);
+  }
+  50% {
+    transform: translateY(0px); /* Adjust the distance as needed */
+  }
+  100% {
+    transform: translateY(10px);
+  }
+}
+
+.moving {
+  animation: move 1s linear infinite; /* Adjust duration and timing function as needed */
+}
+
+
+/* Home.css */
+.home-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.full-screen-section {
+  flex: 1;
+}
+
+
+
+.page-control {
+  position: fixed;
+  top: 50%;
+  right: 40px; /* Adjust this value as needed */
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 1000;
+}
+
+.page-indicator {
+  width: 15px;
+  height: 15px;
+  background-color: #e67225;
+  border-radius: 50%;
+  margin: 5px 0;
+  cursor: pointer;
+}
+
+.page-indicator.active {
+  background-color: #07528b;
+  width: 25px;
+  height: 25px;
+}

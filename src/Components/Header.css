@@ -1,0 +1,169 @@
+.header-top.see-full {
+  /* padding: 12px 0; */
+  /* Add your styles here */
+}
+
+.parent-see-width {
+  padding: 0% 1% 0% 5%;
+    margin-top: -20px;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: fixed;
+    width: 100%;
+    height: 5rem;
+    background-color: #f8f8f8;
+    /* background-image: url('../public/main-bg.jpg');
+    background-size: cover;
+    background-repeat: no-repeat; */
+}
+
+.logo a img {
+
+  max-width: 100%;
+}
+
+.count-bell {
+  width: 18px;
+  height: 18px;
+  display: inline-block;
+  background-color: #e97730;
+  color: #fff;
+  border-radius: 50%;
+  position: relative;
+  right: -1rem;
+  /* top: 1rem; */
+  border: 2px solid #fff;
+  font-size: 10px;
+  text-align: center;
+  padding: 1px 0px;
+}
+
+@media (max-width: 576px) {
+  .logo a img {
+    max-width: 150%;
+    margin-left: -30px;
+  }
+}
+
+.login-main {
+  display: flex;
+  align-items: baseline;
+  /* margin-left: auto; */
+  /* width: 60%; */
+  background-color: rgba(255, 0, 0, 0);
+  /* margin-right: 10rem; */
+  align-content: space-around;
+  flex-wrap: wrap;
+}
+
+.login-main select {
+  border-radius: 30px;
+  margin-right: 10px;
+  padding: 10px 15px;
+  border: 2px solid #e97730;
+}
+
+.log-in {
+  display: flex;
+  align-items: center;
+  margin-right: 15px;
+  position: relative;
+}
+
+.log-in a {
+  text-decoration: none;
+  color: #000;
+  margin-right: 5px;
+  position: relative;
+  display: inline-block;
+}
+
+.media {
+  position: relative;
+  display: inline-block;
+}
+
+.media img {
+  width: 100%;
+  transition: opacity 0.3s ease;
+}
+
+.hover-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+}
+
+.media:hover .hover-img {
+  opacity: 1;
+}
+
+.media:hover .normal {
+  opacity: 0;
+}
+
+.login-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 22px;
+  font-weight: 600;
+  z-index: 1;
+  width: max-content;
+}
+
+
+/* Adjustments for extra small screens */
+@media (max-width: 576px) {
+  .parent-see-width {
+    margin-top: -20px;
+    z-index: 9999;
+      display: flex;
+      align-items: center;
+      position: fixed;
+      width: 100%;
+      height: 4rem;
+      background-color: #f8f8f8;
+  }
+
+  .logo {
+    margin-bottom: 10px;
+    width: 6rem;
+  }
+
+  .login-main {
+    display: flex;
+    align-items: center;
+    background-color: rgba(255, 0, 0, 0);
+    
+  }
+
+  .login-main select {
+    margin-right: 0;
+    margin-bottom: 10px;
+  }
+
+  .log-in {
+    margin-top: 0;
+  }
+
+  .log-in a {
+    margin-right: 0;
+  }
+
+  .login-text {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    width: max-content;
+    z-index: 1;
+}
+}

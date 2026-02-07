@@ -1,0 +1,21 @@
+.carousel-container {
+    perspective: 1000px;
+  }
+  
+  .custom-carousel {
+    transform-style: preserve-3d;
+  }
+  
+  .carousel-item {
+    transition: transform 0.6s ease;
+  }
+  
+  .carousel-item.active {
+    transform: translateZ(0);
+  }
+  
+  .carousel-item-next.carousel-item-left,
+  .carousel-item-prev.carousel-item-right {
+    transform: rotateY(-90deg);
+    position: absolute;
+  }

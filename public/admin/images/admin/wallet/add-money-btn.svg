@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="158.001" height="56" viewBox="0 0 158.001 56">
+  <defs>
+    <linearGradient id="linear-gradient" x1="0.5" x2="0.5" y2="1" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#d6d6d6"/>
+      <stop offset="1" stop-color="#f9f9f9"/>
+    </linearGradient>
+    <filter id="Rectangle_761" x="-8.999" y="-6" width="176" height="74" filterUnits="userSpaceOnUse">
+      <feOffset dy="3" input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feFlood flood-opacity="0.161"/>
+      <feComposite operator="in" in2="blur"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+    <linearGradient id="linear-gradient-2" x1="0.5" x2="0.5" y2="1" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#4a92f8"/>
+      <stop offset="1" stop-color="#bdd3fe"/>
+    </linearGradient>
+    <clipPath id="clip-path">
+      <g transform="matrix(1, 0, 0, 1, 0, 0)" filter="url(#Rectangle_761)">
+        <rect id="Rectangle_761-2" data-name="Rectangle 761" width="158" height="56" rx="28" transform="translate(0 0)" fill="url(#linear-gradient)"/>
+      </g>
+    </clipPath>
+    <radialGradient id="radial-gradient" cx="0.5" cy="0.5" r="0.6" gradientTransform="translate(0 -0.078) scale(1 1.156)" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#65a7ff"/>
+      <stop offset="0.416" stop-color="#86b9ff"/>
+      <stop offset="1" stop-color="#c9e0ff"/>
+    </radialGradient>
+    <radialGradient id="radial-gradient-2" cx="0.5" cy="0.5" r="0.546" gradientTransform="translate(0 0.097) scale(1 0.806)" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#c9e0ff"/>
+      <stop offset="0.226" stop-color="#bdd9ff"/>
+      <stop offset="1" stop-color="#6dabff"/>
+    </radialGradient>
+  </defs>
+  <g id="add-money-btn" transform="translate(0.001)">
+    <rect id="Rectangle_758" data-name="Rectangle 758" width="158" height="56" rx="28" transform="translate(0)" fill="url(#linear-gradient-2)"/>
+    <g id="Mask_Group_89" data-name="Mask Group 89" transform="translate(0 0)" clip-path="url(#clip-path)">
+      <ellipse id="Ellipse_7696" data-name="Ellipse 7696" cx="79" cy="20" rx="79" ry="20" transform="translate(-0.001 -26)" fill="url(#radial-gradient)"/>
+      <ellipse id="Ellipse_7698" data-name="Ellipse 7698" cx="79" cy="20" rx="79" ry="20" transform="translate(-0.001 42)" fill="url(#radial-gradient-2)"/>
+    </g>
+  </g>
+</svg>

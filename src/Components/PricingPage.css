@@ -1,0 +1,373 @@
+.tab-box {
+    /* display: flex; */
+    background-color: transparent;
+    /* min-height: 40rem !important; */
+    width: 88%;
+    margin-left: 136px;
+    margin-top: 70px;
+    border-radius: 12px;
+    border-top-left-radius: 0%;
+    border: 2px solid #e97730;
+}
+
+.active-web {
+    margin-left: -132px;
+    margin-top: 10px;
+    position: relative;
+    width: 130px;
+    border-top-left-radius: 35px;
+    border-bottom-left-radius: 0px;
+    padding: 16px 0;
+    background-color: #e97730;
+    color: #fff;
+    border-top-left-radius: 35px;
+    border-bottom-left-radius: 35px;
+    display: block;
+    /* color: #035189; */
+    font-weight: 600;
+    height: 130px;
+    border: none;
+    outline: none;
+    font-size: 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.title-box {
+    position: relative;
+    color: #154e7a;
+    padding: 5px;
+    /* display: flex; */
+    width: 15%;
+    height: 45vh;
+        /* background-image: url(https://console.upnetcloud.com/public/images/frontend/price/server-img.png); */
+    background-image: "./server-img.png";
+    background-size: cover;
+    border-radius: 8px;
+    box-shadow: 2px 2px 2px 2px rgba(0, 0, 0, 0.1);
+    justify-content: space-around;
+    margin-top: 0rem;
+    margin-left: 20px;
+ 
+}
+
+.pricing-right{
+    background: #e97730;
+    width: auto;
+    color: #fff;
+    float: right;
+    height: 60px;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    padding: 15px;
+    margin-right: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 30px;
+    margin-top: -201px;
+    padding: 20px;
+}
+
+.heading-dotted-pricing {
+    font-size: 26px !important;
+    font-weight: 500;
+    padding: 10px 0;
+    border-bottom: 2px solid #154e7a;
+    display: inline-block;
+    position: relative;
+    text-transform: capitalize;
+    color: #154e7a;
+  }
+  
+  /* @media (min-width: 1920px) and (max-width: 2559px) {
+    .heading-dotted-pricing {
+        font-size: 50px;
+    }
+  } */
+  
+  @media (min-width: 1500px) {
+    .heading-dotted-pricing::before {
+        content: "...";
+        position: absolute;
+        bottom: -11px !important;
+        left: 100%;
+      }
+}
+
+  .heading-dotted-pricing::before {
+    content: "...";
+    position: absolute;
+    bottom: -11px !important;
+    left: 100%;
+  }
+  
+  .slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 25px;
+    height: 25px;
+    background: #f47c20;
+    cursor: pointer;
+    border-radius: 50%;
+  }
+  
+  .slider-input::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 25px;
+    height: 25px;
+    background: #f47c20;
+    cursor: pointer;
+    border-radius: 50%;
+  }
+  
+  .slider-input::-moz-range-thumb {
+    width: 25px;
+    height: 25px;
+    background: #f47c20;
+    cursor: pointer;
+    border-radius: 50%;
+  }
+  @media (max-width: 576px) {
+
+    .slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 25px;
+        height: 25px;
+        background: #f47c20;
+        cursor: pointer;
+        border-radius: 50%;
+      }
+      
+      .slider-input::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 25px;
+        height: 25px;
+        background: #f47c20;
+        cursor: pointer;
+        border-radius: 50%;
+      }
+      
+      .slider-input::-moz-range-thumb {
+        width: 25px;
+        height: 25px;
+        background: #f47c20;
+        cursor: pointer;
+        border-radius: 50%;
+      }
+
+
+    .spec-tab-container{
+        float: left;
+        padding: 15px;
+        border: 2px solid #e97730;
+        width: 92%;
+        border-radius: 20px;
+        border-top-left-radius: 0%;
+        height: 325px;
+        display: none;
+    }
+.pricing-right{
+    background: #035189;
+    width: auto;
+    color: #fff;
+    float: right;
+    height: 50px;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    padding: 15px;
+    margin-right: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 30px;
+    margin-top: 20px;
+}
+
+.title-box {
+    color: #154e7a;
+    padding: 5px;
+    display: flex;
+    width: 90%;
+    height: 50px;
+    /* background-image: url(https://console.upnetcloud.com/public/images/frontend/price/server-img.png); */
+    background-image: "./server-img.png";
+    background-position: center;
+    border-radius: 8px;
+    box-shadow: 2px 2px 2px 2px rgba(0, 0, 0, 0.1);
+    justify-content: space-around;
+    margin-top: -10px;
+    margin-left: 20px;
+    margin-bottom: 20px;
+}
+  
+
+
+.tab-box{
+    /* display: flex; */
+    background-color: transparent;
+    height: 70vh;
+    width: 90%;
+    margin-left: 20px;
+    margin-top: 70px;
+    border-radius: 12px;
+    border-top-left-radius: 0%;
+    border: 2px solid #e97730;
+}
+    .active-mobile{
+        position: absolute;
+        width: 80px;
+        left: 20px;
+        border-top-left-radius: 35px;
+        border-bottom-left-radius: 0px;
+        border-top-right-radius: 35px;
+        padding: 16px 0;
+        background-color: #e97730;
+        color: #fff;
+        
+        /* border-radius: 0%; */
+        border-top-left-radius: 35px;
+        /* border-bottom-left-radius: 35px; */
+        display: block;
+        
+        
+        font-weight: 600;
+        height: 70px;
+        /* border-radius: 50%; */
+        margin-bottom: 5px;
+        border: none;
+        outline: none;
+        font-size: 13px;
+        text-align: center;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    .heading-dotted-pricing {
+        width: 90%;
+        font-size: 24px;
+        font-weight: 500;
+        padding: 10px 0;
+        border-bottom: 2px solid #154e7a;
+        display: inline-block;
+        position: relative;
+        text-transform: capitalize;
+        color: #154e7a;
+        top: 5rem;
+        margin-left: 1rem;
+        /* margin-bottom: 8rem; */
+    }
+  
+  .heading-dotted-pricing::before {
+    content: "...";
+    position: absolute;
+    bottom: -12px;
+    left: 100%;
+  }
+
+  @media (max-width: 992px) {
+     .tabcontent {
+        width: 100%;
+        height: auto;
+    }
+}
+
+   .tabcontent {
+    float: left;
+    padding: 15px;
+    border: 2px solid #e97730;
+    width: 92%;
+    border-radius: 20px;
+    border-top-left-radius: 0%;
+    height: 325px;
+    display: none;
+}
+.tabcontent.active {
+    display: block;
+}
+
+.tabcontent .custom-container .head-buttons {
+    display: flex;
+    justify-content: start;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 992px) {
+    .tabcontent .custom-container .range-container {
+        flex-direction: column;
+        padding: 20px 0;
+    }
+}
+@media (max-width: 992px) {
+     .range-container .title-box {
+        width: 100%;
+        margin-bottom: 25px;
+    }
+}
+@media (max-width: 992px) {
+    .range-container .title-box .headings {
+        height: auto;
+        flex-direction: row;
+        padding: 15px 0px;
+    }
+}
+
+ .range-container .title-box .headings {
+    height: 230px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+    position: relative;
+}
+
+ .tabcontent .custom-container .range-container {
+    display: flex;
+    padding: 20px;
+    width: 100%;
+}
+
+  }
+
+
+  .title-box-pricing {
+    position: relative;
+    color: #154e7a;
+    padding: 5px;
+    /* display: flex; */
+    width: 13rem !important;
+    height: 30rem !important;
+    /* background-image: url(https://console.upnetcloud.com/public/images/frontend/price/server-img.png); */
+    background-image: "./server-img.png";
+    background-size: cover;
+    border-radius: 30px;
+    box-shadow: 2px 2px 2px 2px rgba(0, 0, 0, 0.1);
+    justify-content: space-around;
+    margin-top: 0rem;
+    margin-bottom: 40px;
+    margin-left: 20px;
+}
+
+    .title-box-cdn-pricing {
+      position: relative;
+      color: #154e7a;
+      padding: 5px;
+      /* display: flex; */
+      width: 11rem !important;
+      height: 8rem !important;
+      /* background-image: url(https://console.upnetcloud.com/public/images/frontend/price/server-img.png); */
+      background-image: "./server-img.png";
+      background-size: cover;
+      border-radius: 30px;
+      box-shadow: 2px 2px 2px 2px rgba(0, 0, 0, 0.1);
+      justify-content: space-around;
+      margin-top: 0rem;
+      margin-bottom: 40px;
+      margin-left: 20px;
+    }

@@ -1,0 +1,189 @@
+
+.carousel-indicators [data-bs-target] {
+    box-sizing: content-box;
+    flex: 0 1 auto;
+    /* width: 70px;
+    height: 10px; */
+    border-radius: 10px;
+    padding: 0;
+    margin-right: 3px;
+    margin-left: 3px;
+    text-indent: -999px;
+    cursor: pointer;
+    background-color: #f97307;
+    background-clip: padding-box;
+    border: 0;
+    border-top: 10px solid transparent;
+    border-bottom: 10px solid transparent;
+    height: 10px;
+        width: 45px;
+    /* opacity: .5; */
+    /* transition: opacity .6s ease; */
+}
+
+.carousel-indicators {
+    position: absolute;
+    right: auto;
+    bottom: 0;
+    left: 0;
+    z-index: 2;
+    display: flex;
+    justify-content: center;
+    padding: 0;
+    margin-right: 15%;
+    margin-bottom: -4rem;
+    margin-left: 15%;
+}
+
+.carousel-control-prev{
+    display: none;
+}
+
+.carousel-control-next{
+    display: none;
+}
+
+.log-in a {
+    text-decoration: none;
+    color: #000;
+    margin-right: 5px;
+    position: relative;
+    display: inline-block;
+  }
+
+.media-banner {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .media-banner img {
+    width: 100%;
+    transition: opacity 0.3s ease;
+    height: 100%;
+  }
+  
+  .hover-img-banner {
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0;
+  }
+  
+  .media-banner:hover .hover-img-banner {
+    opacity: 1;
+  }
+  
+  .media-banner:hover .normal-banner {
+    opacity: 0;
+  }
+  
+  .login-text-banner {
+    position: absolute;
+    top: 50%;
+    left: 44%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 20px;
+    font-weight: 600;
+    z-index: 1;
+  }
+
+
+  @media (max-width: 575px) {
+    .carousel-indicators [data-bs-target] {
+      box-sizing: content-box;
+      flex: 0 1 auto;
+      /* width: 70px;
+      height: 10px; */
+      border-radius: 18px;
+      padding: 0;
+      margin-right: 3px;
+      margin-left: 3px;
+      text-indent: -999px;
+      cursor: pointer;
+      background-color: #f97307;
+      background-clip: padding-box;
+      border: 0;
+      border-top: 10px solid transparent;
+      border-bottom: 10px solid transparent;
+      height: 6px;
+          width: 35px;
+      /* opacity: .5; */
+      /* transition: opacity .6s ease; */
+  }
+  
+  .carousel-indicators {
+      position: absolute;
+      right: auto;
+      top: 100%;
+      left: 0;
+      z-index: 2;
+      display: flex;
+      justify-content: center;
+      padding: 0;
+      margin-right: 15%;
+      margin-bottom: 1rem;
+      margin-left: 25%;
+  }
+  
+  .carousel-control-prev{
+      display: none;
+  }
+  
+  .carousel-control-next{
+      display: none;
+  }
+  
+  .log-in a {
+      text-decoration: none;
+      color: #000;
+      margin-right: 5px;
+      position: relative;
+      display: inline-block;
+    }
+  
+  .media-banner {
+      position: relative;
+      display: inline-block;
+    }
+    
+    .media-banner img {
+      width: 100%;
+      transition: opacity 0.3s ease;
+      height: 100%;
+    }
+    
+    .hover-img-banner {
+      position: absolute;
+      top: 0;
+      left: 0;
+      opacity: 0;
+    }
+    
+    .media-banner:hover .hover-img-banner {
+      opacity: 1;
+    }
+    
+    .media-banner:hover .normal-banner {
+      opacity: 0;
+    }
+    
+    .login-text-banner {
+      width: max-content;
+      position: absolute;
+      top: 50%;
+      left: 44%;
+      transform: translate(-50%, -50%);
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+      z-index: 1;
+    }
+  
+  }
+
+
+.modal-backdrop.show {
+    opacity: var(--bs-backdrop-opacity);
+    z-index: 9999999999;
+}

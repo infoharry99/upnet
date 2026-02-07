@@ -1,0 +1,175 @@
+
+.heading-dotted-wallet::before {
+    content: "...";
+    position: absolute;
+    bottom: -16px;
+    left: 100%;
+  }
+
+  .heading-dotted-wallet {
+    font-size: 34px;
+    font-weight: 500;
+    padding: 10px 0;
+    border-bottom: 2px solid #154e7a;
+    display: inline-block;
+    position: relative;
+    text-transform: capitalize;
+    color: #545454 !important;
+    margin-left: 9rem;
+  }
+
+  .details-label {
+    background-color: #154e7a;
+    color: #fff;
+    border-radius: 0.3rem;
+    padding: 0.3rem 0.6rem;
+    font-weight: 700;
+    white-space: nowrap;
+    font-size: 28px;
+}
+.wallet-col{
+    display: flex;
+    padding: 1.5rem 0;
+    justify-content: space-evenly;
+    border-bottom: 0.15rem solid #ccc;
+}
+.details-label span {
+  font-size: 0.9rem;
+  font-weight: 300;
+  line-height: 100%;
+  vertical-align: baseline;
+}
+  .wallet-container{
+    width: 100%;
+    margin-top: 1.5rem;
+    height: 60vh;
+    border: 0.15rem solid var(--primary_color);
+    border-radius: 1rem;
+    padding: 1rem;
+  }
+
+   .wallet-box-main {
+    height: 100%;
+    overflow-y: scroll;
+    padding-right: 1rem;
+}
+
+.popup-input-container {
+  position: relative;
+  color: rgb(255, 255, 255);
+  top: -10rem;
+  right: 35%;
+  background: #154e7a;
+  padding: 0.3rem 1rem;
+  border-radius: 2rem;
+  width: 29rem;
+  height: 3rem;
+  text-align: center;
+  font-size: 1.5rem;
+}
+
+.buttons-addmoney {
+    margin-top: 35px;
+    outline: 2px solid #e97730;
+    border: 2px solid #fff;
+    width: 32rem;
+    height: 40px;
+    border-radius: 20px;
+    background: #e97730;
+}
+
+  @media (max-width: 576px) {
+    .popup-input-container {
+      position: absolute;
+      color: rgb(255, 255, 255);
+      top: 21rem;
+      left: 8%;
+      background: #154e7a;
+      padding: 0.3rem 1rem;
+      border-radius: 2rem;
+      width: 19rem;
+      height: 3rem;
+      text-align: center;
+      font-size: 1.5rem;
+  }
+
+  .buttons-addmoney {
+    margin-top: 35px;
+    outline: 2px solid #e97730;
+    border: 2px solid #fff;
+    width: 24rem;
+    height: 40px;
+    border-radius: 20px;
+    background: #e97730;
+}
+    /* .details-label:not(:first-child)::before {
+      content: "";
+      position: absolute;
+      width: 0.3rem;
+      height: 1.1rem;
+      background: var(--secondary_color);
+      top: 0;
+      transform: translateY(-100%);
+      left: 30%;
+  }
+
+    .details-label::after {
+      content: "";
+      position: absolute;
+      width: 0.3rem;
+      height: 1.1rem;
+      background: var(--secondary_color);
+      top: 0;
+      transform: translateY(-100%);
+      right: 30%;
+    } */
+    .details-label {
+      width: 80%;
+      height: 50%;
+      margin-top: 0.5rem;
+      background-color: #154e7a;
+      color: #fff;
+      border-radius: 0.3rem;
+      padding: 0.3rem 0.6rem;
+      font-weight: 500;
+      white-space: nowrap;
+      font-size: 17px;
+  }
+
+  .details-label span {
+    font-size: 12px;
+    font-weight: 300;
+    line-height: 100%;
+    vertical-align: baseline;
+  }
+
+  .wallet-col {
+    display: flex;
+    padding: 1.5rem 0;
+    justify-content: center;
+    align-items: center;
+    border-bottom: 0.15rem solid #ccc;
+    flex-direction: column;
+
+  }
+    .heading-dotted-wallet {
+        font-size: 24px;
+        font-weight: 500;
+        padding: 10px 0;
+        border-bottom: 2px solid #154e7a;
+        display: inline-block;
+        position: relative;
+        text-transform: capitalize;
+        color: #154e7a;
+        top: 3rem;
+        margin-left: 10px;
+        margin-bottom: 4rem;
+    }
+
+    .heading-dotted-wallet::before {
+        content: "...";
+        position: absolute;
+        bottom: -12px;
+        left: 100%;
+    }
+  }

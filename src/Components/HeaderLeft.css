@@ -1,0 +1,224 @@
+.header-left.h-auto {
+  
+    z-index: 99999999;
+    /* width: 6%; */
+    position: fixed;
+    left: 0;
+    top: 0;
+    float: left;
+    background-color: #e97730;
+    height: auto;
+    border-radius: 60px;
+    margin-left: 2%;
+    margin-top: 1%;
+
+  }
+
+  
+  .listing.see-full {
+    margin-top: -60%;
+    /* padding-left: 0rem !important; */
+    /* Add your styles here */
+  }
+
+  li::marker {
+    content: "";
+} 
+.li {
+    color: #FFFFFFCC;
+    font-weight: 300;
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: center;
+}
+
+.listing {
+  display: block;
+  transition: opacity 0.3s ease;
+}
+
+.listing.hide {
+  opacity: 0;
+  pointer-events: none; /* Disable pointer events when hidden */
+}
+  .border {
+    position: relative;
+    border: 3px solid #fff !important; 
+    border-radius: 50%;
+    margin-bottom: 2rem;
+    
+    /* width: 50px;
+    height: 50px; */
+    /* Add your styles here */
+  }
+  .border-selected {
+    margin-right: 13px;
+    position: relative;
+    border: 3px solid #fff !important; 
+    border-radius: 25%;
+    margin-bottom: 2rem;
+    background-color: white;    
+    /* width: 50px;
+    height: 50px; */
+    /* Add your styles here */
+  }
+  
+  figure img.normal {
+    /* Add your styles here */
+  }
+  
+  figure img.on-active {
+    display: none;
+    /* Add your styles here */
+  }
+  
+  .border:hover img.normal {
+    display: none;
+  }
+  
+  .border:hover img.on-active {
+    display: inline;
+  }
+  
+  .heading {
+    text-align: center;
+    position: absolute;
+    left: 50%;
+    overflow-wrap: break-word;    
+    transform: translateX(-50%);
+    font-size: 17px;    
+    color: #fff;
+    font-weight: 600;
+    /* text-transform: capitalize; */
+    top: 100%;
+  }
+  
+  .hide {
+    display: none !important;
+  }
+  
+  .listing li .border {
+    width: 85px;
+    height: 85px;
+}
+
+.img-menu {
+vertical-align: middle;
+margin-top: 4px;
+margin-left: 5px;
+width: 70px;
+padding: 12px;
+}
+
+
+@media (max-width: 576px) {
+  .header-left.h-auto {
+    z-index: 99999999;
+    width: 80px;
+    /* height: 10px; */
+    position: fixed;
+    left: 75%;
+    /* top: 0; */
+    float: right;
+    background-color: #e97730;
+    height: auto;
+    border-radius: 30px;
+    /* margin-left: 2%; */
+    margin-top: 10px;
+}
+  
+
+.listing.see-full {
+  margin-top: -2rem;
+}
+
+  li::marker {
+    content: "";
+} 
+.li {
+    color: #FFFFFFCC;
+    font-weight: 300;
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: center;
+}
+
+.listing {
+  display: block;
+  transition: opacity 0.3s ease;
+}
+
+.listing.hide {
+  opacity: 0;
+  pointer-events: none; /* Disable pointer events when hidden */
+}
+  .border {
+    position: relative;
+    border: 3px solid #fff !important; 
+    border-radius: 50%;
+    margin-bottom: 2rem;
+    
+    /* width: 50px;
+    height: 50px; */
+    /* Add your styles here */
+  }
+  .border-selected {
+    /* margin-top: 4rem; */
+    margin-right: 20px;
+    position: relative;
+    border: 3px solid #fff !important; 
+    border-radius: 25%;
+    /* margin-bottom: 2rem; */
+    background-color: white;    
+    /* width: 50px;
+    height: 50px; */
+    /* Add your styles here */
+  }
+  
+  figure img.normal {
+    /* Add your styles here */
+  }
+  
+  figure img.on-active {
+    display: none;
+    /* Add your styles here */
+  }
+  
+  .border:hover img.normal {
+    display: none;
+  }
+  
+  .border:hover img.on-active {
+    display: inline;
+  }
+  
+  .heading {
+    position: absolute;
+    left: 50%;
+    overflow-wrap: break-word;    
+    transform: translateX(-50%);
+    font-size: 14px;    
+    color: #fff;
+    font-weight: 600;
+    text-transform: capitalize;
+    top: 100%;
+  }
+  
+  .hide {
+    display: none !important;
+  }
+  
+
+.listing li .border {
+  width: 60px;
+  height: 60px;
+}
+
+.img-menu {
+vertical-align: middle;
+width: 70px;
+padding: 10px;
+padding: 14px 30px 10px 10px;
+}
+
+}

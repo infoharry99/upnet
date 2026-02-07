@@ -1,0 +1,263 @@
+/* styles.css */
+.features-page-solution {
+    /* display: flex; */
+    justify-content: space-around;
+    padding: 2rem;
+  }
+  
+  .features-section-solution,
+  .solutions-section-solution {
+    flex: 1;
+    padding: 1rem;
+  }
+  
+  .features-list-solution,
+  .solutions-list-solution {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+  }
+  
+  .feature-solution,
+  .solution-solution {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 1rem;
+    padding: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  .feature-icon-solution,
+  .solution-icon-solution {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .feature-title-solution,
+  .solution-title-solution {
+    margin: 0;
+    font-size: 1.2rem;
+  }
+  
+  .solution-description-solution {
+    text-align: center;
+    font-size: 0.9rem;
+  }
+
+/* // */
+.outer-border-solution {
+    align-content: center;
+    height: 90px;
+    width: 90px;
+    border: 2px solid #E97730;
+    border-radius: 50%;
+    margin: auto;
+    background-color: transparent;
+    margin-top: -21%;
+    padding: 0;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .inner-border-solution {
+    height: 80px;
+    width: 80px;
+    padding: 10px;
+    border: 2px solid #E97730;
+    border-radius: 50%;
+    margin: auto;
+    background-color: #E97730;
+    position: relative;
+    transition: background-color 0.3s ease;
+  }
+  
+  .image-background-solution {
+    height: 100%;
+    width: 100%;
+    
+  }
+  
+  .solution-card-solution:hover {
+    background-color: rgb(233, 119, 48, 0.1);
+  
+  }
+
+
+  .solution-card-solution {
+    
+    /* width: 50%; */
+    /* height: 30%; */
+    height: 100%;
+    background-image: url(https://smartcloudvm.com/public/images/solution-box-bg.png);
+    background-size: cover;
+    background-position: center;
+    /* background-color: #f5f5f500; */
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 2px 2px 2px 2px rgba(0, 0, 0, 0.1);
+    justify-content: flex-start;
+    
+    /* flex-wrap: wrap; */
+    padding: 3rem;
+    margin-top: 5rem;
+    
+    /* display: flex; */
+    /* align-items: flex-start; */
+    /* align-content: flex-start; */
+    /* display: flex;
+    align-items: center;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); */
+  }
+  
+  .icon-container-solution {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 64px;
+    height: 64px;
+    background-color: #ff6b35;
+    border-radius: 50%;
+    margin-right: 16px;
+    margin-top: -10%;
+    margin-left: 45%;
+    /* display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 64px;
+    height: 64px;
+    background-color: #ff6b35;
+    border-radius: 50%;
+    margin-right: 16px; */
+  }
+  
+  .icon-solution {
+    font-size: 32px;
+    color: #fff;
+  }
+  
+  .content-solution {
+    flex: 1;
+  }
+  
+  .title-solution {
+    text-transform: capitalize;
+    font-size: 18px;
+    font-weight: 500;
+    margin-top: -2rem;
+  }
+  
+  .description-solution {    
+    color: #4d4c4c;
+    line-height: 1.4;
+    font-size: 14px;
+    /* line-height: 17px; */
+    text-align: center;
+    font-weight: 400;
+  }
+
+  .solution-posts-inner {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px; /* Adjust the gap between the grid items as needed */
+  }
+
+  .heading-dotted::before {
+    content: "...";
+    position: absolute;
+    bottom: -16px;
+    left: 100%;
+  }
+
+  .heading-dotted {
+    font-size: 34px;
+    font-weight: 500;
+    padding: 10px 0;
+    border-bottom: 2px solid #154e7a;
+    display: inline-block;
+    position: relative;
+    text-transform: capitalize;
+    color: #154e7a;
+    margin-left: 9rem;
+  }
+
+  @media (min-width: 1920px) and (max-width: 2559px) {
+    .heading-dotted {
+        font-size: 50px;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .heading-dotted {
+        font-size: 24px;
+        font-weight: 500;
+        padding: 10px 0;
+        border-bottom: 2px solid #154e7a;
+        display: inline-block;
+        position: relative;
+        text-transform: capitalize;
+        color: #154e7a;
+        top: 3rem;
+        margin-left: auto;
+        margin-bottom: 4rem;
+    }
+
+    .heading-dotted::before {
+        content: "...";
+        position: absolute;
+        bottom: -12px;
+        left: 100%;
+    }
+
+    .solution-posts-inner {
+        display: grid;
+        grid-template-columns: repeat(1, 1fr);
+        gap: 80px; /* Adjust the gap between the grid items as needed */
+      }
+
+    .title-solution-solution {
+      /* padding: 10px; */
+      text-transform: capitalize;
+      font-size: 13px;
+      font-weight: 500;
+      text-align: left;
+      margin-left: 1rem;
+      height: 100%;
+    }
+    
+    .description-solution {    
+      color: #4d4c4c;
+      line-height: 1.4;
+      font-size: 10px;
+      /* line-height: 17px; */
+      font-weight: 400;
+      margin-left: 1rem;
+    }
+    .solution-card-solution {
+        height: 12rem;
+        background-image: url(https://smartcloudvm.com/public/images/solution-box-bg.png);
+        background-size: cover;
+        background-position: center;
+        /* background-color: #f5f5f500; */
+        border-radius: 8px;
+        
+        box-shadow: 2px 2px 2px 2px rgba(0, 0, 0, 0.1);
+        justify-content: flex-start;
+        flex-wrap: wrap;
+        
+        margin-top: 2rem;
+        
+    }
+
+    .features-section-solution,
+    .solutions-section-solution {
+      flex: 1;
+      /* padding: 1rem; */
+      margin-top: 2rem;
+    }
+    
+  }

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="182" height="65" viewBox="0 0 182 65">
+  <defs>
+    <linearGradient id="linear-gradient" x1="0.5" x2="0.5" y2="1" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#4a92f8"/>
+      <stop offset="1" stop-color="#bdd3fe"/>
+    </linearGradient>
+    <clipPath id="clip-path">
+      <path id="Path_42946" data-name="Path 42946" d="M32.5,0h117a32.5,32.5,0,0,1,0,65H32.5a32.5,32.5,0,0,1,0-65Z" transform="translate(1748 22)" fill="url(#linear-gradient)"/>
+    </clipPath>
+    <linearGradient id="linear-gradient-3" x1="0.538" y1="0.145" x2="0.485" y2="1.418" xlink:href="#linear-gradient"/>
+    <linearGradient id="linear-gradient-4" x1="0.566" y1="0.046" x2="0.644" y2="1.324" xlink:href="#linear-gradient"/>
+  </defs>
+  <g id="more-info-btn-bg" transform="translate(-1748 -22)" clip-path="url(#clip-path)">
+    <path id="Path_42945" data-name="Path 42945" d="M32.5,0h117a32.5,32.5,0,0,1,0,65H32.5a32.5,32.5,0,0,1,0-65Z" transform="translate(1748 22)" fill="url(#linear-gradient)"/>
+    <ellipse id="Ellipse_1" data-name="Ellipse 1" cx="66" cy="26" rx="66" ry="26" transform="matrix(0.966, 0.259, -0.259, 0.966, 1748.876, 49.58)" fill="url(#linear-gradient-3)"/>
+    <ellipse id="Ellipse_2" data-name="Ellipse 2" cx="66" cy="26" rx="66" ry="26" transform="matrix(0.966, 0.259, -0.259, 0.966, 1824.498, -23.42)" fill="url(#linear-gradient-4)"/>
+  </g>
+</svg>

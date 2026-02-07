@@ -1,0 +1,270 @@
+
+.heading-dotted-bill::before {
+    content: "...";
+    position: absolute;
+    bottom: -16px;
+    left: 100%;
+  }
+
+  .heading-dotted-bill {
+    font-size: 34px;
+    font-weight: 500;
+    padding: 10px 0;
+    border-bottom: 2px solid #154e7a;
+    display: inline-block;
+    position: relative;
+    text-transform: capitalize;
+    color: #545454 !important;
+    margin-left: 9rem;
+  }
+
+  .table-row {
+    display: flex;
+    position: relative;
+}
+
+ .table-data {
+  width: 20%;
+  position: relative;
+  font-size: 13px;
+  margin-right: 1px;
+  margin-bottom: 1px;
+}
+ .table-row::before {
+  position: absolute;
+  content: "";
+  width: 100%;
+  height: 100%;
+  background-color: #e97730;
+  opacity: 0;
+  transition: all 0.5s 0.2s;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
+
+.table-row::before:hover {  
+  background-color: #e97730;
+  opacity: 0.1;
+}
+
+.billing-list{
+  height: 80vh; /* Adjust the height as needed */
+  /* width: 100%; */
+  overflow-y: auto; /* Enables vertical scrolling */
+  /* padding: 10px; */
+  /* box-sizing: border-box; */
+  font-weight: 500;
+}
+
+.billing-list-cont .button-cont {
+  position: relative;
+  text-align: center;
+  width: max-content;
+  margin: auto;
+  transition: all 0.3s 0.2s;
+}
+
+ .table-content {
+  position: absolute;
+  width: 100%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  z-index: 99;
+  font-size: 23px;
+}
+
+.table-head{
+  width: 20%;
+  position: relative;
+  font-size: 13px;
+  margin-right: 1px;
+  margin-bottom: 1px;
+}
+.table-head-report{
+  width: 15%;
+  position: relative;
+  font-size: 13px;
+  margin-right: 1px;
+  margin-bottom: 1px;
+}
+
+.table-data-report {
+  width: auto;
+  position: relative;
+  font-size: 13px;
+  margin-right: 1px;
+  margin-bottom: 1px;
+}
+
+.table-data {
+  width: 20%;
+  position: relative;
+  font-size: 13px;
+  margin-right: 1px;
+  margin-bottom: 1px;
+}
+
+.table-footer-image-size{
+  width: 300px;
+}
+.table-footer-image-size-report{
+  width: auto;
+}
+
+
+/* body {
+  font-family: "Open Sans"
+} */
+
+ul {
+  margin: 0;
+  padding: 0;
+}
+
+li {
+  list-style: none;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 40px;
+}
+
+.input_container {
+  width: 100%;
+  min-width: 0;
+  max-width: 430px;
+  position: relative;
+
+  &::before {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    content: '\00a0';
+    position: absolute;
+    transition: border-bottom-color 200ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+    border-bottom: solid 2px #979797;
+    pointer-events: none;
+  }
+
+  &::after {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    content: '';
+    position: absolute;
+    transform: scaleX(0);
+    transition: transform 300ms cubic-bezier(0, 0, 0.2, 1) 0ms;
+    border-bottom: solid 2px #ff407f;
+    pointer-events: none;
+  }
+
+  &:focus-within {
+    &::after {
+      transform: scaleX(1);
+    }
+  }
+}
+
+.input {
+  width: 100%;
+  /* padding-bottom: 12px; */
+  padding-left: 5px;
+  min-width: 0;
+  max-width: 430px;
+  border: none;
+  outline: none;
+  height: 40px;
+  font-size: 22px;
+  letter-spacing: -0.7px;
+  color: #090a3c;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.input::placeholder {
+  color: #b3b3b3;
+}
+
+.dropdown {
+  width: 100%;
+  min-width: 0;
+  margin-left: 5px;
+  max-width: 320px;
+  height: 100%;
+  max-height: 150px;
+  overflow-x: hidden;
+  border: 1px solid #b3b3b3;
+  background-color: #fff;
+  visibility: hidden;
+  z-index: 10;
+
+  &.v {
+    visibility: visible;
+  }
+}
+
+.dropdown_item {
+  width: 100%;
+  max-width: 407px;
+  padding: 12px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #f1f1f1d7;
+  }
+
+  border-bottom: 1px solid #b3b3b36b;
+}
+
+.item_text1 {
+  color: #090a3c;
+  margin-bottom: 5px;
+    font-size: 20px;
+}
+
+.item_text2 {
+  font-size: 20px;
+  color: #090a3c80;
+}
+
+  @media (max-width: 576px) {
+
+    .billing-list{
+      display: flex;
+      height: auto;
+      width: 100%;
+      overflow-y: auto;
+      padding: 10px;
+      box-sizing: border-box;
+      font-weight: 500;
+      flex-wrap: wrap;
+      flex-direction: row;
+    }
+  
+
+    .heading-dotted-bill {
+        font-size: 24px;
+        font-weight: 500;
+        padding: 10px 0;
+        border-bottom: 2px solid #154e7a;
+        display: inline-block;
+        position: relative;
+        text-transform: capitalize;
+        color: #154e7a;
+        top: 3rem;
+        margin-left: 20px;
+        margin-bottom: 4rem;
+    }
+
+    .heading-dotted-bill::before {
+        content: "...";
+        position: absolute;
+        bottom: -12px;
+        left: 100%;
+    }
+  }

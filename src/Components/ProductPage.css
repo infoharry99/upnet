@@ -1,0 +1,440 @@
+.heading-dotted-product {
+    font-size: 24px;
+    font-weight: 500;
+    padding: 10px 0;
+    border-bottom: 2px solid #154e7a;
+    display: inline-block;
+    position: relative;
+    /* text-transform: capitalize; */
+    color: #154e7a;
+  }
+  
+  @media (min-width: 1920px) and (max-width: 2559px) {
+    .heading-dotted {
+        font-size: 50px;
+    }
+  }
+  
+  .heading-dotted::before {
+    content: "...";
+    position: absolute;
+    bottom: -21px;
+    left: 100%;
+  }
+  
+  @media (min-width: 1920px) and (max-width: 2559px) {
+    .product .product-main .listing .front .btn {
+        border: 6px solid #e97730 !important;
+        border-radius: 70px;
+    }
+  }
+  .product .product-main .listing .front .btn {
+      border: 3px solid #e97730 !important;
+      display: inline-block;
+      margin-top: -2px;
+      padding: 5px;
+      border-radius: 30px;
+  }
+  .btn a {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #E97730;
+    color: #f5f1f1;
+    text-decoration: none;
+    border-radius: 4px;
+  }
+  .product-see-full {
+    width: 60%;
+    position: relative;
+    box-sizing: border-box;
+  }
+
+  element.style {
+}
+.list-item-product {
+    position: fixed;
+    margin-top: 6%;
+    /* margin-left: -29%; */
+      /* Ensure the element has a perspective for 3D effects */
+  perspective: 1000px;
+  /* Set the transform-style to preserve-3d for proper 3D rendering */
+  transform-style: preserve-3d;
+  /* Set a transition for smooth animation */
+  transition: transform 0.5s;
+}
+  
+  .card-product {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    perspective: 1000px;
+  }
+  
+  .back {
+    margin-top: -348px;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    transition: transform 0.6s;
+    transform: rotateY(0deg);
+  }
+
+  .front{
+    /* position: relative; */
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    transition: transform 0.6s;
+    transform: rotateY(0deg);
+  }
+  
+  .front {
+    z-index: 2;
+    transform: rotateY(0deg);
+  }
+  
+  .back {
+    transform: rotateY(180deg);
+  }
+  
+ 
+  
+  .list-item-product:hover {
+    /* Rotate the entire element on hover */
+    transform: rotateY(180deg);
+  }
+  /* .list-item-product:hover .front {
+    transform: rotateY(-180deg);
+  }
+  
+  .list-item-product:hover .back {
+    transform: rotateY(0deg);
+  } */
+  
+  .front-figure {
+    padding: 20px;
+    border: 7px solid #e97730;
+    display: flex;
+    margin: auto;
+    text-align: center;
+    border-radius: 52%;
+    width: 136%;
+    height: 280px;
+    position: relative;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  
+  .bg-white {
+    background-color: white;
+  }
+  
+  .btn a {
+    text-decoration: none;
+    color: #000;
+  }
+  
+  .btn{
+    text-decoration: none;
+    color: #000;
+  }
+
+  .back .bg-img {
+    position: absolute;
+    width: 300%;
+    height: 300%;
+    
+  }
+  .product .product-main .listing .back .cont {
+    display: block;
+  }
+  
+  /* .back .bg-img img {
+    width: 30rem;
+    height: 35rem;
+    object-fit: cover;
+    margin-left: -330%;
+  } */
+  .back .content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: white;
+    z-index: 2;
+    background-color: rgba(0, 0, 0, 0.5); /* Optional: Add a semi-transparent background for better readability */
+    padding: 20px;
+    border-radius: 10px;
+  }
+  
+  .back figure {
+    position: relative;
+    z-index: 1;
+  }
+  
+  .productheading {
+    width: max-content;
+    text-transform: capitalize;
+    color: #154e7a;
+    font-size: 24px;
+    position: relative;
+    font-weight: bold;
+    margin-left: 6rem;
+  }
+  
+  .iconimg{
+    width: 60%;
+    margin-left: 20%;
+  }
+  .cont {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: -5px;
+    width: 21rem;
+    margin-left: 0rem;
+    position: relative;
+  }
+  
+  .cont a {
+    font-weight: 500;
+    font-size: 20px;
+    text-decoration: underline;
+    color: #000;
+    margin: 5px 0;
+  }
+  
+  .back .bg-img img {
+    bottom: 20rem;
+    left: 2px;
+    position: relative;
+    width: 360px;
+    height: 20rem;
+    /* object-fit: cover; */
+    /* margin-left: -330%; */
+}
+  
+  .product .product-main .listing-product .front figure {
+    padding: 20px;
+    border: 3px solid #e97730;
+    display: flex;
+    margin: auto;
+    text-align: center;
+    border-radius: 52%;
+    width: 170px;
+    height: 170px;
+    position: relative;
+    align-items: center;
+    justify-content: center;
+  }
+  .product .product-main .listing-product {
+    margin-top: 80px;
+    text-align: center;
+  }
+  .see-width {
+    
+  }
+  
+  .product .product-main .listing-product .list-item {
+    position: relative;
+    width: 33.33%;
+    transform-style: preserve-3d;
+    transition: all 0.3s ease-in-out;
+  }
+  .listing-product.see-full {
+    margin-top: 1% ;
+    
+  }
+
+
+  @media (max-width: 576px) {
+    .product-card-mobile {
+        
+        background-image: "./images/box-bg-white.png";
+        background-size: cover;
+        background-position: center;
+        border-radius: 8px;
+        box-shadow: 2px 2px 2px 2px rgba(0, 0, 0, 0.1);
+        margin: 2rem;
+        height: 25rem;
+        
+      }
+  
+    .cont {
+        margin-left: -1.5rem;
+        /* display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: -5px;
+        width: 21rem;
+        margin-left: 0rem;
+        position: relative; */
+      }
+    .back-mobile .content-mobile {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        color: white;
+        z-index: 2;
+        background-color: rgba(0, 0, 0, 0.5); /* Optional: Add a semi-transparent background for better readability */
+        padding: 20px;
+        border-radius: 10px;
+      }
+      
+      .back figure {
+        position: relative;
+        z-index: 1;
+      }
+
+    .back-mobile .bg-img-mobile img {
+        bottom: 20rem;
+        left: 2px;
+        position: relative;
+        width: 360px;
+        height: 20rem;
+        /* object-fit: cover; */
+        /* margin-left: -330%; */
+    }
+
+    .scrollable-container::-webkit-scrollbar {
+        
+        height: 2px;
+        background-color: #ffffff; /* Set scrollbar background color */
+      }
+      
+      /* Set scrollbar thumb color to red */
+      .scrollable-container::-webkit-scrollbar-thumb {
+        background-color: #e97730; /* Set scrollbar thumb color */
+        border-radius: 3px; /* Set border radius for the scrollbar thumb */
+      }
+
+    .scrollable-container {
+        margin-top: 2rem;
+        max-width: 100%; /* Set the maximum width of the container */
+        overflow-x: auto; /* Enable horizontal scrolling */
+        white-space: nowrap; /* Prevent wrapping of child elements */
+      }
+
+    
+
+    .heading-dotted {
+        width: 90%;
+        font-size: 24px;
+        font-weight: 500;
+        padding: 10px 0;
+        border-bottom: 2px solid #154e7a;
+        display: inline-block;
+        position: relative;
+        text-transform: capitalize;
+        color: #154e7a;
+        top: 5rem;
+        margin-left: 1rem;
+        /* margin-bottom: 8rem; */
+    }
+  
+  .heading-dotted::before {
+    content: "...";
+    position: absolute;
+    bottom: -12px;
+    left: 100%;
+  }
+
+  .iconimg{
+    width: 60%;
+    margin-left: 20%;
+  }
+
+  .front-mobile {
+    padding: 15px;
+    display: inline-block; /* Display each child element in a row */
+  vertical-align: top; /*
+    margin-top: 25px;
+    position: absolute;
+    /* width: 100%; */
+    /* height: 100%; */
+    backface-visibility: hidden;
+   
+  }
+
+  .front-mobile-single {
+    margin-left: 55px;
+    padding: 25px;
+    display: inline-block;
+    vertical-align: top;
+    
+    backface-visibility: hidden;
+}
+  
+  .front-mobile-container {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y:hidden;/* Enable vertical scrolling */
+  }
+  
+  .front-mobile {
+    margin-bottom: 20px; /* Add space between each div */
+  }
+
+  .figure-container {
+    margin-left: -4rem;
+    border: 3px solid #e97730;
+    display: flex;
+    margin: auto;
+    text-align: center;
+    border-radius: 52%;
+    width: 5rem;
+    height: 5rem;
+    position: relative;
+    align-items: center;
+    justify-content: center; /* Corrected justify content property */
+  }
+  
+  .iconimg {
+    /* Add styles for the icon image */
+  }
+  
+  .bg-white {
+    /* Add styles for the background */
+  }
+  
+  .button-container {
+    margin-top: -3px;
+    width: 150px;
+    height: 50px;
+    margin-left: 10px;
+    background-color: transparent;
+    border: 3px solid rgb(233, 119, 48);
+    border-radius: 25px;
+  }
+  
+  .button-text {
+    color: white;
+    background-color: #e97730;
+    padding-top: 6px;
+    border-radius: 15px;
+    height: 30px;
+    margin-top: 1px;
+    font-size: 14px;
+    font-weight: 700;
+  }
+  
+  .line {
+    z-index: 999;
+    left: 80px;
+    top: -51px;
+    position: relative;
+    height: 5px;
+    width: 10px;
+    background-color: #ffffff;
+  }
+  
+  
+  
+
+  }

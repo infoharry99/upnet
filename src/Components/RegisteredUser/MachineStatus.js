@@ -4075,15 +4075,12 @@ const [newPassword, setNewPassword] = useState("");
                 backgroundImage: `url("/images/blue-box-bg.svg")`,
                 backgroundSize: "cover",
                 marginLeft: "20px",
-                width: "90%",
+                width: "100%",
                 padding: "25px",
                 backgroundColor: "#07528b",
                 borderRadius: "12px",
               }}
             >
-              <h3 style={{ color: "white", marginBottom: "20px" }}>
-                Create Linux User
-              </h3>
 
               {/* Username */}
               <input
@@ -4303,7 +4300,6 @@ const [newPassword, setNewPassword] = useState("");
                       position: "relative",
                       marginTop: "10%",
                       left: "25%",
-                      // alignItems: "center",
                       fontWeight: "700",
                       color: "white",
                       height: "55px",
@@ -7736,9 +7732,9 @@ const [newPassword, setNewPassword] = useState("");
                       >
                         <select
                           value={selectedJumpserverId}
-                          onChange={(e) => setSelectedJumpserverId(e.target.value)}
+                          onChange={(e) => setSelectedJumpserverId(Number(e.target.value))}
                           style={{
-                            width: "100%",
+                            width: "50%",
                             height: "40px",
                             borderRadius: "20px",
                             padding: "0 15px",
@@ -7747,8 +7743,7 @@ const [newPassword, setNewPassword] = useState("");
                           <option value="">Select Jumpserver</option>
 
                           {jumpservers.map((js) => (
-                            console.log(js, "js"),
-                            <option key={js.id} value={js.id}>
+                            <option key={js.id} value={Number(js.id)}>
                               {js.vm_name} ({js.public_ip})
                             </option>
                           ))}
@@ -7756,23 +7751,17 @@ const [newPassword, setNewPassword] = useState("");
 
                         <button
                           style={{
-                            marginTop: "15px",
-                            padding: "10px 20px",
                             marginTop: "20px",
                             padding: "10px 20px",
-                            cursor: "pointer",
-                            position: "absolute",
                             fontWeight: "700",
                             color: "white",
                             height: "42px",
-                            width: "10rem",
                             backgroundColor: "#e97730",
                             outline: "4px solid #e97730",
-                            border: "4px solid #ffff",
-                            borderColor: "white",
+                            border: "4px solid white",
                             borderRadius: "30px",
                             opacity:
-                              !selectedJumpserverId || isJumpserverAlreadyAttached ? 0.8 : 1,
+                              !selectedJumpserverId || isJumpserverAlreadyAttached ? 0.6 : 1,
                             cursor:
                               !selectedJumpserverId || isJumpserverAlreadyAttached
                                 ? "not-allowed"
@@ -7846,7 +7835,6 @@ const [newPassword, setNewPassword] = useState("");
                         onClick={createVMUser}
                         style={{
                           marginTop: "20px",
-                          padding: "10px 20px",
                           cursor: "pointer",
                           position: "absolute",
                           fontWeight: "700",
@@ -7861,7 +7849,7 @@ const [newPassword, setNewPassword] = useState("");
                         }}
                         onMouseOver={(e) =>
                           (e.target.style.color = "#07528B")
-                        } // Change color on hover
+                        } 
                         onMouseOut={(e) =>
                           (e.target.style.color = "white")
                         }

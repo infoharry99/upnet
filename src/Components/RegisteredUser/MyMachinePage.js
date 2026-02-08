@@ -97,10 +97,7 @@ const MyMachinePage = () => {
       const timeObj = new Date(storedMachineTime);
       timeObj.setMinutes(timeObj.getMinutes() + 30);
       const activeTime = timeObj.toISOString();
-      // console.log(activeTime, "TIME<<<<");
       setMachineActiveTime(activeTime);
-      // Optionally, store machineActiveTime in localStorage
-      // localStorage.setItem("machineActiveTime", activeTime);
     }
   }, []);
 
@@ -170,24 +167,11 @@ const MyMachinePage = () => {
         vm_template: machineData.vm_template,
         osiddata: machineData.osiddata,
         name: machineData.vm_name,
-        // vm_config_category:
-        // config: machineData.vm_config_type
         cpu: machineData.cpu,
         ram: machineData.ram,
         hard_disk: machineData.hard_disk,
         data_transfer: machineData.data_transfer,
       };
-      // console.log(reBuildPaylod, "reBuildPaylod");
-      // const payload = {
-      //   uuid: newMahineOs,
-      //   config: newMahineConfigId,
-      //   name: newMachineName,
-      //   machine_val: newMahineOs, //drop down id
-      //   machine_price: finalAmount,
-      //   plan_time: newMachineTime, //1
-      //   user_id: smuser.id,
-      // };
-      // console.log(payload, "CreateMachine_Li");
       if (smuser.platform_status == "1") {
         try {
           const encryptedResponse = await apiEncryptRequest(reBuildPaylod);
@@ -593,8 +577,6 @@ const MyMachinePage = () => {
         position: "relative",
         backgroundImage: isMobile ? `url(./main-bg.jpg)` : `url(./main-bg.jpg)`,
         backgroundSize: "cover",
-        // backgroundPosition: "center",
-        // backgroundColor: "#141414",
         backgroundRepeat: "round",
         backgroundBlendMode: "overlay",
       }}
@@ -619,8 +601,8 @@ const MyMachinePage = () => {
               width: isMobile ? "90%" : "35%",
               backdropFilter: "blur(5px)",
               height: "35rem",
-              boxShadow: "0px 0px 10px rgba(0, 0, 0, 0.1)", // Box shadow added
-              borderRadius: "12px", // Assuming you want rounded corners
+              boxShadow: "0px 0px 10px rgba(0, 0, 0, 0.1)",
+              borderRadius: "12px", 
               border: "2px solid #e97730",
             }}
           >

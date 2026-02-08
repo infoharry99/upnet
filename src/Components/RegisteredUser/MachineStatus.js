@@ -141,6 +141,9 @@ const [selectedVmId, setSelectedVmId] = useState(null);
 const [error, setError] = useState("");
 const [jumpservers, setJumpservers] = useState([]);
 const [selectedJumpserverId, setSelectedJumpserverId] = useState("");
+const isJumpserverAlreadyAttached = Boolean(monitorData?.jumpserver_id);
+const [newUsername, setNewUsername] = useState("");
+const [newPassword, setNewPassword] = useState("");
 
   const [rule, setRule] = useState({
     direction: "IN",
@@ -155,9 +158,10 @@ const [selectedJumpserverId, setSelectedJumpserverId] = useState("");
   useEffect(() => {
     console.log("ACTIVE BUTTON:", activeButton);
   }, [activeButton]);
-    const handleClick = () => {
-      setIsFlipped(!isFlipped);
-    };
+
+  const handleClick = () => {
+    setIsFlipped(!isFlipped);
+  };
 
   const handleChangeFirewall = (e) => {
     const { name, value } = e.target;
@@ -204,6 +208,7 @@ const [selectedJumpserverId, setSelectedJumpserverId] = useState("");
   const handleMouseEnter = () => {
     setIsHovered(true);
   };
+
   const handleMouseLeave = () => {
     setIsHovered(false);
   };
@@ -504,9 +509,53 @@ const [selectedJumpserverId, setSelectedJumpserverId] = useState("");
     }
   };
 
-    const attachJumpserver = async () => {
-      if (!selectedJumpserverId) {
-        toast.error("Please select a jumpserver");
+  const attachJumpserver = async () => {
+    if (!selectedJumpserverId) {
+      toast.error("Please select a jumpserver");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const payload = {
+        user_id: smuser.id,
+        vm_id: monitorData.vm_id,
+        jumpserver_id: selectedJumpserverId,
+      };
+
+      const encrypted = await apiEncryptRequest(payload);
+      const res = await instance.post("/attach-jumpserver", encrypted);
+      const data = await decryptData(res.data);
+
+      if (data.success) {
+        toast.success("Jumpserver attached successfully");
+        GetMyMachines();
+        setActiveButton("SSH");
+      } else {
+        toast.error(data.message || "Failed to attach jumpserver");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to attach jumpserver");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const inputStyle = {
+    width: "100%",
+    height: "45px",
+    borderRadius: "25px",
+    padding: "0 15px",
+    marginBottom: "15px",
+    border: "none",
+    outline: "none",
+  };
+
+  const createVMUser = async () => {
+      if (!newUsername || !newPassword) {
+        toast.error("Username & Password required");
         return;
       }
 
@@ -516,23 +565,24 @@ const [selectedJumpserverId, setSelectedJumpserverId] = useState("");
         const payload = {
           user_id: smuser.id,
           vm_id: monitorData.vm_id,
-          jumpserver_id: selectedJumpserverId,
+          username: newUsername,
+          password: newPassword,
         };
 
         const encrypted = await apiEncryptRequest(payload);
-        const res = await instance.post("/attach-jumpserver", encrypted);
+        const res = await instance.post("/create-vm-user", encrypted);
         const data = await decryptData(res.data);
 
-        if (data.success) {
-          toast.success("Jumpserver attached successfully");
-          GetMyMachines();
-          setActiveButton("SSH");
+        if (data.code === 200) {
+          toast.success("User created successfully");
+          setNewUsername("");
+          setNewPassword("");
         } else {
-          toast.error(data.message || "Failed to attach jumpserver");
+          toast.error(data.message || "Failed");
         }
       } catch (err) {
         console.error(err);
-        toast.error("Failed to attach jumpserver");
+        toast.error("Failed to create user");
       } finally {
         setLoading(false);
       }
@@ -3902,6 +3952,7 @@ const [selectedJumpserverId, setSelectedJumpserverId] = useState("");
           {activeButton !== "SSH" &&
             activeButton !== "SSL" &&
             activeButton !== "ATTACH_JUMPSERVER" &&
+            activeButton !== "CREATE_USER" &&
             !isShowBackupView &&
             !isShowVMView &&
             monitorData &&
@@ -4020,65 +4071,65 @@ const [selectedJumpserverId, setSelectedJumpserverId] = useState("");
           {activeButton === "CREATE_USER" && (
             <div
               style={{
-                minHeight: "34rem",
+                minHeight: "22rem",
                 backgroundImage: `url("/images/blue-box-bg.svg")`,
                 backgroundSize: "cover",
-                top: "1rem",
                 marginLeft: "20px",
                 width: "90%",
-                padding: "1px 25px",
-                position: "relative",
-                backgroundColor: "#07528b", 
+                padding: "25px",
+                backgroundColor: "#07528b",
                 borderRadius: "12px",
               }}
             >
-              <div>
-                <div
-                  style={{
-                    position: "relative",
-                    flexWrap: "wrap",
-                    zIndex: "1",
-                  }}
-                >
-                    <div
-                      style={{
-                        marginTop: "20px",
-                        border: "2px solid white",
-                        borderRadius: "25px",
-                        padding: "10px",
-                      }}
-                    >
-                    <select
-                      value={selectedJumpserverId}
-                      onChange={(e) => setSelectedJumpserverId(e.target.value)}
-                      style={{
-                        width: "100%",
-                        height: "40px",
-                        borderRadius: "20px",
-                        padding: "0 15px",
-                      }}
-                    >
-                    <p style={{ color: "white" }}>
-                      Jumpservers loaded: {jumpservers.length}
-                    </p>
-                      <option value="">Select Jumpserver</option>
+              <h3 style={{ color: "white", marginBottom: "20px" }}>
+                Create Linux User
+              </h3>
 
-                      {jumpservers.map((js) => (
-                        <option key={js.id} value={js.id}>
-                          {js.vm_name} ({js.public_ip})
-                        </option>
-                      ))}
-                    </select>
-                      <button
-                        disabled={!selectedJumpserverId}
-                        onClick={attachJumpserver}
-                      >
-                        Apply Jumpserver
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              {/* Username */}
+              <input
+                type="text"
+                placeholder="Username"
+                value={newUsername}
+                onChange={(e) => setNewUsername(e.target.value)}
+                style={{
+                        width: "100%",
+                        height: "45px",
+                        borderRadius: "25px",
+                        padding: "0 15px",
+                        marginBottom: "15px",
+                        border: "none",
+                        outline: "none",
+                      }}
+              />
+
+              {/* Password */}
+              <input
+                type="password"
+                placeholder="Password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                style={{
+                        width: "100%",
+                        height: "45px",
+                        borderRadius: "25px",
+                        padding: "0 15px",
+                        marginBottom: "15px",
+                        border: "none",
+                        outline: "none",
+                      }}
+              />
+
+              <button
+                onClick={createVMUser}
+                style={{
+                  marginTop: "20px",
+                  padding: "10px 20px",
+                  cursor: "pointer",
+                }}
+              >
+                Create User
+              </button>
+            </div>
           )}
 
           {activeButton === "SSH" && (
@@ -7328,7 +7379,6 @@ const [selectedJumpserverId, setSelectedJumpserverId] = useState("");
                         maxWidth: "15rem",
                         marginTop: "-15rem",
                         marginLeft: "47rem",
-                        // marginLeft: "69rem",
                       }}
                     >
                       <div className="machine-icon-edit-profile">
@@ -7394,7 +7444,6 @@ const [selectedJumpserverId, setSelectedJumpserverId] = useState("");
                         />
                       </div>
                       <div className="mid-portion" />
-                      {/* {console.log(monitorData, "AAA")} */}
                       <div className="machine-subtitle theme-bg-blue">
                         <button
                           // className="more-details-hover"
@@ -7456,6 +7505,11 @@ const [selectedJumpserverId, setSelectedJumpserverId] = useState("");
 
                     <button
                       className={`btn ${activeButton === "ATTACH_JUMPSERVER" ? "active" : ""}`}
+                      style={{
+                        background: `${
+                          activeButton === "ATTACH_JUMPSERVER" ? "#f47c20" : "#035189"
+                        }`,
+                      }}
                       onClick={() => handleButtonClick("ATTACH_JUMPSERVER")}
                     >
                       Attach Jumpserver
@@ -7463,6 +7517,11 @@ const [selectedJumpserverId, setSelectedJumpserverId] = useState("");
 
                     <button
                       className={`btn ${activeButton === "CREATE_USER" ? "active" : ""}`}
+                      style={{
+                        background: `${
+                          activeButton === "CREATE_USER" ? "#f47c20" : "#035189"
+                        }`,
+                      }}
                       onClick={() => handleButtonClick("CREATE_USER")}
                     >
                       Create User
@@ -7587,6 +7646,7 @@ const [selectedJumpserverId, setSelectedJumpserverId] = useState("");
                   {activeButton !== "SSH" &&
                     activeButton !== "SSL" &&
                     activeButton !== "ATTACH_JUMPSERVER" &&
+                    activeButton !== "CREATE_USER" &&
                     !isShowBackupView &&
                     !isShowVMView &&
                     monitorData &&
@@ -7647,6 +7707,7 @@ const [selectedJumpserverId, setSelectedJumpserverId] = useState("");
                   className="flip-card-container"
                   style={{ marginLeft: "10px" }}
                 >
+
                   {activeButton === "ATTACH_JUMPSERVER" && (
                     <div
                       style={{
@@ -7654,8 +7715,7 @@ const [selectedJumpserverId, setSelectedJumpserverId] = useState("");
                           minHeight: "20rem",
                           backgroundImage: `url("/images/blue-box-bg.svg")`,
                           backgroundSize: "cover",
-                          marginLeft: "20px",
-                          width: "90%",
+                          width: "100%",
                           padding: "25px",
                           backgroundColor: "#07528b",
                           borderRadius: "12px",
@@ -7698,15 +7758,119 @@ const [selectedJumpserverId, setSelectedJumpserverId] = useState("");
                           style={{
                             marginTop: "15px",
                             padding: "10px 20px",
+                            marginTop: "20px",
+                            padding: "10px 20px",
+                            cursor: "pointer",
+                            position: "absolute",
+                            fontWeight: "700",
+                            color: "white",
+                            height: "42px",
+                            width: "10rem",
+                            backgroundColor: "#e97730",
+                            outline: "4px solid #e97730",
+                            border: "4px solid #ffff",
+                            borderColor: "white",
+                            borderRadius: "30px",
+                            opacity:
+                              !selectedJumpserverId || isJumpserverAlreadyAttached ? 0.8 : 1,
+                            cursor:
+                              !selectedJumpserverId || isJumpserverAlreadyAttached
+                                ? "not-allowed"
+                                : "pointer",
                           }}
-                          disabled={!selectedJumpserverId}
+                          disabled={!selectedJumpserverId || isJumpserverAlreadyAttached}
                           onClick={attachJumpserver}
                         >
-                          Apply Jumpserver
+                          {isJumpserverAlreadyAttached
+                            ? "Jumpserver Already Attached"
+                            : "Apply Jumpserver"}
                         </button>
                       </div>
                     </div>
                   )}
+
+                  {activeButton === "CREATE_USER" && (
+                    <div
+                      style={{
+                        marginTop: "60px",
+                        minHeight: "22rem",
+                        backgroundImage: `url("/images/blue-box-bg.svg")`,
+                        backgroundSize: "cover",
+                        width: "100%",
+                        padding: "25px",
+                        backgroundColor: "#07528b",
+                        overflow: "visible",
+                        borderRadius: "12px",
+                      }}
+                    >
+                      <div className="row">
+                        <div className="col-md-6">
+                          {/* Username */}
+                          <input
+                            type="text"
+                            placeholder="Username"
+                            value={newUsername}
+                            onChange={(e) => setNewUsername(e.target.value)}
+                            style={{
+                                  width: "100%",
+                                  height: "45px",
+                                  borderRadius: "25px",
+                                  padding: "0 15px",
+                                  marginBottom: "15px",
+                                  border: "none",
+                                  outline: "none",
+                                }}
+                          />
+                        </div>
+
+                        <div className="col-md-6">
+                          {/* Password */}
+                          <input
+                            type="password"
+                            placeholder="Password"
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value)}
+                            style={{
+                                  width: "100%",
+                                  height: "45px",
+                                  borderRadius: "25px",
+                                  padding: "0 15px",
+                                  marginBottom: "15px",
+                                  border: "none",
+                                  outline: "none",
+                                }}
+                          />
+                        </div>
+                      </div>
+                      <button
+                        onClick={createVMUser}
+                        style={{
+                          marginTop: "20px",
+                          padding: "10px 20px",
+                          cursor: "pointer",
+                          position: "absolute",
+                          fontWeight: "700",
+                          color: "white",
+                          height: "42px",
+                          width: "10rem",
+                          backgroundColor: "#e97730",
+                          outline: "4px solid #e97730",
+                          border: "4px solid #ffff",
+                          borderColor: "white",
+                          borderRadius: "30px",
+                        }}
+                        onMouseOver={(e) =>
+                          (e.target.style.color = "#07528B")
+                        } // Change color on hover
+                        onMouseOut={(e) =>
+                          (e.target.style.color = "white")
+                        }
+                      >
+                        Create User
+                      </button>
+                    </div>
+                  )}
+
                   {/* Flip Views */}
                   {activeButton === "SSH" && (
                     <div
@@ -7950,86 +8114,6 @@ const [selectedJumpserverId, setSelectedJumpserverId] = useState("");
                                       )}
                                     </div>
                                   </div>
-                                  {/* Password */}
-                                  {/* <div
-                                    style={{
-                                      marginTop: "15px",
-                                      display: "flex",
-                                      alignItems: "center",
-                                      border: "2px solid white",
-                                      borderRadius: "25px",
-                                      padding: "5px",
-                                      height: "50px",
-                                    }}
-                                  >
-                                    <p
-                                      style={{
-                                        color: "white",
-                                        textAlign: "center",
-                                        fontSize: "20px",
-                                        paddingTop: "15px",
-                                        marginLeft: "20px",
-                                      }}
-                                    >
-                                      {" "}
-                                      SSH Password :{" "}
-                                      {vmRes && showPass
-                                        ? vmRes.vm_pass
-                                        : "••••••••"}
-                                    </p>
-                                    {vmRes && vmRes.vm_pass && (
-                                      <div className="img-wrapper">
-                                        <img
-                                          className="hover-zoom"
-                                          src={"/images/copy_icon.png"}
-                                          style={{
-                                            marginLeft: "10px",
-                                            width: "30px",
-                                            height: "30px",
-                                          }}
-                                          onClick={() => {
-                                            navigator.clipboard.writeText(
-                                              vmRes.vm_pass
-                                            );
-                                            setCopied4(true);
-                                            setTimeout(
-                                              () => setCopied4(false),
-                                              2000
-                                            );
-                                          }}
-                                        />
-                                        {copied4 && (
-                                          <span className="blinkStyle">
-                                            Copied!
-                                          </span>
-                                        )}
-                                      </div>
-                                    )}
-                                    <div
-                                      style={{
-                                        position: "absolute",
-                                        right: "3%",
-                                      }}
-                                    >
-                                      {showPass ? (
-                                        <FaEyeSlash
-                                          onClick={() => setShowPass(false)}
-                                          style={{
-                                            color: "white",
-                                            width: "20px",
-                                          }}
-                                        />
-                                      ) : (
-                                        <FaEye
-                                          onClick={() => setShowPass(true)}
-                                          style={{
-                                            color: "white",
-                                            width: "20px",
-                                          }}
-                                        />
-                                      )}
-                                    </div>
-                                  </div> */}
                                 </div>
                               </div>
                               <div onClick={() => setChangePass(!changePass)}>

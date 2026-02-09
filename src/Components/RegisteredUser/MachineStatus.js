@@ -102,7 +102,7 @@ const MachineStatus = () => {
 
   const [vmBackUpList, setVMBackUpList] = useState([]);
   const [isSelectedBackupForRestore, setSelectedBackupForRestore] = useState(
-    []
+    [],
   );
   const [isSelectedParentTime, setSelectedParentTime] = useState([]);
   const [isShowProgressView, setIsShowProgressView] = useState(false);
@@ -136,25 +136,25 @@ const MachineStatus = () => {
   const [copiedDomain, setCopiedDomain] = useState(false);
   const [selectedPrivFile, setSelectedPrivFile] = useState(null);
   const [selectedFullChainFile, setSelectedFullChainFile] = useState(null);
-const [vmList, setVmList] = useState([]);
-const [selectedVmId, setSelectedVmId] = useState(null);
-const [error, setError] = useState("");
-const [jumpservers, setJumpservers] = useState([]);
-const [selectedJumpserverId, setSelectedJumpserverId] = useState(null);
-const isJumpserverAlreadyAttached = Boolean(monitorData?.jumpserver_id);
-const [newUsername, setNewUsername] = useState("");
-const [newPassword, setNewPassword] = useState("");
-const thStyle = {
-  border: "1px solid white",
-  padding: "8px",
-  color: "white",
-};
+  const [vmList, setVmList] = useState([]);
+  const [selectedVmId, setSelectedVmId] = useState(null);
+  const [error, setError] = useState("");
+  const [jumpservers, setJumpservers] = useState([]);
+  const [selectedJumpserverId, setSelectedJumpserverId] = useState(null);
+  const isJumpserverAlreadyAttached = Boolean(monitorData?.jumpserver_id);
+  const [newUsername, setNewUsername] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const thStyle = {
+    border: "1px solid white",
+    padding: "8px",
+    color: "white",
+  };
 
-const tdStyle = {
-  border: "1px solid white",
-  padding: "10px",
-  color: "white",
-};
+  const tdStyle = {
+    border: "1px solid white",
+    padding: "10px",
+    color: "white",
+  };
 
   const inputStyle = {
     width: "100%",
@@ -164,18 +164,18 @@ const tdStyle = {
     marginBottom: "15px",
     border: "none",
     outline: "none",
-};
+  };
 
-const buttonStyle = {
-  fontWeight: "700",
-  color: "white",
-  height: "42px",
-  width: "10rem",
-  backgroundColor: "#e97730",
-  border: "4px solid white",
-  borderRadius: "30px",
-  cursor: "pointer",
-};
+  const buttonStyle = {
+    fontWeight: "700",
+    color: "white",
+    height: "42px",
+    width: "10rem",
+    backgroundColor: "#e97730",
+    border: "4px solid white",
+    borderRadius: "30px",
+    cursor: "pointer",
+  };
   const [rule, setRule] = useState({
     direction: "IN",
     ipType: "IPv4",
@@ -186,8 +186,6 @@ const buttonStyle = {
     source: "0.0.0.0/0",
   });
 
-
-
   useEffect(() => {
     console.log("ACTIVE BUTTON:", activeButton);
   }, [activeButton]);
@@ -196,11 +194,11 @@ const buttonStyle = {
     setIsFlipped(!isFlipped);
   };
   useEffect(() => {
-  if (monitorData?.jumpserver_id) {
-    console.log("monitorData.jumpserver_id", monitorData.jumpserver_id);
-    setSelectedJumpserverId(Number(monitorData.jumpserver_id));
-  }
-}, [monitorData]);
+    if (monitorData?.jumpserver_id) {
+      console.log("monitorData.jumpserver_id", monitorData.jumpserver_id);
+      setSelectedJumpserverId(Number(monitorData.jumpserver_id));
+    }
+  }, [monitorData]);
 
   const handleChangeFirewall = (e) => {
     const { name, value } = e.target;
@@ -242,8 +240,6 @@ const buttonStyle = {
     }
   };
 
-  
-
   const handleMouseEnter = () => {
     setIsHovered(true);
   };
@@ -258,7 +254,6 @@ const buttonStyle = {
       arrowElement.classList.toggle("auto");
     }
   };
-
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -292,7 +287,7 @@ const buttonStyle = {
       user_id: smuser.id,
       vm_id: machineId,
     };
-    
+
     try {
       const vncResponse = await instance.post("vm/vnc", payload);
       if (vncResponse.data.status) {
@@ -319,7 +314,7 @@ const buttonStyle = {
       const encryptedResponse = await apiEncryptRequest(payload);
       const loginUserResponse = await instance.post(
         "/regenerate",
-        encryptedResponse
+        encryptedResponse,
       );
       const loginResponse = await decryptData(loginUserResponse.data);
       if (loginResponse.status) {
@@ -381,7 +376,7 @@ const buttonStyle = {
           const encryptedResponse = await apiEncryptRequest(payload);
           const loginUserResponse = await instance.post(
             "/vm/change-server-details",
-            encryptedResponse
+            encryptedResponse,
           );
           const loginResponse = await decryptData(loginUserResponse.data);
           setNewPass(null);
@@ -415,7 +410,7 @@ const buttonStyle = {
         } catch (error) {
           console.error(
             "Error during the change-server-details process:",
-            error
+            error,
           );
         }
       } else {
@@ -460,7 +455,7 @@ const buttonStyle = {
       const encryptedResponse = await apiEncryptRequest(payload);
       const loginUserResponse = await instance.post(
         "/vm/stats",
-        encryptedResponse
+        encryptedResponse,
       );
       const Response = await decryptData(loginUserResponse.data);
 
@@ -508,10 +503,10 @@ const buttonStyle = {
       setIsMobile(isMobileDevice()); // Update isMobile state based on device type
     }
 
-    window.addEventListener("resize", handleResize); 
+    window.addEventListener("resize", handleResize);
     return () => {
       clearTimeout(interval);
-      window.removeEventListener("resize", handleResize); 
+      window.removeEventListener("resize", handleResize);
     };
   }, [progressPercentage, isBackUpFail, isMobile, isRegenerateSSH]);
 
@@ -527,8 +522,8 @@ const buttonStyle = {
 
       if (res.data?.success && Array.isArray(res.data.jumpservers)) {
         // normalize + enforce types
-        const list = res.data.jumpservers.map(js => ({
-          id: Number(js.id),            // DB id (IMPORTANT)
+        const list = res.data.jumpservers.map((js) => ({
+          id: Number(js.id), // DB id (IMPORTANT)
           vm_id: js.vm_id,
           vm_name: js.vm_name,
           public_ip: js.public_ip,
@@ -600,21 +595,18 @@ const buttonStyle = {
       } else {
         toast.error(data?.message || "Failed to attach jumpserver");
       }
-
     } catch (err) {
       console.error("Attach Jumpserver Error:", err);
 
       toast.error(
         err?.response?.data?.message ||
-        err?.message ||
-        "Failed to attach jumpserver"
+          err?.message ||
+          "Failed to attach jumpserver",
       );
     } finally {
       setLoading(false);
     }
   };
-
-
 
   // const inputStyle = {
   //   width: "100%",
@@ -627,39 +619,39 @@ const buttonStyle = {
   // };
 
   const createVMUser = async () => {
-      if (!newUsername || !newPassword) {
-        toast.error("Username & Password required");
-        return;
+    if (!newUsername || !newPassword) {
+      toast.error("Username & Password required");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const payload = {
+        user_id: smuser.id,
+        vm_id: monitorData.vm_id,
+        username: newUsername,
+        password: newPassword,
+      };
+
+      const encrypted = await apiEncryptRequest(payload);
+      const res = await instance.post("/create-vm-user", encrypted);
+      const data = await decryptData(res.data);
+
+      if (data.code === 200) {
+        toast.success("User created successfully");
+        setNewUsername("");
+        setNewPassword("");
+      } else {
+        toast.error(data.message || "Failed");
       }
-
-      try {
-        setLoading(true);
-
-        const payload = {
-          user_id: smuser.id,
-          vm_id: monitorData.vm_id,
-          username: newUsername,
-          password: newPassword,
-        };
-
-        const encrypted = await apiEncryptRequest(payload);
-        const res = await instance.post("/create-vm-user", encrypted);
-        const data = await decryptData(res.data);
-
-        if (data.code === 200) {
-          toast.success("User created successfully");
-          setNewUsername("");
-          setNewPassword("");
-        } else {
-          toast.error(data.message || "Failed");
-        }
-      } catch (err) {
-        console.error(err);
-        toast.error("Failed to create user");
-      } finally {
-        setLoading(false);
-      }
-    };
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to create user");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleButtonClick = (button) => {
     console.log("button", button);
@@ -729,7 +721,7 @@ const buttonStyle = {
       const encryptedResponse = await apiEncryptRequest(payload);
       const loginUserResponse = await instance.post(
         "/getsvpsdomains",
-        encryptedResponse
+        encryptedResponse,
       );
       const Response = await decryptData(loginUserResponse.data);
       const domainDetails = Response.domain;
@@ -757,7 +749,7 @@ const buttonStyle = {
       const encryptedResponse = await apiEncryptRequest(payload);
       const loginUserResponse = await instance.post(
         "/port_list",
-        encryptedResponse
+        encryptedResponse,
       );
       const Response = await decryptData(loginUserResponse.data);
       const portList = Response.port_list;
@@ -783,7 +775,7 @@ const buttonStyle = {
         const encryptedResponse = await apiEncryptRequest(payload);
         const loginUserResponse = await instance.post(
           "/adddomain",
-          encryptedResponse
+          encryptedResponse,
         );
         const Response = await decryptData(loginUserResponse.data);
         setDomainId(Response.id);
@@ -842,7 +834,7 @@ const buttonStyle = {
         const encryptedResponse = await apiEncryptRequest(payload);
         const loginUserResponse = await instance.post(
           "/domainstatus",
-          encryptedResponse
+          encryptedResponse,
         );
         const Response = await decryptData(loginUserResponse.data);
 
@@ -891,7 +883,7 @@ const buttonStyle = {
         const encryptedResponse = await apiEncryptRequest(payload);
         const loginUserResponse = await instance.post(
           "/redirectdomain",
-          encryptedResponse
+          encryptedResponse,
         );
         const Response = await decryptData(loginUserResponse.data);
 
@@ -951,7 +943,7 @@ const buttonStyle = {
         const encryptedResponse = await apiEncryptRequest(payload);
         const loginUserResponse = await instance.post(
           "/removedomain",
-          encryptedResponse
+          encryptedResponse,
         );
         const Response = await decryptData(loginUserResponse.data);
 
@@ -1013,7 +1005,7 @@ const buttonStyle = {
         const encryptedResponse = await apiEncryptRequest(payload);
         const loginUserResponse = await instance.post(
           "/domainssl",
-          encryptedResponse
+          encryptedResponse,
         );
         const Response = await decryptData(loginUserResponse.data);
 
@@ -1066,7 +1058,7 @@ const buttonStyle = {
         const encryptedResponse = await apiEncryptRequest(payload);
         const loginUserResponse = await instance.post(
           "/edit_portname",
-          encryptedResponse
+          encryptedResponse,
         );
         const Response = await decryptData(loginUserResponse.data);
 
@@ -1109,7 +1101,7 @@ const buttonStyle = {
       const encryptedResponse = await apiEncryptRequest(payload);
       const loginUserResponse = await instance.post(
         "/generate_portlist",
-        encryptedResponse
+        encryptedResponse,
       );
 
       const Response = await decryptData(loginUserResponse.data);
@@ -1140,7 +1132,7 @@ const buttonStyle = {
       const encryptedResponse = await apiEncryptRequest(payload);
       const loginUserResponse = await instance.post(
         "/generate_port_url",
-        encryptedResponse
+        encryptedResponse,
       );
       const Response = await decryptData(loginUserResponse.data);
 
@@ -1177,7 +1169,7 @@ const buttonStyle = {
         const encryptedResponse = await apiEncryptRequest(payload);
         const loginUserResponse = await instance.post(
           "/remove_port",
-          encryptedResponse
+          encryptedResponse,
         );
         const Response = await decryptData(loginUserResponse.data);
 
@@ -1235,7 +1227,7 @@ const buttonStyle = {
         const encryptedResponse = await apiEncryptRequest(payload);
         const loginUserResponse = await instance.post(
           "/otherport_url",
-          encryptedResponse
+          encryptedResponse,
         );
         const Response = await decryptData(loginUserResponse.data);
 
@@ -1300,13 +1292,13 @@ const buttonStyle = {
       formDataProfile.append("msg", customReqtext);
       formDataProfile.append(
         "reply",
-        "We are look into this. please wait while"
+        "We are look into this. please wait while",
       );
 
       try {
         const cdnInfoResponse = await instance.post(
           "/create-enquiry",
-          formDataProfile
+          formDataProfile,
         );
         const Response = await decryptData(cdnInfoResponse.data);
         setCustomRequestText("");
@@ -1360,7 +1352,7 @@ const buttonStyle = {
       const encryptedResponse = await apiEncryptRequest(payload);
       const loginUserResponse = await instance.post(
         "/vmbackuplist",
-        encryptedResponse
+        encryptedResponse,
       );
       const Response = await decryptData(loginUserResponse.data);
       const backUpList = Response?.list || [];
@@ -1383,7 +1375,7 @@ const buttonStyle = {
       const encryptedResponse = await apiEncryptRequest(payload);
       const loginUserResponse = await instance.post(
         "/machines",
-        encryptedResponse
+        encryptedResponse,
       );
       const loginResponse = await decryptData(loginUserResponse.data);
       // console.log(loginResponse, "GetMachines");
@@ -1439,7 +1431,7 @@ const buttonStyle = {
             const encryptedResponse = await apiEncryptRequest(payload);
             const loginUserResponse = await instance.post(
               "/restoresamevm",
-              encryptedResponse
+              encryptedResponse,
             );
             const loginResponse = await decryptData(loginUserResponse.data);
             // console.log(loginResponse, "Restore Response");
@@ -1468,7 +1460,7 @@ const buttonStyle = {
               ));
             }
           } catch (error) {
-            console.error( error);
+            console.error(error);
           }
         } else {
           toast((t) => (
@@ -1511,65 +1503,65 @@ const buttonStyle = {
           "hdd"
             ? monitorData.hard_disk
             : monitorData.disk_type == "nvme"
-            ? monitorData.nvme
-            : monitorData.ssd * restorePrice.hdd_rate +
-              monitorData.data_transfer * 1 -
-              (restorePrice.custom_discount *
-                (monitorData.cpu * restorePrice.cpu_rate +
-                  (monitorData.ram / 1024) * restorePrice.ram_rate +
-                  monitorData.disk_type ==
-                "hdd"
-                  ? monitorData.hard_disk
-                  : monitorData.disk_type == "nvme"
-                  ? monitorData.nvme
-                  : monitorData.ssd * restorePrice.hdd_rate +
-                    monitorData.data_transfer * 1)) /
-                100) /
+              ? monitorData.nvme
+              : monitorData.ssd * restorePrice.hdd_rate +
+                monitorData.data_transfer * 1 -
+                (restorePrice.custom_discount *
+                  (monitorData.cpu * restorePrice.cpu_rate +
+                    (monitorData.ram / 1024) * restorePrice.ram_rate +
+                    monitorData.disk_type ==
+                  "hdd"
+                    ? monitorData.hard_disk
+                    : monitorData.disk_type == "nvme"
+                      ? monitorData.nvme
+                      : monitorData.ssd * restorePrice.hdd_rate +
+                        monitorData.data_transfer * 1)) /
+                  100) /
             30) *
             3
         : newMachineTime === "7"
-        ? ((monitorData.cpu * restorePrice.cpu_rate +
-            (monitorData.ram / 1024) * restorePrice.ram_rate +
-            monitorData.disk_type ==
-          "hdd"
-            ? monitorData.hard_disk
-            : monitorData.disk_type == "nvme"
-            ? monitorData.nvme
-            : monitorData.ssd * restorePrice.hdd_rate +
-              monitorData.data_transfer * 1 -
-              (restorePrice.custom_discount *
-                (monitorData.cpu * restorePrice.cpu_rate +
-                  (monitorData.ram / 1024) * restorePrice.ram_rate +
-                  monitorData.disk_type ==
-                "hdd"
-                  ? monitorData.hard_disk
-                  : monitorData.disk_type == "nvme"
-                  ? monitorData.nvme
-                  : monitorData.ssd * restorePrice.hdd_rate +
-                    monitorData.data_transfer * 1)) /
-                100) /
-            30) *
-          7
-        : (monitorData.cpu * restorePrice.cpu_rate +
-            (monitorData.ram / 1024) * restorePrice.ram_rate +
-            monitorData.disk_type ==
-          "hdd"
-            ? monitorData.hard_disk
-            : monitorData.disk_type == "nvme"
-            ? monitorData.nvme
-            : monitorData.ssd * restorePrice.hdd_rate +
-              monitorData.data_transfer * 1 -
-              (restorePrice.custom_discount *
-                (monitorData.cpu * restorePrice.cpu_rate +
-                  (monitorData.ram / 1024) * restorePrice.ram_rate +
-                  monitorData.disk_type ==
-                "hdd"
-                  ? monitorData.hard_disk
-                  : monitorData.disk_type == "nvme"
-                  ? monitorData.nvme
-                  : monitorData.ssd * restorePrice.hdd_rate +
-                    monitorData.data_transfer * 1)) /
-                100) * newMachineTime;
+          ? ((monitorData.cpu * restorePrice.cpu_rate +
+              (monitorData.ram / 1024) * restorePrice.ram_rate +
+              monitorData.disk_type ==
+            "hdd"
+              ? monitorData.hard_disk
+              : monitorData.disk_type == "nvme"
+                ? monitorData.nvme
+                : monitorData.ssd * restorePrice.hdd_rate +
+                  monitorData.data_transfer * 1 -
+                  (restorePrice.custom_discount *
+                    (monitorData.cpu * restorePrice.cpu_rate +
+                      (monitorData.ram / 1024) * restorePrice.ram_rate +
+                      monitorData.disk_type ==
+                    "hdd"
+                      ? monitorData.hard_disk
+                      : monitorData.disk_type == "nvme"
+                        ? monitorData.nvme
+                        : monitorData.ssd * restorePrice.hdd_rate +
+                          monitorData.data_transfer * 1)) /
+                    100) /
+              30) *
+            7
+          : (monitorData.cpu * restorePrice.cpu_rate +
+              (monitorData.ram / 1024) * restorePrice.ram_rate +
+              monitorData.disk_type ==
+            "hdd"
+              ? monitorData.hard_disk
+              : monitorData.disk_type == "nvme"
+                ? monitorData.nvme
+                : monitorData.ssd * restorePrice.hdd_rate +
+                  monitorData.data_transfer * 1 -
+                  (restorePrice.custom_discount *
+                    (monitorData.cpu * restorePrice.cpu_rate +
+                      (monitorData.ram / 1024) * restorePrice.ram_rate +
+                      monitorData.disk_type ==
+                    "hdd"
+                      ? monitorData.hard_disk
+                      : monitorData.disk_type == "nvme"
+                        ? monitorData.nvme
+                        : monitorData.ssd * restorePrice.hdd_rate +
+                          monitorData.data_transfer * 1)) /
+                    100) * newMachineTime;
 
     if (smuser.total_credit < machine_price) {
       toast((t) => (
@@ -1608,8 +1600,8 @@ const buttonStyle = {
               monitorData && monitorData.disk_type == "hdd"
                 ? monitorData.hard_disk
                 : monitorData.disk_type == "nvme"
-                ? monitorData.nvme
-                : monitorData.ssd,
+                  ? monitorData.nvme
+                  : monitorData.ssd,
             cpue: monitorData && monitorData.cpu,
             rame: monitorData && monitorData.ram / 1024,
             data_transfer: monitorData && monitorData.data_transfer,
@@ -1625,7 +1617,7 @@ const buttonStyle = {
             const encryptedResponse = await apiEncryptRequest(payload);
             const loginUserResponse = await instance.post(
               "/restorebackup",
-              encryptedResponse
+              encryptedResponse,
             );
             const loginResponse = await decryptData(loginUserResponse.data);
 
@@ -1695,7 +1687,7 @@ const buttonStyle = {
       const encryptedResponse = await apiEncryptRequest(payload);
       const loginUserResponse = await instance.post(
         "/vmbackupstatus",
-        encryptedResponse
+        encryptedResponse,
       );
       const Response = await decryptData(loginUserResponse.data);
       const progress = Response.progress;
@@ -1754,7 +1746,7 @@ const buttonStyle = {
       const encryptedResponse = await apiEncryptRequest(payload);
       const loginUserResponse = await instance.post(
         "/restore_price",
-        encryptedResponse
+        encryptedResponse,
       );
       const loginResponse = await decryptData(loginUserResponse.data);
       // console.log(loginResponse, "====== Restore Price Response");
@@ -1775,7 +1767,7 @@ const buttonStyle = {
       const encryptedResponse = await apiEncryptRequest(payload);
       const loginUserResponse = await instance.post(
         "/restore_pricing",
-        encryptedResponse
+        encryptedResponse,
       );
       const loginResponse = await decryptData(loginUserResponse.data);
       // console.log(loginResponse, "======Restore Price Response");
@@ -1799,7 +1791,7 @@ const buttonStyle = {
       const encryptedResponse = await apiEncryptRequest(payload);
       const loginUserResponse = await instance.post(
         "/backupon",
-        encryptedResponse
+        encryptedResponse,
       );
       const Response = await decryptData(loginUserResponse.data);
       // console.log(Response, "backup On off Response===");
@@ -1832,7 +1824,7 @@ const buttonStyle = {
       const encryptedResponse = await apiEncryptRequest(payload);
       const loginUserResponse = await instance.post(
         "/ip_price",
-        encryptedResponse
+        encryptedResponse,
       );
       const Response = await decryptData(loginUserResponse.data);
       // console.log(Response, "==!==!==IP Price Response");
@@ -1866,7 +1858,7 @@ const buttonStyle = {
           const encryptedResponse = await apiEncryptRequest(payload);
           const loginUserResponse = await instance.post(
             "/dedicatedip",
-            encryptedResponse
+            encryptedResponse,
           );
           const Response = await decryptData(loginUserResponse.data);
           // console.log(Response, "backup On off Response===");
@@ -1921,7 +1913,7 @@ const buttonStyle = {
       const encryptedResponse = await apiEncryptRequest(payload);
       const loginUserResponse = await instance.post(
         "/backup_plans",
-        encryptedResponse
+        encryptedResponse,
       );
       const Response = await decryptData(loginUserResponse.data);
       // console.log(Response, "==!==!==Backup List Response");
@@ -1958,7 +1950,7 @@ const buttonStyle = {
         const encryptedResponse = await apiEncryptRequest(payload);
         const loginUserResponse = await instance.post(
           "/vm/buybackup/plan",
-          encryptedResponse
+          encryptedResponse,
         );
         const Response = await decryptData(loginUserResponse.data);
         console.log(Response, "==!==!== Response");
@@ -2035,7 +2027,7 @@ const buttonStyle = {
       const encryptedResponse = await apiEncryptRequest(payload);
       const loginUserResponse = await instance.post(
         "/domaincustomssl",
-        encryptedResponse
+        encryptedResponse,
       );
       const Response = await decryptData(loginUserResponse.data);
       console.log(Response, "==!==!== Response");
@@ -2059,7 +2051,7 @@ const buttonStyle = {
     window.open(
       "https://www.upnetcloud.com/restore-pricing",
       "_blank",
-      "noopener,noreferrer"
+      "noopener,noreferrer",
     );
   };
 
@@ -2377,7 +2369,6 @@ const buttonStyle = {
               textAlign: "center",
             }}
           >
-
             <h4
               style={{
                 color: "white",
@@ -2738,68 +2729,70 @@ const buttonStyle = {
                         "hdd"
                           ? monitorData.hard_disk
                           : monitorData.disk_type == "nvme"
-                          ? monitorData.nvme
-                          : monitorData.ssd * restorePrice.hdd_rate +
-                            monitorData.data_transfer * 1 -
-                            (restorePrice.custom_discount *
-                              (monitorData.cpu * restorePrice.cpu_rate +
-                                (monitorData.ram / 1024) *
-                                  restorePrice.ram_rate +
-                                monitorData.disk_type ==
-                              "hdd"
-                                ? monitorData.hard_disk
-                                : monitorData.disk_type == "nvme"
-                                ? monitorData.nvme
-                                : monitorData.ssd * restorePrice.hdd_rate +
-                                  monitorData.data_transfer * 1)) /
-                              100) /
+                            ? monitorData.nvme
+                            : monitorData.ssd * restorePrice.hdd_rate +
+                              monitorData.data_transfer * 1 -
+                              (restorePrice.custom_discount *
+                                (monitorData.cpu * restorePrice.cpu_rate +
+                                  (monitorData.ram / 1024) *
+                                    restorePrice.ram_rate +
+                                  monitorData.disk_type ==
+                                "hdd"
+                                  ? monitorData.hard_disk
+                                  : monitorData.disk_type == "nvme"
+                                    ? monitorData.nvme
+                                    : monitorData.ssd * restorePrice.hdd_rate +
+                                      monitorData.data_transfer * 1)) /
+                                100) /
                           30) *
                           3
                       : newMachineTime === "7"
-                      ? ((monitorData.cpu * restorePrice.cpu_rate +
-                          (monitorData.ram / 1024) * restorePrice.ram_rate +
-                          monitorData.disk_type ==
-                        "hdd"
-                          ? monitorData.hard_disk
-                          : monitorData.disk_type == "nvme"
-                          ? monitorData.nvme
-                          : monitorData.ssd * restorePrice.hdd_rate +
-                            monitorData.data_transfer * 1 -
-                            (restorePrice.custom_discount *
-                              (monitorData.cpu * restorePrice.cpu_rate +
-                                (monitorData.ram / 1024) *
-                                  restorePrice.ram_rate +
-                                monitorData.disk_type ==
-                              "hdd"
-                                ? monitorData.hard_disk
-                                : monitorData.disk_type == "nvme"
-                                ? monitorData.nvme
-                                : monitorData.ssd * restorePrice.hdd_rate +
-                                  monitorData.data_transfer * 1)) /
-                              100) /
-                          30) *
-                        7
-                      : (monitorData.cpu * restorePrice.cpu_rate +
-                          (monitorData.ram / 1024) * restorePrice.ram_rate +
-                          monitorData.disk_type ==
-                        "hdd"
-                          ? monitorData.hard_disk
-                          : monitorData.disk_type == "nvme"
-                          ? monitorData.nvme
-                          : monitorData.ssd * restorePrice.hdd_rate +
-                            monitorData.data_transfer * 1 -
-                            (restorePrice.custom_discount *
-                              (monitorData.cpu * restorePrice.cpu_rate +
-                                (monitorData.ram / 1024) *
-                                  restorePrice.ram_rate +
-                                monitorData.disk_type ==
-                              "hdd"
-                                ? monitorData.hard_disk
-                                : monitorData.disk_type == "nvme"
-                                ? monitorData.nvme
-                                : monitorData.ssd * restorePrice.hdd_rate +
-                                  monitorData.data_transfer * 1)) /
-                              100) * newMachineTime,
+                        ? ((monitorData.cpu * restorePrice.cpu_rate +
+                            (monitorData.ram / 1024) * restorePrice.ram_rate +
+                            monitorData.disk_type ==
+                          "hdd"
+                            ? monitorData.hard_disk
+                            : monitorData.disk_type == "nvme"
+                              ? monitorData.nvme
+                              : monitorData.ssd * restorePrice.hdd_rate +
+                                monitorData.data_transfer * 1 -
+                                (restorePrice.custom_discount *
+                                  (monitorData.cpu * restorePrice.cpu_rate +
+                                    (monitorData.ram / 1024) *
+                                      restorePrice.ram_rate +
+                                    monitorData.disk_type ==
+                                  "hdd"
+                                    ? monitorData.hard_disk
+                                    : monitorData.disk_type == "nvme"
+                                      ? monitorData.nvme
+                                      : monitorData.ssd *
+                                          restorePrice.hdd_rate +
+                                        monitorData.data_transfer * 1)) /
+                                  100) /
+                            30) *
+                          7
+                        : (monitorData.cpu * restorePrice.cpu_rate +
+                            (monitorData.ram / 1024) * restorePrice.ram_rate +
+                            monitorData.disk_type ==
+                          "hdd"
+                            ? monitorData.hard_disk
+                            : monitorData.disk_type == "nvme"
+                              ? monitorData.nvme
+                              : monitorData.ssd * restorePrice.hdd_rate +
+                                monitorData.data_transfer * 1 -
+                                (restorePrice.custom_discount *
+                                  (monitorData.cpu * restorePrice.cpu_rate +
+                                    (monitorData.ram / 1024) *
+                                      restorePrice.ram_rate +
+                                    monitorData.disk_type ==
+                                  "hdd"
+                                    ? monitorData.hard_disk
+                                    : monitorData.disk_type == "nvme"
+                                      ? monitorData.nvme
+                                      : monitorData.ssd *
+                                          restorePrice.hdd_rate +
+                                        monitorData.data_transfer * 1)) /
+                                  100) * newMachineTime,
                   symbol: smuser.prefer_currency,
                   rates: appCurrency,
                 })}
@@ -3117,13 +3110,7 @@ const buttonStyle = {
                     height: "29.8rem",
                   }}
                 >
-                  <div
-                    className="buttons-container"
-                    style={
-                      {
-                      }
-                    }
-                  >
+                  <div className="buttons-container" style={{}}>
                     {innerButtons.map((title, idx) => (
                       <Button
                         key={idx}
@@ -3244,7 +3231,7 @@ const buttonStyle = {
             width: isMobile ? "23rem" : "50rem",
             backdropFilter: "blur(20px)",
             height: "29rem",
-            boxShadow: "0px 0px 10px rgba(0, 0, 0, 0.1)", 
+            boxShadow: "0px 0px 10px rgba(0, 0, 0, 0.1)",
             borderRadius: "12px",
             border: "2px solid #e97730",
             zIndex: "99999",
@@ -3277,7 +3264,6 @@ const buttonStyle = {
               textAlign: "center",
             }}
           >
-
             <h4
               style={{
                 color: "white",
@@ -3297,7 +3283,7 @@ const buttonStyle = {
                   domainList
                     .reverse()
                     .filter(
-                      (item) => item.domain_status === 1 && item.domain_name
+                      (item) => item.domain_status === 1 && item.domain_name,
                     ).length === 0
                     ? "18px"
                     : "24px",
@@ -3322,7 +3308,7 @@ const buttonStyle = {
                 domainList
                   .reverse()
                   .filter(
-                    (item) => item.domain_status === 1 && item.domain_name
+                    (item) => item.domain_status === 1 && item.domain_name,
                   ).length === 0
                   ? "265px"
                   : "290px",
@@ -3662,7 +3648,6 @@ const buttonStyle = {
               justifyContent: "center",
             }}
           >
-            
             <div>
               {" "}
               <button
@@ -3834,15 +3819,15 @@ const buttonStyle = {
 
                 <div className="machine-title theme-bg-orange">Storage</div>
                 <div className="mid-portion" />
-                  <div className="machine-subtitle theme-bg-blue">
-                    {monitorData && monitorData.disk_type == "hdd"
-                      ? monitorData.hard_disk
-                      : monitorData.disk_type == "nvme"
+                <div className="machine-subtitle theme-bg-blue">
+                  {monitorData && monitorData.disk_type == "hdd"
+                    ? monitorData.hard_disk
+                    : monitorData.disk_type == "nvme"
                       ? monitorData.nvme
                       : monitorData.ssd}{" "}
-                    GB
-                  </div>
+                  GB
                 </div>
+              </div>
 
               <img
                 src="/images/admin/06-View-Stats/server.png"
@@ -4170,7 +4155,12 @@ const buttonStyle = {
                                 style={{ ...tdStyle, textAlign: "center" }}
                                 onClick={(e) => e.stopPropagation()}
                               >
-                                <div style={{ display: "flex", justifyContent: "center" }}>
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    justifyContent: "center",
+                                  }}
+                                >
                                   <div
                                     style={{
                                       width: "140px",
@@ -4214,10 +4204,10 @@ const buttonStyle = {
                                       {loading
                                         ? "Attaching..."
                                         : isJumpserverAlreadyAttached
-                                        ? "Already Attached"
-                                        : isSelected
-                                        ? "Apply"
-                                        : "Select"}
+                                          ? "Already Attached"
+                                          : isSelected
+                                            ? "Apply"
+                                            : "Select"}
                                     </span>
                                   </div>
                                 </div>
@@ -4246,7 +4236,6 @@ const buttonStyle = {
                 borderRadius: "12px",
               }}
             >
-
               {/* Username */}
               <input
                 type="text"
@@ -4254,14 +4243,14 @@ const buttonStyle = {
                 value={newUsername}
                 onChange={(e) => setNewUsername(e.target.value)}
                 style={{
-                        width: "100%",
-                        height: "45px",
-                        borderRadius: "25px",
-                        padding: "0 15px",
-                        marginBottom: "15px",
-                        border: "none",
-                        outline: "none",
-                      }}
+                  width: "100%",
+                  height: "45px",
+                  borderRadius: "25px",
+                  padding: "0 15px",
+                  marginBottom: "15px",
+                  border: "none",
+                  outline: "none",
+                }}
               />
 
               {/* Password */}
@@ -4271,14 +4260,14 @@ const buttonStyle = {
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 style={{
-                        width: "100%",
-                        height: "45px",
-                        borderRadius: "25px",
-                        padding: "0 15px",
-                        marginBottom: "15px",
-                        border: "none",
-                        outline: "none",
-                      }}
+                  width: "100%",
+                  height: "45px",
+                  borderRadius: "25px",
+                  padding: "0 15px",
+                  marginBottom: "15px",
+                  border: "none",
+                  outline: "none",
+                }}
               />
 
               <button
@@ -4459,7 +4448,7 @@ const buttonStyle = {
                 </div>
 
                 <div>
-                  <button 
+                  <button
                     style={{
                       zIndex: "2",
                       position: "relative",
@@ -4494,7 +4483,7 @@ const buttonStyle = {
                       paddingTop: "15px",
                       fontWeight: "600",
                       textDecoration: "underline",
-                      marginLeft: "78px"
+                      marginLeft: "78px",
                     }}
                   >
                     {" "}
@@ -4994,7 +4983,7 @@ const buttonStyle = {
                           onClick={() =>
                             validateDomain(
                               domainData.domain_name,
-                              domainData.id
+                              domainData.id,
                             )
                           }
                         >
@@ -5059,7 +5048,7 @@ const buttonStyle = {
                           .reverse()
                           .filter(
                             (item) =>
-                              item.domain_status === 1 && item.domain_name
+                              item.domain_status === 1 && item.domain_name,
                           ).length === 0 ? (
                           <div
                             style={{
@@ -5123,7 +5112,7 @@ const buttonStyle = {
                                       item.domain_status === 1 &&
                                       item.domain_name
                                         .toLowerCase()
-                                        .includes(searchText.toLowerCase())
+                                        .includes(searchText.toLowerCase()),
                                   )
                                   .map((item, idx) => (
                                     <tr>
@@ -5164,7 +5153,7 @@ const buttonStyle = {
                                               onClick={() =>
                                                 validateDomain(
                                                   item.domain_name,
-                                                  item.id
+                                                  item.id,
                                                 )
                                               }
                                               className="underline-text"
@@ -5225,7 +5214,7 @@ const buttonStyle = {
                                                 onClick={() =>
                                                   validateDomain(
                                                     item.domain_name,
-                                                    item.id
+                                                    item.id,
                                                   )
                                                 }
                                                 className="underline-text"
@@ -5348,7 +5337,7 @@ const buttonStyle = {
                 domainList
                   .reverse()
                   .filter(
-                    (item) => item.domain_status === 1 && item.domain_name
+                    (item) => item.domain_status === 1 && item.domain_name,
                   ).length === 0 ? (
                   <div
                     style={{
@@ -5411,7 +5400,7 @@ const buttonStyle = {
                               item.domain_status === 1 &&
                               item.domain_name
                                 .toLowerCase()
-                                .includes(searchText.toLowerCase())
+                                .includes(searchText.toLowerCase()),
                           )
                           .map((item, idx) => (
                             <tr>
@@ -5504,7 +5493,7 @@ const buttonStyle = {
                                         onClick={() =>
                                           validateDomain(
                                             item.domain_name,
-                                            item.id
+                                            item.id,
                                           )
                                         }
                                         className="underline-text"
@@ -5664,7 +5653,7 @@ const buttonStyle = {
                 domainList
                   .reverse()
                   .filter(
-                    (item) => item.domain_status === 1 && item.domain_name
+                    (item) => item.domain_status === 1 && item.domain_name,
                   ).length === 0 ? (
                   <div
                     style={{
@@ -5727,7 +5716,7 @@ const buttonStyle = {
                               item.domain_status === 1 &&
                               item.domain_name
                                 .toLowerCase()
-                                .includes(searchText.toLowerCase())
+                                .includes(searchText.toLowerCase()),
                           )
                           .map((item, idx) => (
                             <tr>
@@ -5816,7 +5805,7 @@ const buttonStyle = {
                                         onClick={() =>
                                           redirectDomain(
                                             item.domain_name,
-                                            item.id
+                                            item.id,
                                           )
                                         }
                                         className="underline-text"
@@ -5864,7 +5853,7 @@ const buttonStyle = {
                                   <a
                                     onClick={() => {
                                       setSelectDomainNameForDelete(
-                                        item.domain_name
+                                        item.domain_name,
                                       );
                                       setSelectDomainIdForDelete(item.id);
                                       SetDeletePopup(true);
@@ -6021,7 +6010,7 @@ const buttonStyle = {
                                   .filter((item) =>
                                     item.port
                                       .toLowerCase()
-                                      .includes(searchText.toLowerCase())
+                                      .includes(searchText.toLowerCase()),
                                   )
                                   .map((item, idx) => (
                                     <tr>
@@ -6088,7 +6077,7 @@ const buttonStyle = {
                                             generatePortURL(
                                               item.port_name,
                                               item.port,
-                                              item.id
+                                              item.id,
                                             );
                                           }}
                                         >
@@ -6377,7 +6366,7 @@ const buttonStyle = {
                                   .filter((item) =>
                                     item.url
                                       .toLowerCase()
-                                      .includes(searchText.toLowerCase())
+                                      .includes(searchText.toLowerCase()),
                                   )
                                   .map((item, idx) => (
                                     <tr>
@@ -7518,8 +7507,8 @@ const buttonStyle = {
                           ? monitorData.disk_type == "hdd"
                             ? `${monitorData.hard_disk} GB`
                             : monitorData.disk_type == "nvme"
-                            ? `${monitorData.nvme} GB`
-                            : `${monitorData.ssd} GB`
+                              ? `${monitorData.nvme} GB`
+                              : `${monitorData.ssd} GB`
                           : "0 GB"}
                       </div>
                     </div>
@@ -7612,8 +7601,8 @@ const buttonStyle = {
                             isIntializing
                               ? ""
                               : monitorData.backup_status === 1
-                              ? onClickBackup()
-                              : ""
+                                ? onClickBackup()
+                                : ""
                           }
                           style={{
                             color: "white",
@@ -7629,14 +7618,14 @@ const buttonStyle = {
                           monitorData.backup_status === 1
                             ? "Restore Status"
                             : (monitorData &&
-                                monitorData.backup_status === 1) ||
-                              progressPercentage === 100
-                            ? isIntializing
-                              ? "Restore Intilizing..."
-                              : "More Details"
-                            : monitorData && monitorData.backup_status === 1
-                            ? "Enable"
-                            : "Disable"}
+                                  monitorData.backup_status === 1) ||
+                                progressPercentage === 100
+                              ? isIntializing
+                                ? "Restore Intilizing..."
+                                : "More Details"
+                              : monitorData && monitorData.backup_status === 1
+                                ? "Enable"
+                                : "Disable"}
                         </button>
                       </div>
                     </div>
@@ -7663,12 +7652,14 @@ const buttonStyle = {
                     >
                       SSH
                     </button>
-                    {monitorData && monitorData.type == 1   && (
+                    {monitorData && monitorData.type == 1 && (
                       <button
                         className={`btn ${activeButton === "ATTACH_JUMPSERVER" ? "active" : ""}`}
                         style={{
                           background: `${
-                            activeButton === "ATTACH_JUMPSERVER" ? "#f47c20" : "#035189"
+                            activeButton === "ATTACH_JUMPSERVER"
+                              ? "#f47c20"
+                              : "#035189"
                           }`,
                         }}
                         onClick={() => handleButtonClick("ATTACH_JUMPSERVER")}
@@ -7931,7 +7922,9 @@ const buttonStyle = {
                                     <tr
                                       key={js.vm_id}
                                       onClick={() =>
-                                        setSelectedJumpserverId(Number(js.vm_id))
+                                        setSelectedJumpserverId(
+                                          Number(js.vm_id),
+                                        )
                                       }
                                       style={{
                                         cursor: "pointer",
@@ -7945,7 +7938,9 @@ const buttonStyle = {
                                       <td
                                         style={{
                                           ...tdStyle,
-                                          fontWeight: isSelected ? "700" : "500",
+                                          fontWeight: isSelected
+                                            ? "700"
+                                            : "500",
                                         }}
                                       >
                                         {js.vm_name}
@@ -7956,10 +7951,18 @@ const buttonStyle = {
 
                                       {/* Action */}
                                       <td
-                                        style={{ ...tdStyle, textAlign: "center" }}
+                                        style={{
+                                          ...tdStyle,
+                                          textAlign: "center",
+                                        }}
                                         onClick={(e) => e.stopPropagation()}
                                       >
-                                        <div style={{ display: "flex", justifyContent: "center" }}>
+                                        <div
+                                          style={{
+                                            display: "flex",
+                                            justifyContent: "center",
+                                          }}
+                                        >
                                           <div
                                             style={{
                                               width: "140px",
@@ -8003,10 +8006,10 @@ const buttonStyle = {
                                               {loading
                                                 ? "Attaching..."
                                                 : isJumpserverAlreadyAttached
-                                                ? "Already Attached"
-                                                : isSelected
-                                                ? "Apply"
-                                                : "Select"}
+                                                  ? "Already Attached"
+                                                  : isSelected
+                                                    ? "Apply"
+                                                    : "Select"}
                                             </span>
                                           </div>
                                         </div>
@@ -8023,6 +8026,50 @@ const buttonStyle = {
                   )}
 
                   {activeButton === "CREATE_USER" && (
+                    // <div
+                    //   style={{
+                    //     minHeight: "15rem",
+                    //     backgroundImage: `url("/images/blue-box-bg.svg")`,
+                    //     backgroundSize: "cover",
+                    //     width: "100%",
+                    //     padding: "25px",
+                    //     backgroundColor: "#07528b",
+                    //     borderRadius: "12px",
+                    //   }}
+                    // >
+                    //   <div className="row align-items-center">
+                    //     <div className="col-md-3">
+                    //       <input
+                    //         type="text"
+                    //         placeholder="Username"
+                    //         value={newUsername}
+                    //         onChange={(e) => setNewUsername(e.target.value)}
+                    //         style={inputStyle}
+                    //       />
+                    //     </div>
+
+                    //     <div className="col-md-3">
+                    //       <input
+                    //         type="password"
+                    //         placeholder="Password"
+                    //         value={newPassword}
+                    //         onChange={(e) => setNewPassword(e.target.value)}
+                    //         style={inputStyle}
+                    //       />
+                    //     </div>
+
+                    //     <div className="col-md-3">
+                    //       <button
+                    //         type="button"
+                    //         onClick={createVMUser}
+                    //         style={buttonStyle}
+                    //       >
+                    //         Create User
+                    //       </button>
+                    //     </div>
+                    //   </div>
+                    // </div>
+
                     <div
                       style={{
                         minHeight: "15rem",
@@ -8032,29 +8079,44 @@ const buttonStyle = {
                         padding: "25px",
                         backgroundColor: "#07528b",
                         borderRadius: "12px",
+                        position: "relative",
                       }}
                     >
                       <div className="row align-items-center">
                         <div className="col-md-3">
                           <input
                             type="text"
-                            placeholder="Username"
+                            className="input-signup"
+                            placeholder="New Password"
                             value={newUsername}
+                            style={{
+                              color: "white",
+                              border: "2px solid white",
+                              borderRadius: "25px",
+                              background: "transparent",
+                              flex: "1",
+                              padding: "5px",
+                            }}
                             onChange={(e) => setNewUsername(e.target.value)}
-                            style={inputStyle}
                           />
                         </div>
-
                         <div className="col-md-3">
                           <input
-                            type="password"
-                            placeholder="Password"
+                            type="text"
+                            className="input-signup"
+                            placeholder="Confirm Password"
                             value={newPassword}
+                            style={{
+                              color: "white",
+                              border: "2px solid white",
+                              borderRadius: "25px",
+                              background: "transparent",
+                              flex: "1",
+                              padding: "5px",
+                            }}
                             onChange={(e) => setNewPassword(e.target.value)}
-                            style={inputStyle}
                           />
                         </div>
-
                         <div className="col-md-3">
                           <button
                             type="button"
@@ -8065,9 +8127,6 @@ const buttonStyle = {
                           </button>
                         </div>
                       </div>
-
-
-                      
                     </div>
                   )}
 
@@ -8102,14 +8161,14 @@ const buttonStyle = {
                                     ? monitorData.vm_port
                                     : monitorData.vm_port,
                                   vmRes.vm_username,
-                                  vmRes.vm_pass
+                                  vmRes.vm_pass,
                                 );
                               }}
                               style={{
                                 border: "none",
                                 backgroundColor: "transparent",
-                                position: "absolute", 
-                                top: "15px", 
+                                position: "absolute",
+                                top: "15px",
                                 right: "10px",
                                 height: "30px",
                               }}
@@ -8179,12 +8238,12 @@ const buttonStyle = {
                                           }}
                                           onClick={() => {
                                             navigator.clipboard.writeText(
-                                              monitorData.public_ip
+                                              monitorData.public_ip,
                                             );
                                             setCopied1(true);
                                             setTimeout(
                                               () => setCopied1(false),
-                                              2000
+                                              2000,
                                             );
                                           }}
                                         />
@@ -8232,12 +8291,12 @@ const buttonStyle = {
                                           }}
                                           onClick={() => {
                                             navigator.clipboard.writeText(
-                                              vmRes.vm_username
+                                              vmRes.vm_username,
                                             );
                                             setCopied2(true);
                                             setTimeout(
                                               () => setCopied2(false),
-                                              2000
+                                              2000,
                                             );
                                           }}
                                         />
@@ -8298,12 +8357,12 @@ const buttonStyle = {
                                             monitorData &&
                                               monitorData.vm_type === 1
                                               ? monitorData.vm_port
-                                              : monitorData.vm_port
+                                              : monitorData.vm_port,
                                           );
                                           setCopied3(true);
                                           setTimeout(
                                             () => setCopied3(false),
-                                            2000
+                                            2000,
                                           );
                                         }}
                                       />
@@ -8631,12 +8690,12 @@ const buttonStyle = {
                                             }}
                                             onClick={() => {
                                               navigator.clipboard.writeText(
-                                                vmRes.vnc_ip
+                                                vmRes.vnc_ip,
                                               );
                                               setCopied5(true);
                                               setTimeout(
                                                 () => setCopied5(false),
-                                                2000
+                                                2000,
                                               );
                                             }}
                                           />
@@ -8687,12 +8746,12 @@ const buttonStyle = {
                                             }}
                                             onClick={() => {
                                               navigator.clipboard.writeText(
-                                                vmRes.vnc_pass
+                                                vmRes.vnc_pass,
                                               );
                                               setCopied6(true);
                                               setTimeout(
                                                 () => setCopied6(false),
-                                                2000
+                                                2000,
                                               );
                                             }}
                                           />
@@ -8775,12 +8834,12 @@ const buttonStyle = {
                                             }}
                                             onClick={() => {
                                               navigator.clipboard.writeText(
-                                                vmRes.vnc_port
+                                                vmRes.vnc_port,
                                               );
                                               setCopied7(true);
                                               setTimeout(
                                                 () => setCopied7(false),
-                                                2000
+                                                2000,
                                               );
                                             }}
                                           />
@@ -9392,8 +9451,8 @@ const buttonStyle = {
                                                   item.domain_name
                                                     .toLowerCase()
                                                     .includes(
-                                                      searchText.toLowerCase()
-                                                    )
+                                                      searchText.toLowerCase(),
+                                                    ),
                                                 )
                                                 .map((item, idx) => (
                                                   <tr>
@@ -9441,7 +9500,7 @@ const buttonStyle = {
                                                             onClick={() =>
                                                               validateDomain(
                                                                 item.domain_name,
-                                                                item.id
+                                                                item.id,
                                                               )
                                                             }
                                                             className="underline-text"
@@ -9453,7 +9512,7 @@ const buttonStyle = {
                                                               fontWeight: "600",
                                                             }}
                                                             onMouseOver={(
-                                                              e
+                                                              e,
                                                             ) => (
                                                               (e.target.style.fontWeight =
                                                                 "800"),
@@ -9506,7 +9565,7 @@ const buttonStyle = {
                                                               onClick={() =>
                                                                 validateDomain(
                                                                   item.domain_name,
-                                                                  item.id
+                                                                  item.id,
                                                                 )
                                                               }
                                                               className="underline-text"
@@ -9520,7 +9579,7 @@ const buttonStyle = {
                                                                   "600",
                                                               }}
                                                               onMouseOver={(
-                                                                e
+                                                                e,
                                                               ) => (
                                                                 (e.target.style.fontWeight =
                                                                   "800"),
@@ -9530,7 +9589,7 @@ const buttonStyle = {
                                                                   "underline")
                                                               )}
                                                               onMouseOut={(
-                                                                e
+                                                                e,
                                                               ) => (
                                                                 (e.target.style.fontWeight =
                                                                   "600"),
@@ -9564,10 +9623,10 @@ const buttonStyle = {
                                                         }}
                                                         onClick={() => {
                                                           setSelectDomainNameForDelete(
-                                                            item.domain_name
+                                                            item.domain_name,
                                                           );
                                                           setSelectDomainIdForDelete(
-                                                            item.id
+                                                            item.id,
                                                           );
                                                           SetDeletePopup(true);
                                                         }}
@@ -9656,7 +9715,8 @@ const buttonStyle = {
                                 .reverse()
                                 .filter(
                                   (item) =>
-                                    item.domain_status === 1 && item.domain_name
+                                    item.domain_status === 1 &&
+                                    item.domain_name,
                                 ).length === 0 ? (
                                 <div
                                   style={{
@@ -9719,8 +9779,8 @@ const buttonStyle = {
                                             item.domain_name
                                               .toLowerCase()
                                               .includes(
-                                                searchText.toLowerCase()
-                                              )
+                                                searchText.toLowerCase(),
+                                              ),
                                         )
                                         .map((item, idx) => (
                                           <tr>
@@ -9754,7 +9814,7 @@ const buttonStyle = {
                                                   onClick={() =>
                                                     domainSSL(
                                                       item.domain_name,
-                                                      item.id
+                                                      item.id,
                                                     )
                                                   }
                                                 >
@@ -9820,7 +9880,7 @@ const buttonStyle = {
                                                       onClick={() =>
                                                         validateDomain(
                                                           item.domain_name,
-                                                          item.id
+                                                          item.id,
                                                         )
                                                       }
                                                       className="underline-text"
@@ -9892,7 +9952,7 @@ const buttonStyle = {
                                                 onClick={() => {
                                                   SetCustomSSLPopup(true);
                                                   setSelectedDomain(
-                                                    item.domain_name
+                                                    item.domain_name,
                                                   );
                                                   setSelectedDomainId(item.id);
                                                 }}
@@ -9950,7 +10010,8 @@ const buttonStyle = {
                                 .reverse()
                                 .filter(
                                   (item) =>
-                                    item.domain_status === 1 && item.domain_name
+                                    item.domain_status === 1 &&
+                                    item.domain_name,
                                 ).length === 0 ? (
                                 <div
                                   style={{
@@ -10013,8 +10074,8 @@ const buttonStyle = {
                                             item.domain_name
                                               .toLowerCase()
                                               .includes(
-                                                searchText.toLowerCase()
-                                              )
+                                                searchText.toLowerCase(),
+                                              ),
                                         )
                                         .map((item, idx) => (
                                           <tr>
@@ -10048,7 +10109,7 @@ const buttonStyle = {
                                                   onClick={() =>
                                                     redirectDomain(
                                                       item.domain_name,
-                                                      item.id
+                                                      item.id,
                                                     )
                                                   }
                                                 >
@@ -10111,7 +10172,7 @@ const buttonStyle = {
                                                       onClick={() =>
                                                         redirectDomain(
                                                           item.domain_name,
-                                                          item.id
+                                                          item.id,
                                                         )
                                                       }
                                                       className="underline-text"
@@ -10163,10 +10224,10 @@ const buttonStyle = {
                                                 <a
                                                   onClick={() => {
                                                     setSelectDomainNameForDelete(
-                                                      item.domain_name
+                                                      item.domain_name,
                                                     );
                                                     setSelectDomainIdForDelete(
-                                                      item.id
+                                                      item.id,
                                                     );
                                                     SetDeletePopup(true);
                                                   }}
@@ -10370,8 +10431,8 @@ const buttonStyle = {
                                                   item.port
                                                     .toLowerCase()
                                                     .includes(
-                                                      searchText.toLowerCase()
-                                                    )
+                                                      searchText.toLowerCase(),
+                                                    ),
                                                 )
                                                 .map((item, idx) => (
                                                   <tr>
@@ -10449,7 +10510,7 @@ const buttonStyle = {
                                                           generatePortURL(
                                                             item.port_name,
                                                             item.port,
-                                                            item.id
+                                                            item.id,
                                                           );
                                                         }}
                                                       >
@@ -10549,7 +10610,7 @@ const buttonStyle = {
                                                 }}
                                                 onChange={(e) =>
                                                   setCustomProductTag(
-                                                    e.target.value
+                                                    e.target.value,
                                                   )
                                                 }
                                               />
@@ -10588,7 +10649,7 @@ const buttonStyle = {
                                                 }}
                                                 onChange={(e) =>
                                                   setCustomPortNumber(
-                                                    e.target.value
+                                                    e.target.value,
                                                   )
                                                 }
                                               />
@@ -10762,8 +10823,8 @@ const buttonStyle = {
                                                   item.generated_url
                                                     .toLowerCase()
                                                     .includes(
-                                                      searchText.toLowerCase()
-                                                    )
+                                                      searchText.toLowerCase(),
+                                                    ),
                                                 )
                                                 .map((item, idx) => (
                                                   <tr>
@@ -10945,7 +11006,7 @@ const buttonStyle = {
                         height: "100%",
                         padding: "25px 25px",
                         position: "relative",
-                        backgroundColor: "#07528b", 
+                        backgroundColor: "#07528b",
                         borderRadius: "12px",
                       }}
                     >
@@ -11516,14 +11577,14 @@ const buttonStyle = {
                                                 if (isLoginByParentUser == 1) {
                                                   SetVMRestorePopup(true);
                                                   setSelectedParentTime(
-                                                    item.time
+                                                    item.time,
                                                   );
                                                   setSelectedBackupForRestore(
-                                                    item
+                                                    item,
                                                   );
                                                 } else {
                                                   SetChildUserContentPopup(
-                                                    true
+                                                    true,
                                                   );
                                                 }
                                               }
@@ -11614,14 +11675,14 @@ const buttonStyle = {
                                                     ) {
                                                       SetVMRestorePopup(true);
                                                       setSelectedParentTime(
-                                                        item.time
+                                                        item.time,
                                                       );
                                                       setSelectedBackupForRestore(
-                                                        childItem
+                                                        childItem,
                                                       );
                                                     } else {
                                                       SetChildUserContentPopup(
-                                                        true
+                                                        true,
                                                       );
                                                     }
                                                   }}
@@ -11661,10 +11722,10 @@ const buttonStyle = {
                                                 </div>
                                               </td>
                                             </tr>
-                                          )
+                                          ),
                                         )}
                                     </React.Fragment>
-                                  )
+                                  ),
                                 )}
                             </tbody>
                           </table>
@@ -11998,7 +12059,6 @@ const buttonStyle = {
                     </div>
                   )}
                 </div>
-
               </div>
             </Row>
           </div>

@@ -140,11 +140,42 @@ const [vmList, setVmList] = useState([]);
 const [selectedVmId, setSelectedVmId] = useState(null);
 const [error, setError] = useState("");
 const [jumpservers, setJumpservers] = useState([]);
-const [selectedJumpserverId, setSelectedJumpserverId] = useState("");
+const [selectedJumpserverId, setSelectedJumpserverId] = useState(null);
 const isJumpserverAlreadyAttached = Boolean(monitorData?.jumpserver_id);
 const [newUsername, setNewUsername] = useState("");
 const [newPassword, setNewPassword] = useState("");
+const thStyle = {
+  border: "1px solid white",
+  padding: "8px",
+  color: "white",
+};
 
+const tdStyle = {
+  border: "1px solid white",
+  padding: "10px",
+  color: "white",
+};
+
+  const inputStyle = {
+    width: "100%",
+    height: "45px",
+    borderRadius: "25px",
+    padding: "0 15px",
+    marginBottom: "15px",
+    border: "none",
+    outline: "none",
+};
+
+const buttonStyle = {
+  fontWeight: "700",
+  color: "white",
+  height: "42px",
+  width: "10rem",
+  backgroundColor: "#e97730",
+  border: "4px solid white",
+  borderRadius: "30px",
+  cursor: "pointer",
+};
   const [rule, setRule] = useState({
     direction: "IN",
     ipType: "IPv4",
@@ -155,6 +186,8 @@ const [newPassword, setNewPassword] = useState("");
     source: "0.0.0.0/0",
   });
 
+
+
   useEffect(() => {
     console.log("ACTIVE BUTTON:", activeButton);
   }, [activeButton]);
@@ -162,6 +195,12 @@ const [newPassword, setNewPassword] = useState("");
   const handleClick = () => {
     setIsFlipped(!isFlipped);
   };
+  useEffect(() => {
+  if (monitorData?.jumpserver_id) {
+    console.log("monitorData.jumpserver_id", monitorData.jumpserver_id);
+    setSelectedJumpserverId(Number(monitorData.jumpserver_id));
+  }
+}, [monitorData]);
 
   const handleChangeFirewall = (e) => {
     const { name, value } = e.target;
@@ -510,8 +549,17 @@ const [newPassword, setNewPassword] = useState("");
   };
 
   const attachJumpserver = async () => {
+    // Prevent double click
+    if (loading) return;
+
+    // Validation
     if (!selectedJumpserverId) {
       toast.error("Please select a jumpserver");
+      return;
+    }
+
+    if (!smuser?.id || !monitorData?.vm_id) {
+      toast.error("Invalid user or VM data");
       return;
     }
 
@@ -524,34 +572,59 @@ const [newPassword, setNewPassword] = useState("");
         jumpserver_id: selectedJumpserverId,
       };
 
+      // Encrypt request
       const encrypted = await apiEncryptRequest(payload);
+
+      // API call
       const res = await instance.post("/attach-jumpserver", encrypted);
+
+      // Decrypt response
       const data = await decryptData(res.data);
 
-      if (data.success) {
-        toast.success("Jumpserver attached successfully");
-        GetMyMachines();
+      if (data?.success) {
+        toast.success(data.message || "Jumpserver attached successfully");
+
+        // Store jump IP (if used in SSH panel)
+        // if (data.jump_ip) {
+        //   setJumpIp(data.jump_ip);
+        // }
+
+        // Reset selection
+        setSelectedJumpserverId(null);
+
+        // Switch to SSH tab
         setActiveButton("SSH");
+
+        // Refresh machines
+        await GetMyMachines();
       } else {
-        toast.error(data.message || "Failed to attach jumpserver");
+        toast.error(data?.message || "Failed to attach jumpserver");
       }
+
     } catch (err) {
-      console.error(err);
-      toast.error("Failed to attach jumpserver");
+      console.error("Attach Jumpserver Error:", err);
+
+      toast.error(
+        err?.response?.data?.message ||
+        err?.message ||
+        "Failed to attach jumpserver"
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  const inputStyle = {
-    width: "100%",
-    height: "45px",
-    borderRadius: "25px",
-    padding: "0 15px",
-    marginBottom: "15px",
-    border: "none",
-    outline: "none",
-  };
+
+
+  // const inputStyle = {
+  //   width: "100%",
+  //   height: "45px",
+  //   borderRadius: "25px",
+  //   padding: "0 15px",
+  //   marginBottom: "15px",
+  //   border: "none",
+  //   outline: "none",
+  // };
 
   const createVMUser = async () => {
       if (!newUsername || !newPassword) {
@@ -4013,58 +4086,150 @@ const [newPassword, setNewPassword] = useState("");
                 minHeight: "20rem",
                 backgroundImage: `url("/images/blue-box-bg.svg")`,
                 backgroundSize: "cover",
-                marginLeft: "20px",
                 width: "100%",
                 padding: "25px",
                 backgroundColor: "#07528b",
-                borderRadius: "12px",
-                overflow: "visible",
                 position: "relative",
                 zIndex: 10,
+                pointerEvents: loading ? "none" : "auto",
+                opacity: loading ? 0.7 : 1,
+                transition: "0.2s",
               }}
             >
-              <h3 style={{ color: "white", marginBottom: "15px" }}>
-                Attach Jumpserver
-              </h3>
+              <div>
+                <div
+                  style={{
+                    maxHeight: "260px",
+                    overflowY: "auto",
+                    overflowX: "hidden",
+                    textAlign: "center",
+                  }}
+                >
+                  {jumpservers?.length === 0 ? (
+                    <div
+                      style={{
+                        border: "1px solid white",
+                        padding: "10px",
+                        color: "white",
+                        fontSize: "16px",
+                        fontWeight: "600",
+                      }}
+                    >
+                      No Jumpserver Found
+                    </div>
+                  ) : (
+                    <table
+                      className="table"
+                      style={{
+                        borderCollapse: "collapse",
+                        width: "100%",
+                      }}
+                    >
+                      <thead>
+                        <tr>
+                          <th style={thStyle}>Jumpserver</th>
+                          <th style={thStyle}>Public IP</th>
+                          <th style={thStyle}>Action</th>
+                        </tr>
+                      </thead>
 
-              <p style={{ color: "white" }}>
-                Jumpservers loaded: {jumpservers.length}
-              </p>
+                      <tbody>
+                        {jumpservers.map((js) => {
+                          const isSelected =
+                            selectedJumpserverId === Number(js.vm_id);
 
-              <select
-                value={selectedJumpserverId}
-                onChange={(e) => setSelectedJumpserverId(Number(e.target.value))}
-                style={{
-                  width: "100%",
-                  height: "40px",
-                  borderRadius: "20px",
-                  padding: "0 15px",
-                  marginTop: "10px",
-                  position: "relative",
-                  zIndex: 1000,
-                }}
-              >
-                <option value="">Select Jumpserver</option>
+                          return (
+                            <tr
+                              key={js.vm_id}
+                              onClick={() =>
+                                setSelectedJumpserverId(Number(js.vm_id))
+                              }
+                              style={{
+                                cursor: "pointer",
+                                backgroundColor: isSelected
+                                  ? "rgba(255,255,255,0.15)"
+                                  : "transparent",
+                                transition: "0.2s",
+                              }}
+                            >
+                              {/* Jumpserver Name */}
+                              <td
+                                style={{
+                                  ...tdStyle,
+                                  fontWeight: isSelected ? "700" : "500",
+                                }}
+                              >
+                                {js.vm_name}
+                              </td>
 
-                {jumpservers.map((js) => (
-                  <option key={js.id} value={js.id}>
-                    {js.vm_name} ({js.public_ip})
-                  </option>
-                ))}
-              </select>
+                              {/* Public IP */}
+                              <td style={tdStyle}>{js.public_ip}</td>
 
-              <button
-                disabled={!selectedJumpserverId}
-                onClick={attachJumpserver}
-                style={{
-                  marginTop: "15px",
-                  padding: "10px 20px",
-                  opacity: selectedJumpserverId ? 1 : 0.5,
-                  cursor: selectedJumpserverId ? "pointer" : "not-allowed",
-                }}
-              >
-                Apply Jumpserver
-              </button>
+                              {/* Action */}
+                              <td
+                                style={{ ...tdStyle, textAlign: "center" }}
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <div style={{ display: "flex", justifyContent: "center" }}>
+                                  <div
+                                    style={{
+                                      width: "140px",
+                                      height: "34px",
+                                      backgroundColor: "white",
+                                      borderRadius: "6px",
+                                      display: "flex",
+                                      justifyContent: "center",
+                                      alignItems: "center",
+                                      cursor:
+                                        loading ||
+                                        isJumpserverAlreadyAttached ||
+                                        !isSelected
+                                          ? "not-allowed"
+                                          : "pointer",
+                                      opacity:
+                                        loading ||
+                                        isJumpserverAlreadyAttached ||
+                                        !isSelected
+                                          ? 0.6
+                                          : 1,
+                                      transition: "0.2s",
+                                    }}
+                                    onClick={() => {
+                                      if (
+                                        !loading &&
+                                        !isJumpserverAlreadyAttached &&
+                                        isSelected
+                                      ) {
+                                        attachJumpserver();
+                                      }
+                                    }}
+                                  >
+                                    <span
+                                      style={{
+                                        fontSize: "15px",
+                                        color: "#035189",
+                                        fontWeight: "600",
+                                      }}
+                                    >
+                                      {loading
+                                        ? "Attaching..."
+                                        : isJumpserverAlreadyAttached
+                                        ? "Already Attached"
+                                        : isSelected
+                                        ? "Apply"
+                                        : "Select"}
+                                    </span>
+                                  </div>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              </div>
             </div>
           )}
 
@@ -7498,19 +7663,19 @@ const [newPassword, setNewPassword] = useState("");
                     >
                       SSH
                     </button>
-
-                    <button
-                      className={`btn ${activeButton === "ATTACH_JUMPSERVER" ? "active" : ""}`}
-                      style={{
-                        background: `${
-                          activeButton === "ATTACH_JUMPSERVER" ? "#f47c20" : "#035189"
-                        }`,
-                      }}
-                      onClick={() => handleButtonClick("ATTACH_JUMPSERVER")}
-                    >
-                      Attach Jumpserver
-                    </button>
-
+                    {monitorData && monitorData.type == 1   && (
+                      <button
+                        className={`btn ${activeButton === "ATTACH_JUMPSERVER" ? "active" : ""}`}
+                        style={{
+                          background: `${
+                            activeButton === "ATTACH_JUMPSERVER" ? "#f47c20" : "#035189"
+                          }`,
+                        }}
+                        onClick={() => handleButtonClick("ATTACH_JUMPSERVER")}
+                      >
+                        Attach Jumpserver
+                      </button>
+                    )}
                     <button
                       className={`btn ${activeButton === "CREATE_USER" ? "active" : ""}`}
                       style={{
@@ -7703,77 +7868,156 @@ const [newPassword, setNewPassword] = useState("");
                   className="flip-card-container"
                   style={{ marginLeft: "10px" }}
                 >
-
                   {activeButton === "ATTACH_JUMPSERVER" && (
                     <div
                       style={{
-                          marginTop: "40px",
-                          minHeight: "20rem",
-                          backgroundImage: `url("/images/blue-box-bg.svg")`,
-                          backgroundSize: "cover",
-                          width: "100%",
-                          padding: "25px",
-                          backgroundColor: "#07528b",
-                          borderRadius: "12px",
-                          overflow: "visible", 
-                          position: "relative",
-                          zIndex: 10,
+                        marginTop: "40px",
+                        minHeight: "15rem",
+                        backgroundImage: `url("/images/blue-box-bg.svg")`,
+                        backgroundSize: "cover",
+                        width: "100%",
+                        padding: "25px",
+                        backgroundColor: "#07528b",
+                        position: "relative",
+                        zIndex: 10,
+                        pointerEvents: loading ? "none" : "auto",
+                        opacity: loading ? 0.7 : 1,
+                        transition: "0.2s",
                       }}
                     >
-                      <h3 style={{ color: "white" }}>Attach Jumpserver</h3>
-
-                      <div
-                        style={{
-                          marginTop: "20px",
-                          border: "2px solid white",
-                          borderRadius: "25px",
-                          padding: "10px",
-                        }}
-                      >
-                        <select
-                          value={selectedJumpserverId}
-                          onChange={(e) => setSelectedJumpserverId(Number(e.target.value))}
+                      <div>
+                        <div
                           style={{
-                            width: "50%",
-                            height: "40px",
-                            borderRadius: "20px",
-                            padding: "0 15px",
+                            maxHeight: "260px",
+                            overflowY: "auto",
+                            overflowX: "hidden",
+                            textAlign: "center",
                           }}
                         >
-                          <option value="">Select Jumpserver</option>
+                          {jumpservers?.length === 0 ? (
+                            <div
+                              style={{
+                                border: "1px solid white",
+                                padding: "10px",
+                                color: "white",
+                                fontSize: "16px",
+                                fontWeight: "600",
+                              }}
+                            >
+                              No Jumpserver Found
+                            </div>
+                          ) : (
+                            <table
+                              className="table"
+                              style={{
+                                borderCollapse: "collapse",
+                                width: "100%",
+                              }}
+                            >
+                              <thead>
+                                <tr>
+                                  <th style={thStyle}>Jumpserver</th>
+                                  <th style={thStyle}>Public IP</th>
+                                  <th style={thStyle}>Action</th>
+                                </tr>
+                              </thead>
 
-                          {jumpservers.map((js) => (
-                            <option key={js.id} value={Number(js.id)}>
-                              {js.vm_name} ({js.public_ip})
-                            </option>
-                          ))}
-                        </select>
+                              <tbody>
+                                {jumpservers.map((js) => {
+                                  const isSelected =
+                                    selectedJumpserverId === Number(js.vm_id);
 
-                        <button
-                          style={{
-                            marginTop: "20px",
-                            padding: "10px 20px",
-                            fontWeight: "700",
-                            color: "white",
-                            height: "42px",
-                            backgroundColor: "#e97730",
-                            outline: "4px solid #e97730",
-                            border: "4px solid white",
-                            borderRadius: "30px",
-                            opacity:
-                              !selectedJumpserverId || isJumpserverAlreadyAttached ? 0.6 : 1,
-                            cursor:
-                              !selectedJumpserverId || isJumpserverAlreadyAttached
-                                ? "not-allowed"
-                                : "pointer",
-                          }}
-                          disabled={!selectedJumpserverId || isJumpserverAlreadyAttached}
-                          onClick={attachJumpserver}
-                        >
-                          {isJumpserverAlreadyAttached
-                            ? "Jumpserver Already Attached"
-                            : "Apply Jumpserver"}
-                        </button>
+                                  return (
+                                    <tr
+                                      key={js.vm_id}
+                                      onClick={() =>
+                                        setSelectedJumpserverId(Number(js.vm_id))
+                                      }
+                                      style={{
+                                        cursor: "pointer",
+                                        backgroundColor: isSelected
+                                          ? "rgba(255,255,255,0.15)"
+                                          : "transparent",
+                                        transition: "0.2s",
+                                      }}
+                                    >
+                                      {/* Jumpserver Name */}
+                                      <td
+                                        style={{
+                                          ...tdStyle,
+                                          fontWeight: isSelected ? "700" : "500",
+                                        }}
+                                      >
+                                        {js.vm_name}
+                                      </td>
+
+                                      {/* Public IP */}
+                                      <td style={tdStyle}>{js.public_ip}</td>
+
+                                      {/* Action */}
+                                      <td
+                                        style={{ ...tdStyle, textAlign: "center" }}
+                                        onClick={(e) => e.stopPropagation()}
+                                      >
+                                        <div style={{ display: "flex", justifyContent: "center" }}>
+                                          <div
+                                            style={{
+                                              width: "140px",
+                                              height: "34px",
+                                              backgroundColor: "white",
+                                              borderRadius: "6px",
+                                              display: "flex",
+                                              justifyContent: "center",
+                                              alignItems: "center",
+                                              cursor:
+                                                loading ||
+                                                isJumpserverAlreadyAttached ||
+                                                !isSelected
+                                                  ? "not-allowed"
+                                                  : "pointer",
+                                              opacity:
+                                                loading ||
+                                                isJumpserverAlreadyAttached ||
+                                                !isSelected
+                                                  ? 0.6
+                                                  : 1,
+                                              transition: "0.2s",
+                                            }}
+                                            onClick={() => {
+                                              if (
+                                                !loading &&
+                                                !isJumpserverAlreadyAttached &&
+                                                isSelected
+                                              ) {
+                                                attachJumpserver();
+                                              }
+                                            }}
+                                          >
+                                            <span
+                                              style={{
+                                                fontSize: "15px",
+                                                color: "#035189",
+                                                fontWeight: "600",
+                                              }}
+                                            >
+                                              {loading
+                                                ? "Attaching..."
+                                                : isJumpserverAlreadyAttached
+                                                ? "Already Attached"
+                                                : isSelected
+                                                ? "Apply"
+                                                : "Select"}
+                                            </span>
+                                          </div>
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  );
+                                })}
+                              </tbody>
+                            </table>
+                          )}
+                        </div>
                       </div>
                     </div>
                   )}
@@ -7781,81 +8025,49 @@ const [newPassword, setNewPassword] = useState("");
                   {activeButton === "CREATE_USER" && (
                     <div
                       style={{
-                        marginTop: "60px",
-                        minHeight: "22rem",
+                        minHeight: "15rem",
                         backgroundImage: `url("/images/blue-box-bg.svg")`,
                         backgroundSize: "cover",
                         width: "100%",
                         padding: "25px",
                         backgroundColor: "#07528b",
-                        overflow: "visible",
                         borderRadius: "12px",
                       }}
                     >
-                      <div className="row">
-                        <div className="col-md-6">
-                          {/* Username */}
+                      <div className="row align-items-center">
+                        <div className="col-md-3">
                           <input
                             type="text"
                             placeholder="Username"
                             value={newUsername}
                             onChange={(e) => setNewUsername(e.target.value)}
-                            style={{
-                                  width: "100%",
-                                  height: "45px",
-                                  borderRadius: "25px",
-                                  padding: "0 15px",
-                                  marginBottom: "15px",
-                                  border: "none",
-                                  outline: "none",
-                                }}
+                            style={inputStyle}
                           />
                         </div>
 
-                        <div className="col-md-6">
-                          {/* Password */}
+                        <div className="col-md-3">
                           <input
                             type="password"
                             placeholder="Password"
                             value={newPassword}
                             onChange={(e) => setNewPassword(e.target.value)}
-                            style={{
-                                  width: "100%",
-                                  height: "45px",
-                                  borderRadius: "25px",
-                                  padding: "0 15px",
-                                  marginBottom: "15px",
-                                  border: "none",
-                                  outline: "none",
-                                }}
+                            style={inputStyle}
                           />
                         </div>
+
+                        <div className="col-md-3">
+                          <button
+                            type="button"
+                            onClick={createVMUser}
+                            style={buttonStyle}
+                          >
+                            Create User
+                          </button>
+                        </div>
                       </div>
-                      <button
-                        onClick={createVMUser}
-                        style={{
-                          marginTop: "20px",
-                          cursor: "pointer",
-                          position: "absolute",
-                          fontWeight: "700",
-                          color: "white",
-                          height: "42px",
-                          width: "10rem",
-                          backgroundColor: "#e97730",
-                          outline: "4px solid #e97730",
-                          border: "4px solid #ffff",
-                          borderColor: "white",
-                          borderRadius: "30px",
-                        }}
-                        onMouseOver={(e) =>
-                          (e.target.style.color = "#07528B")
-                        } 
-                        onMouseOut={(e) =>
-                          (e.target.style.color = "white")
-                        }
-                      >
-                        Create User
-                      </button>
+
+
+                      
                     </div>
                   )}
 
@@ -10728,15 +10940,13 @@ const [newPassword, setNewPassword] = useState("");
                       style={{
                         backgroundImage: `url("/images/blue-box-bg.svg")`,
                         backgroundSize: "cover",
-                        // top: "0rem",
                         marginTop: "28px",
                         width: "100%",
                         height: "100%",
                         padding: "25px 25px",
                         position: "relative",
-                        backgroundColor: "#07528b", // Use backgroundColor instead of background
+                        backgroundColor: "#07528b", 
                         borderRadius: "12px",
-                        // flexWrap: "wrap",
                       }}
                     >
                       <div

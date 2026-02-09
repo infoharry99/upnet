@@ -224,23 +224,16 @@ const CreateMachine = (props) => {
                     ));
                     setShowPhoneVerify(false);
                     ChangeCurrency();
-                    //   window.location.href = "/vm/create";
-                    // } else {
-                    //   // console.log(loginResponse, "else status");
                 }
                 } else {
-                // console.log(loginResponse);
                 if (loginResponse.status) {
-                    // console.log(loginResponse, s"after status");
                     setPhoneOtpSent(true);
                     toast((t) => (
                     <AppToast id={t.id} message={loginResponse.message} />
                     ));
                 } else {
-                    // console.log(loginResponse, "else status");
                 }
                 }
-                // console.log(loginResponse.data, "<<<<<<getmobileotp");
             } catch (error) {
                 console.error("Error during the login process:", error);
             }
@@ -5452,7 +5445,7 @@ const CreateMachine = (props) => {
                   fontWeight: "600",
                 }}
               >
-                Create Machine1
+                Create Machine
               </a>
             </div>
 
@@ -9678,7 +9671,7 @@ const CreateMachine = (props) => {
                   className="input-container"
                   style={{
                     border: "2px solid #e97730",
-                    width: "13rem",
+                    width: "20rem",
                     marginTop: "0px",
                   }}
                 >

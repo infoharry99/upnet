@@ -343,11 +343,13 @@ const Profile = (props) => {
       fileInputAdharRef.current.click();
     }
   };
+
   const handleImagePANChangeBtn = () => {
     if (fileInputPANRef.current) {
       fileInputPANRef.current.click();
     }
   };
+
   const handleImageCompanyPANChangeBtn = () => {
     if (fileInputCompanyPANRef.current) {
       fileInputCompanyPANRef.current.click();
@@ -387,6 +389,7 @@ const Profile = (props) => {
       reader.readAsDataURL(file);
     }
   };
+
   const handleImagePANChange = (e) => {
     const file = e.target.files[0];
     setPreviewPANImage(null);
@@ -415,6 +418,7 @@ const Profile = (props) => {
       reader.readAsDataURL(file);
     }
   };
+
   const handleImageAdharChange = (e) => {
     const file = e.target.files[0];
 
@@ -449,6 +453,7 @@ const Profile = (props) => {
       reader.readAsDataURL(file);
     }
   };
+
   const handleImageCompanyPANChange = (e) => {
     const file = e.target.files[0];
 
@@ -484,6 +489,7 @@ const Profile = (props) => {
       reader.readAsDataURL(file);
     }
   };
+
   const handleImageCINNoChange = (e) => {
     const file = e.target.files[0];
 
@@ -825,6 +831,7 @@ const Profile = (props) => {
       ));
     }
   };
+
   const adharVerify = async () => {
     if (adharOTP !== "" && adharOTP !== null) {
       setLoading(true);
@@ -872,6 +879,7 @@ const Profile = (props) => {
     }
     setLoading(false);
   };
+
   const adharEdit = async () => {
     setAdharVerified(false);
   };
@@ -1784,6 +1792,7 @@ const Profile = (props) => {
                         </button>
                       </div>
                     )}
+                    
                     {/* Adhar Number */}
                     {!chkGSTVerify &&
                       !chkAdharVerify &&

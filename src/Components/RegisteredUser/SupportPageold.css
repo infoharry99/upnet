@@ -1,0 +1,67 @@
+
+.heading-dotted-support::before {
+    content: "...";
+    position: absolute;
+    bottom: -16px;
+    left: 100%;
+  }
+
+  .heading-dotted-support {
+    font-size: 34px;
+    font-weight: 500;
+    padding: 10px 0;
+    border-bottom: 2px solid #154e7a;
+    display: inline-block;
+    position: relative;
+    text-transform: capitalize;
+    color: #545454 !important;
+    margin-left: 9rem;
+  }
+.input-tickets::placeholder{
+  color: #545454 !important;
+}
+
+textarea{
+  outline: none;
+}
+
+.spanWithMargin {
+  display: block;
+  margin-bottom: 15px;
+}
+
+  @media (max-width: 576px) {
+    .heading-dotted-support {
+        font-size: 24px;
+        font-weight: 500;
+        padding: 10px 0;
+        border-bottom: 2px solid #154e7a;
+        display: inline-block;
+        position: relative;
+        text-transform: capitalize;
+        color: #154e7a;
+        top: 3rem;
+        margin-left: 10px;
+        margin-bottom: 4rem;
+    }
+
+    .heading-dotted-support::before {
+        content: "...";
+        position: absolute;
+        bottom: -12px;
+        left: 100%;
+    }
+
+    .three-line-div {
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      /* Limit to 3 lines */
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.5;
+      /* Adjust line height as needed */
+      max-height: 4.5em;
+      /* 3 lines * 1.5 line-height */
+    }
+  }

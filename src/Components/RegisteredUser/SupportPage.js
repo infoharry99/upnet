@@ -1,4343 +1,766 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 
-import { Button, Col, Container, Row } from "react-bootstrap";
-import "./SupportPage.css";
-import { useAuth } from "../../AuthContext";
-import instance, {
-  apiDecrypteRequest,
-  apiEncryptRequest,
-  decryptData,
-} from "../../Api";
-import Loader from "../common/Loader";
-import { FaX } from "react-icons/fa6";
-import toast, { Toaster } from "react-hot-toast";
-import AppToast from "../../AppToast";
+// ── Mock Data & API Simulation ──────────────────────────────────────────
+const MOCK_USER = {
+  id: "usr_001",
+  name: "Rahul Sharma",
+  email: "rahul@example.com",
+  phone: "+91 98765 43210",
+};
 
-// import RangeSlider from "./common/RangeSlider";
+const MOCK_MACHINES = [
+  { vm_id: "vm_101", vm_name: "Web Server #1", public_ip: "103.21.58.12", ip_address: "10.0.0.1" },
+  { vm_id: "vm_102", vm_name: "DB Server", public_ip: "103.21.58.13", ip_address: "10.0.0.2" },
+  { vm_id: "vm_103", vm_name: "App Server", public_ip: null, ip_address: "10.0.0.3" },
+  { vm_id: "vm_104", vm_name: "Staging", public_ip: "103.21.58.15", ip_address: "10.0.0.4" },
+];
 
-const SupportPage = () => {
-  function isMobileDevice() {
-    return window.matchMedia("(max-width: 800px)").matches;
-  }
-  const fileInputRef = useRef(null);
-  const { smuser, isLoginByParentUser } = useAuth();
-  const [isMobile, setIsMobile] = useState(isMobileDevice());
-  const [activeButton, setActiveButton] = useState("");
-  const [machineData, setMachineData] = useState([]);
-  const [supportMsg, setSupportMsg] = useState("");
-  const [supportMachine, setSupportMachine] = useState("");
-  const [supportMachineArr, setSupportMachineArr] = useState([]);
+const MOCK_ENQUIRIES = [
+  {
+    id: 1, enquiry_unique_id: "TKT-20260201-001", type: "Performance Issue",
+    enquiry: "Server response time has increased significantly over the past 48 hours. Average latency went from 120ms to 800ms. We've already tried restarting services but the issue persists.",
+    status: "progress", archived: null, vm_id: "vm_101", vm_name: "Web Server #1",
+    image: null, createdAt: "2026-02-01 14:30",
+  },
+  {
+    id: 2, enquiry_unique_id: "TKT-20260203-002", type: "Network Issue",
+    enquiry: "Intermittent packet loss observed between App Server and DB Server. Connectivity drops every 15 minutes causing failed deployments.",
+    status: "open", archived: null, vm_id: "vm_102,vm_103", vm_name: "DB Server, App Server",
+    image: null, createdAt: "2026-02-03 09:15",
+  },
+  {
+    id: 3, enquiry_unique_id: "TKT-20260205-003", type: "Billing Query",
+    enquiry: "I was charged twice for the February billing cycle. Please review and refund the duplicate payment of ₹4,999.",
+    status: "completed", archived: null, vm_id: null, vm_name: null,
+    image: null, createdAt: "2026-02-05 11:00",
+  },
+  {
+    id: 4, enquiry_unique_id: "TKT-20260128-004", type: "Installation Issue",
+    enquiry: "Unable to install Docker on the staging server. Getting permission denied errors even with sudo access.",
+    status: "archived", archived: "archived", vm_id: "vm_104", vm_name: "Staging",
+    image: null, createdAt: "2026-01-28 16:45",
+  },
+  {
+    id: 5, enquiry_unique_id: "TKT-20260207-005", type: "Other",
+    enquiry: "Request to increase storage allocation on Web Server #1 from 50GB to 100GB before month end.",
+    status: "open", archived: null, vm_id: "vm_101", vm_name: "Web Server #1",
+    image: null, createdAt: "2026-02-07 08:20",
+  },
+  {
+    id: 6, enquiry_unique_id: "TKT-20260208-006", type: "Sales",
+    enquiry: "Interested in upgrading to the Enterprise plan for our team of 25 engineers. Need a custom quote.",
+    status: "progress", archived: null, vm_id: null, vm_name: null,
+    image: null, createdAt: "2026-02-08 10:00",
+  },
+];
+
+const MOCK_REPLIES = [
+  [
+    { id: 101, enquiry_id: 1, reply: "Server has been slow since yesterday evening. Restarted services but no improvement.", admin_reply: null, image: null, created_at: "2026-02-01 15:00" },
+    { id: 102, enquiry_id: 1, reply: null, admin_reply: "We've identified high CPU usage on your instance. Our team is investigating the root cause. We may need temporary SSH access.", image: null, created_at: "2026-02-01 16:30" },
+    { id: 103, enquiry_id: 1, reply: "Sure, I can provide credentials. Let me know when your team is ready.", admin_reply: null, image: null, created_at: "2026-02-01 17:00" },
+  ],
+  [
+    { id: 201, enquiry_id: 2, reply: "Packet loss is affecting our production deployments. This is critical and blocking our release.", admin_reply: null, image: null, created_at: "2026-02-03 09:30" },
+  ],
+  [
+    { id: 301, enquiry_id: 3, reply: "Please check transaction ID: TXN-9876543. Duplicate charge of ₹4,999.", admin_reply: null, image: null, created_at: "2026-02-05 11:15" },
+    { id: 302, enquiry_id: 3, reply: null, admin_reply: "We've verified the duplicate charge. Refund initiated — will reflect in 3-5 business days. Apologies for the inconvenience.", image: null, created_at: "2026-02-05 14:00" },
+  ],
+  [
+    { id: 401, enquiry_id: 4, reply: "Tried multiple approaches but Docker installation keeps failing.", admin_reply: null, image: null, created_at: "2026-01-28 17:00" },
+    { id: 402, enquiry_id: 4, reply: null, admin_reply: "Issue resolved. The server needed a kernel update before Docker could be installed. All set now.", image: null, created_at: "2026-01-29 10:00" },
+  ],
+  [
+    { id: 501, enquiry_id: 5, reply: "Current usage is at 47GB out of 50GB. Need the upgrade urgently.", admin_reply: null, image: null, created_at: "2026-02-07 08:30" },
+  ],
+  [
+    { id: 601, enquiry_id: 6, reply: "We need a plan that supports auto-scaling and dedicated support. What are the options?", admin_reply: null, image: null, created_at: "2026-02-08 10:15" },
+    { id: 602, enquiry_id: 6, reply: null, admin_reply: "Thanks for your interest! I'm connecting you with our sales team. They'll reach out within 24 hours with a custom quote.", image: null, created_at: "2026-02-08 11:00" },
+  ],
+];
+
+/*
+  ── To connect your REAL API, replace these functions: ───────────────────
+  - api.getMachines  → instance.post("/machines", encryptedPayload) + decrypt
+  - api.getTickets   → instance.post("/enquirys", payload) + decrypt
+  - api.createTicket → instance.post("/create-enquiry", formData) + decrypt
+  - api.replyTicket  → instance.post("/reply_enquiry", formData)
+  - api.archiveTicket→ instance.post("/archived_enquiry", payload)
+*/
+const api = {
+  getMachines: () => new Promise(r => setTimeout(() => r(MOCK_MACHINES), 500)),
+  getTickets: () => new Promise(r => setTimeout(() => r({ enquiries: [...MOCK_ENQUIRIES], enquiry_replys: [...MOCK_REPLIES] }), 700)),
+  createTicket: (data) => new Promise(r => setTimeout(() => r({
+    status: true,
+    ticket: {
+      ...data, id: Date.now(),
+      enquiry_unique_id: `TKT-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}-${String(Math.floor(Math.random() * 999)).padStart(3, "0")}`,
+      status: "open", archived: null,
+      createdAt: new Date().toLocaleString(),
+    }
+  }), 900)),
+  replyTicket: () => new Promise(r => setTimeout(() => r({ status: true }), 600)),
+  archiveTicket: () => new Promise(r => setTimeout(() => r({ status: true }), 400)),
+};
+
+// ── SVG Icons ───────────────────────────────────────────────────────────
+const I = {
+  Plus: () => <svg width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>,
+  Search: () => <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>,
+  X: () => <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>,
+  Send: () => <svg width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg>,
+  Clip: () => <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" /></svg>,
+  Clock: () => <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>,
+  Down: () => <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9" /></svg>,
+  Up: () => <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15" /></svg>,
+  Archive: () => <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" viewBox="0 0 24 24"><polyline points="21 8 21 21 3 21 3 8" /><rect x="1" y="3" width="22" height="5" /><line x1="10" y1="12" x2="14" y2="12" /></svg>,
+  Server: () => <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="8" rx="2" /><rect x="2" y="14" width="20" height="8" rx="2" /><line x1="6" y1="6" x2="6.01" y2="6" /><line x1="6" y1="18" x2="6.01" y2="18" /></svg>,
+  Msg: () => <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" /></svg>,
+  Empty: () => <svg width="56" height="56" fill="none" stroke="#c4b5a0" strokeWidth="1.2" strokeLinecap="round" viewBox="0 0 24 24"><path d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" /></svg>,
+  Check: () => <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" /></svg>,
+};
+
+// ── Status Config ───────────────────────────────────────────────────────
+const ST = {
+  open: { label: "Open", color: "#e67e22", bg: "#fef3e2", dot: "#f5a623" },
+  progress: { label: "In Progress", color: "#2d7dd2", bg: "#e8f2fc", dot: "#5ba4e6" },
+  completed: { label: "Completed", color: "#27ae60", bg: "#e6f7ee", dot: "#52d689" },
+  archived: { label: "Archived", color: "#95a5a6", bg: "#f0f1f2", dot: "#b4bec0" },
+};
+
+const TYPES = ["Performance Issue", "Network Issue", "Installation Issue", "Sales", "Billing Query", "Other"];
+const OPTIONAL_VM = ["Sales", "Billing Query", "Other"];
+
+// ── Component ───────────────────────────────────────────────────────────
+export default function SupportPage() {
+  const [machines, setMachines] = useState([]);
+  const [enquiries, setEnquiries] = useState([]);
+  const [replyArr, setReplyArr] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchText, setSearchText] = useState("");
-
-  const [showMore, setShowMore] = useState(false);
-  const [showMoreID, setShowMoreID] = useState(null);
-  const [enquiries, setEnquiries] = useState(null);
-  const [enqID, setEnqID] = useState("");
-
-  const [replyArr, setReplyArr] = useState(null);
+  const [tab, setTab] = useState("all");
+  const [search, setSearch] = useState("");
+  const [modal, setModal] = useState(false);
+  const [expanded, setExpanded] = useState(null);
   const [replyText, setReplyText] = useState("");
+  const [replyImg, setReplyImg] = useState(null);
+  const [toast, setToast] = useState(null);
 
-  const [noVM, setNoVM] = useState(false);
-  const [showSupport, setShowSupport] = useState(false);
+  const [fType, setFType] = useState("");
+  const [fMsg, setFMsg] = useState("");
+  const [fVMs, setFVMs] = useState([]);
+  const [fImg, setFImg] = useState(null);
+  const fRef = useRef(null);
+  const rRef = useRef(null);
 
-  const [ticketType, setTicketType] = useState("");
-  const innerButtons =
-    isLoginByParentUser == 1
-      ? [
-          "Performance Issue",
-          "Network Issue",
-          "Installation Issue",
-          "Sales",
-          "Billing Query",
-          "Other",
-        ]
-      : ["Performance Issue", "Network Issue", "Installation Issue", "Other"];
+  const notify = useCallback((msg, ok = true) => {
+    setToast({ msg, ok });
+    setTimeout(() => setToast(null), 3200);
+  }, []);
 
-  const ticketButtons = ["open", "progress", "complete", "archived", ""];
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [selectedImageRply, setSelectedImageRply] = useState(null);
-  const [previewImage, setPreviewImage] = useState(null);
-  const [showImagePopup, setShowImagePopup] = useState(null);
-  const [showPreviewImagePopup, setPreviewImagePopup] = useState(null);
-  const DateTimeSplit = ({ datetime }) => {
-    // Split the date and time
-    const [date, time] = datetime.split(" ");
-
-    return (
-      <div>
-        <p>{date}</p>
-        <p>{time}</p>
-      </div>
-    );
-  };
-
-  const getCommaSeparatedString = (arr) => {
-    return arr.join(", ");
-  };
-
-  const toggleMachineIdValue = (value) => {
-    if (supportMachineArr.includes(value)) {
-      // If value is already present, remove it
-      const filteredArray = supportMachineArr.filter((item) => item !== value);
-      setSupportMachineArr(filteredArray);
-    } else {
-      // If value is not present, add it
-      setSupportMachineArr([...supportMachineArr, value]);
-    }
-  };
-
-  const handleButtonClick = () => {
-    // Programmatically trigger click on file input
-    // console.log("Programmatically trigger click on file input");
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
-  };
-
-  const handleImageChange = (e) => {
-    //console.log(e.target.files[0]);
-    const file = e.target.files[0];
-    if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        // 2MB limit
-        toast((t) => (
-          <AppToast
-            id={t.id}
-            message={
-              "Selected file size exceeds 2MB. Please choose a smaller file."
-            }
-            isMobile={isMobile}
-          />
-        ));
-        // Optionally clear the selected file input
-        e.target.value = null;
-        return;
-      }
-      setSelectedImage(file);
-
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewImage(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleImageUpdateRply = (e) => {
-    //console.log(e.target.files[0]);
-    const file = e.target.files[0];
-    if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        // 2MB limit
-        toast.error("File size exceeds 2MB. Please choose a smaller file.");
-        // Optionally clear the selected file input
-        e.target.value = null;
-        return;
-      }
-      setSelectedImageRply(file);
-
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewImage(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const UpdateSupport = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
-    if (
-      activeButton === "Sales" ||
-      activeButton === "Billing Query" ||
-      activeButton === "Other"
-    ) {
-      setNoVM(true);
-    }
-    if (
-      smuser !== null &&
-      supportMsg !== "" &&
-      // supportMachine !== "" &&
-      activeButton !== ""
-    ) {
-      const formDataProfile = new FormData();
-      formDataProfile.append("file", selectedImage);
-      formDataProfile.append(
-        "vm_id",
-        getCommaSeparatedString(supportMachineArr)
-      ); //JSON.stringify(supportMachineArr));
-      formDataProfile.append("type", activeButton);
-      formDataProfile.append("user_id", smuser.id);
-      formDataProfile.append("name", smuser.name);
-      formDataProfile.append("user_email", smuser.email);
-      formDataProfile.append("user_mobile", smuser.phone);
-      formDataProfile.append("msg", supportMsg);
-      formDataProfile.append(
-        "reply",
-        "We are look into this. please wait while"
-      );
-
-      // console.log(formDataProfile.values);
-      // console.log(supportMachineArr);
-      try {
-        // First API call to encrypt the request
-        // const encryptedResponse = await apiEncryptRequest(payload);
-        // //console.log(encryptedResponse, "=encryptedResponse");
-
-        // Second API call to login with encrypted response
-        const cdnInfoResponse = await instance.post(
-          "/create-enquiry",
-          formDataProfile
-        );
-        //console.log(cdnInfoResponse.data, "====cdnInfoResponse");
-
-        // Third API call to decrypt the login response
-        const Response = await decryptData(cdnInfoResponse.data);
-        // console.log(Response);
-        setSupportMachine(null);
-        setSupportMsg("");
-        setSelectedImage(null);
-        setActiveButton("");
-        //console.log(Response, "==!==!==Response");
-        if (Response.status) {
-          //toast.success("Your Ticket generated");
-          toast((t) => (
-            <AppToast
-              id={t.id}
-              message={"Your Ticket generated"}
-              isMobile={isMobile}
-            />
-          ));
-          window.location.href = "/create-ticket";
-        } else {
-          GetTickets();
-        }
-      } catch (error) {
-        toast((t) => (
-          <AppToast
-            id={t.id}
-            message={
-              "Oops! Something went wrong while fetching the data. Please try again later or contact support if the issue persists."
-            }
-            isMobile={isMobile}
-          />
-        ));
-      }
-    } else {
-      if (supportMsg == "") {
-        toast((t) => (
-          <AppToast
-            id={t.id}
-            message={"Message is Required!"}
-            isMobile={isMobile}
-          />
-        ));
-      } else if (activeButton == "") {
-        toast((t) => (
-          <AppToast
-            id={t.id}
-            message={"Select Support Type Required!"}
-            isMobile={isMobile}
-          />
-        ));
-      } else {
-        toast((t) => (
-          <AppToast
-            id={t.id}
-            message={"All fields are required!"}
-            isMobile={isMobile}
-          />
-        ));
-      }
-    }
-    setLoading(false);
-  };
-
-  const GetMachines = async () => {
-    const payload = {
-      user_id: smuser.id,
-    };
     try {
-      const encryptedResponse = await apiEncryptRequest(payload);
-      const loginUserResponse = await instance.post(
-        "/machines",
-        encryptedResponse
-      );
-      // const loginResponse = await apiDecrypteRequest(loginUserResponse.data);
-
-      const localDecrypt = await decryptData(loginUserResponse.data);
-      // console.log(localDecrypt, "localDecrypt");
-      const userDetails = localDecrypt;
-      const user = localDecrypt.user;
-      const vm = localDecrypt.vm;
-
-      // //console.log(user, "==!==!==user");
-      //console.log(vm, "==!==!==vm");
-      const vmArray = Object.keys(vm).map((key) => vm[key]);
-      // console.log(vmArray, "==!==!==vvmArraym");
-      setMachineData(vmArray);
-      // const vmArray = Object.keys(vm).map((key) => vm[key]);
-      // localStorage.setItem("NEW_USER", JSON.stringify(userDetails));
-      // window.location.href = "/";
-    } catch (error) {
-      console.error("Error during the login process:", error);
-    }
+      const [m, t] = await Promise.all([api.getMachines(), api.getTickets()]);
+      setMachines(m); setEnquiries(t.enquiries); setReplyArr(t.enquiry_replys);
+    } catch { notify("Failed to load data.", false); }
     setLoading(false);
-  };
+  }, [notify]);
 
-  // const filterByEnquiryId = (dataArray, enquiryId) => {
-  //   return dataArray.filter((item) => item.enquiry_id === enquiryId);
-  // };
-  const filterByEnquiryId = (dataArray, enquiryId) => {
-    // Flatten the dataArray first, assuming dataArray is [{}, {}]
-    const flattenedArray = dataArray.flat();
-    console.log(
-      flattenedArray.filter((item) => item.enquiry_id === enquiryId),
-      "flattenedArray"
-    );
-    // Filter and return objects with matching enquiry_id
-    return flattenedArray.filter((item) => item.enquiry_id === enquiryId);
-  };
+  useEffect(() => { load(); }, [load]);
 
-  const filterByStatus = (dataArray, status) => {
-    if (status === "") {
-      return dataArray;
-    } else {
-      return dataArray.filter((item) => item.status === status);
-    }
-  };
+  const getReplies = id => replyArr.flat().filter(r => r.enquiry_id === id);
 
-  const convertToString = (value) => {
-    // Check if value is an array
-    if (Array.isArray(value)) {
-      // Convert array to comma-separated string
-      return value.join(", ");
-    } else {
-      // Return string directly
-      return value;
-    }
-  };
-
-  const GetTickets = async () => {
+  const create = async () => {
+    if (!fType) return notify("Select an issue type.", false);
+    if (!fMsg.trim()) return notify("Describe your issue.", false);
+    if (!OPTIONAL_VM.includes(fType) && fVMs.length === 0) return notify("Select at least one machine.", false);
     setLoading(true);
-    if (smuser !== null) {
-      const payload = {
-        user_id: smuser.id,
-      };
-      //console.log(payload);
-      try {
-        // const encryptedResponse = await apiEncryptRequest(payload);
-        const cdnInfoResponse = await instance.post("/enquirys", payload);
-        //console.log(cdnInfoResponse.data, "====tickets");
-        const Response = await decryptData(cdnInfoResponse.data);
-
-        // console.log(Response, "==!==!==tickets");
-        const enq = Response.enquiries;
-        const enqMsgs = Response.enquiry_replys;
-        setReplyArr(enqMsgs);
-        // console.log(enqMsgs, "enqMsgs");
-        // console.log(enq);
-        setEnquiries(enq);
-
-        if (
-          filterByStatus(enq, "").filter((item) => item.status === "progress")
-            .length > 0
-        ) {
-          setTicketType("inProgress");
-        } else {
-          setTicketType("open");
-        }
-      } catch (error) {
-        console.error("Error during the login process:", error);
-      }
-    } else {
-      toast((t) => (
-        <AppToast
-          id={t.id}
-          message={
-            "Oops! Something went wrong while fetching the data. Please try again later or contact support if the issue persists."
-          }
-          isMobile={isMobile}
-        />
-      ));
-    }
-    setLoading(false);
-  };
-
-  const TicketsReply = async (replyID, ID) => {
-    setLoading(true);
-    if (
-      replyText !== "" &&
-      replyID !== "" &&
-      replyText !== null &&
-      replyID !== null
-    ) {
-      const formDataProfile = new FormData();
-      if (replyID && replyText && ID && smuser.id) {
-        formDataProfile.append(
-          "file",
-          selectedImageRply === null ? "" : selectedImageRply
-        );
-        formDataProfile.append("id", replyID);
-        formDataProfile.append("reply_message", replyText);
-        formDataProfile.append("enquiry_id", ID);
-        formDataProfile.append("user_id", smuser.id);
-
-        // Send formDataProfile or log it
-        // console.log(...formDataProfile.entries());
-      } else {
-        console.error("Missing data for form submission");
-      }
-
-      try {
-        const cdnInfoResponse = await instance.post(
-          "/reply_enquiry",
-          formDataProfile
-        );
-        //console.log(cdnInfoResponse.data, "====tickets");
-
-        // Third API call to decrypt the login response
-        // console.log(cdnInfoResponse, "==!==!==reply_enquiry");
-        if (cdnInfoResponse.status) {
-          setReplyText("");
-          setSelectedImageRply(null);
-          GetTickets();
-        }
-      } catch (error) {
-        toast((t) => (
-          <AppToast
-            id={t.id}
-            message={
-              "Oops! Something went wrong while fetching the data. Please try again later or contact support if the issue persists."
-            }
-            isMobile={isMobile}
-          />
-        ));
-      }
-    } else {
-      toast((t) => (
-        <AppToast
-          id={t.id}
-          message={"Please write your reply!"}
-          isMobile={isMobile}
-        />
-      ));
-    }
-    setLoading(false);
-  };
-
-  const ArchiveTicket = async (data) => {
-    //     status == 'archived',
-    // status == 'close'
-    setLoading(true);
-    // console.log(data, "ArchiveTicket");
-    // if (enqID !== "") {
-    const payload = {
-      enquiry_id: data.id,
-      user_id: smuser.id,
-      status: data.status,
-    };
-    // console.log(payload, "reply_enquiry");
     try {
-      const cdnInfoResponse = await instance.post("/archived_enquiry", payload);
-      //console.log(cdnInfoResponse.data, "====tickets");
-
-      // Third API call to decrypt the login response
-      // console.log(cdnInfoResponse, "==!==!==reply_enquiry");
-      if (cdnInfoResponse.status) {
-        GetTickets();
+      const res = await api.createTicket({
+        type: fType, enquiry: fMsg, vm_id: fVMs.join(","),
+        vm_name: fVMs.map(id => machines.find(m => m.vm_id === id)?.vm_name).filter(Boolean).join(", "),
+        image: fImg,
+      });
+      if (res.status) {
+        setEnquiries(p => [{ ...res.ticket, image: null }, ...p]);
+        setReplyArr(p => [...p, [{ id: Date.now(), enquiry_id: res.ticket.id, reply: "Ticket created. Awaiting response.", admin_reply: null, image: null, created_at: new Date().toLocaleString() }]]);
+        resetForm(); setModal(false);
+        notify("Ticket created successfully!");
       }
-    } catch (error) {
-      console.error("Error during the login process:", error);
-    }
-    // } else {
-    //   alert("Please write your reply!");
-    // }
+    } catch { notify("Failed to create ticket.", false); }
     setLoading(false);
   };
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-    GetMachines();
-    GetTickets();
-    function handleResize() {
-      setIsMobile(isMobileDevice());
-    }
-
-    window.addEventListener("resize", handleResize);
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, [isMobile, enqID]);
-
-  const [index, setIndex] = useState(0);
-
-  const handleSupportMachineClick = (vmId) => {
-    toggleMachineIdValue(vmId);
-    setSupportMachine(vmId);
-  };
-  const handleOptionVM = (event) => {
-    toggleMachineIdValue(event.target.value);
-    // console.log(event.target.value);
-    setSupportMachine(event.target.value);
-  };
-  const handleSelect = (selectedIndex) => {
-    setIndex(selectedIndex);
+  const reply = async (tid) => {
+    if (!replyText.trim()) return notify("Write a reply first.", false);
+    setLoading(true);
+    try {
+      await api.replyTicket({ reply_message: replyText, enquiry_id: tid });
+      const nr = { id: Date.now(), enquiry_id: tid, reply: replyText, admin_reply: null, image: replyImg ? URL.createObjectURL(replyImg) : null, created_at: new Date().toLocaleString() };
+      setReplyArr(p => {
+        const u = p.map(a => Array.isArray(a) && a.some(r => r.enquiry_id === tid) ? [...a, nr] : a);
+        if (!u.some(a => Array.isArray(a) && a.some(r => r.enquiry_id === tid))) u.push([nr]);
+        return u;
+      });
+      setReplyText(""); setReplyImg(null);
+      notify("Reply sent!");
+    } catch { notify("Failed to send reply.", false); }
+    setLoading(false);
   };
 
-  const featureListStyle = {
-    display: "flex",
-    flexWrap: "wrap",
-    justifyContent: "space-evenly",
-    padding: "20px",
+  const changeStatus = async (tk, st) => {
+    setLoading(true);
+    try {
+      await api.archiveTicket({ enquiry_id: tk.id, status: st });
+      setEnquiries(p => p.map(e => e.id === tk.id ? { ...e, status: st, archived: st === "archived" ? "archived" : e.archived } : e));
+      notify(`Ticket moved to ${ST[st]?.label || st}.`);
+    } catch { notify("Failed to update.", false); }
+    setLoading(false);
   };
+
+  const resetForm = () => { setFType(""); setFMsg(""); setFVMs([]); setFImg(null); };
+  const toggleVM = id => setFVMs(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
+
+  const filtered = enquiries
+    .filter(e => {
+      if (tab === "all") return true;
+      if (tab === "inProgress") return e.status === "progress";
+      if (tab === "closed") return e.status === "completed";
+      return e.status === tab;
+    })
+    .filter(e =>
+      e.enquiry_unique_id.toLowerCase().includes(search.toLowerCase()) ||
+      e.enquiry.toLowerCase().includes(search.toLowerCase()) ||
+      e.type.toLowerCase().includes(search.toLowerCase())
+    );
+
+  const counts = {
+    all: enquiries.length,
+    open: enquiries.filter(e => e.status === "open").length,
+    inProgress: enquiries.filter(e => e.status === "progress").length,
+    closed: enquiries.filter(e => e.status === "completed").length,
+    archived: enquiries.filter(e => e.status === "archived" || e.archived === "archived").length,
+  };
+
+  const TABS = [
+    { key: "all", label: "All", icon: "📋" },
+    { key: "open", label: "Open", icon: "🟠" },
+    { key: "inProgress", label: "In Progress", icon: "🔵" },
+    { key: "closed", label: "Completed", icon: "🟢" },
+    { key: "archived", label: "Archived", icon: "📦" },
+  ];
+
   return (
-    <div
-      style={{
-        width: "100%",
-        minHeight: "65rem",
-        position: "relative",
-        backgroundImage: isMobile ? `url(/main-bg.jpg)` : `url(/main-bg.jpg)`,
-        backgroundSize: "cover",
-        // backgroundPosition: "center",
-        // backgroundColor: "#141414",
-        backgroundRepeat: "round",
-        backgroundBlendMode: "overlay",
-      }}
-    >
-      {showImagePopup && (
-        <div style={{ display: "grid", justifyItems: "center" }}>
-          <div
-            style={{
-              backdropFilter: "blur(5px)",
-              // backgroundColor: "white",
-              boxShadow: "0px 0px 10px rgba(0, 0, 0, 0.1)", // Box shadow added
-              borderRadius: "12px", // Assuming you want rounded corners
-              border: "2px solid #e97730",
-              top: "30%",
-              position: "absolute",
-              zIndex: "999999999999",
-              width: isMobile ? "80%" : "30%",
-              height: isMobile ? "30%" : "30rem",
-            }}
-          >
-            <div style={{ display: "grid", justifyItems: "center" }}>
-              <button
-                style={{
-                  zIndex: "9",
-                  position: "absolute",
-                  backgroundColor: "white",
-                  border: "none",
-                  right: "0",
-                }}
-                onClick={() => setShowImagePopup(false)}
-              >
-                <FaX
-                  style={{
-                    marginTop: "5px",
-                    color: "#e97730",
-                    display: "inline-block",
-                    fontSize: "19px",
-                  }}
-                />
-              </button>{" "}
-              {showPreviewImagePopup !== null &&
-              showPreviewImagePopup !== "" ? (
-                <img
-                  src={`${showPreviewImagePopup}`}
-                  style={{
-                    width: "70%",
-                    height: isMobile ? "80%" : "70%",
-                    border: "none",
-                    borderRadius: "8px",
-                    backgroundColor: "#f47c20",
-                    marginTop: "55px",
-                  }}
-                />
-              ) : (
-                ""
-              )}
+    <div className="sp-root mt-5">
+      <style>{CSS}</style>
+
+      {toast && <div className={`sp-toast ${toast.ok ? "sp-toast-ok" : "sp-toast-err"}`}>{toast.ok ? "✓" : "✕"} {toast.msg}</div>}
+      {loading && <div className="sp-loader-overlay"><div className="sp-loader" /></div>}
+
+      {/* Header */}
+      <header className="sp-header">
+        <div className="sp-header-inner">
+          <div className="sp-header-left">
+            <div className="sp-logo">
+              <svg width="22" height="22" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" viewBox="0 0 24 24"><path d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" /></svg>
+            </div>
+            <div>
+              <h1 className="sp-title">Support Center</h1>
+              <p className="sp-subtitle">Track & manage your support tickets</p>
             </div>
           </div>
+          <button className="sp-create-btn" onClick={() => setModal(true)}>
+            <I.Plus /> New Ticket
+          </button>
         </div>
-      )}
+      </header>
 
-      {isMobile ? (
-        <div
-          className=""
-          style={{
-            width: "100%",
-            minHeight: "65rem",
-            position: "relative",
-            backgroundImage: isMobile
-              ? `url(./main-bg.jpg)`
-              : `url(./main-bg.jpg)`,
-            backgroundSize: "cover",
-            // backgroundPosition: "center",
-            // backgroundColor: "#141414",
-            backgroundRepeat: "round",
-            backgroundBlendMode: "overlay",
-          }}
-        >
-          <div className="heading-dotted-support">
-            Support <span></span>
-          </div>
-          <div
-            className="features-section-solution"
-            style={{ marginTop: "0px" }}
-          >
-            {showSupport ? (
-              <div>
-                <div className="buttons-container">
-                  {innerButtons.map((title, idx) => (
-                    <Button
-                      key={idx}
-                      style={{
-                        background: `${
-                          activeButton === title ? "#035189" : "#f47c20"
-                        }`,
-                        border: "none",
-                        fontSize: "16px",
-                        padding: "5px 15px",
-                        color: "#fff",
-                        fontWeight: "600",
-                        borderRadius: "20px",
-                        marginBottom: "10px",
-                      }}
-                      onClick={() => setActiveButton(title)}
-                    >
-                      {title}
-                    </Button>
-                  ))}
-                </div>
-                <div
-                  className="register-main see-full"
-                  style={{ marginTop: "2rem" }}
-                >
-                  <div className="bg-img">
-                    <img
-                      src="/images/blue-box-bg.svg"
-                      alt=""
-                      style={{ width: "100%" }}
-                    />
-                  </div>
-                  <form className="see-full">
-                    <input
-                      type="hidden"
-                      name="_token"
-                      value="IHks1cEdGGmsvouWsdVeWVHE29KFoaLV0iN8cPkE"
-                    />
-
-                    <div className="form-top">
-                      <h4 className="text-white">Send us your question</h4>
-                      <p
-                        style={{
-                          color: "white",
-                          marginTop: "15px",
-                          fontSize: "16px",
-                          lineHeight: "150%",
-                        }}
-                      >
-                        To help us resolve your Server related problem quickly,
-                        We might Require Temporary access credentials
-                        (root/admin) to your server. Please provide us with a
-                        detailed specification of what the issue is.
-                      </p>
-                      {machineData.length > 0 ? (
-                        <>
-                          <div
-                            style={{
-                              display: "flex",
-                              gap: "10px",
-                              flexWrap: "wrap",
-                            }}
-                          >
-                            {machineData &&
-                              machineData.map((item, idx) => (
-                                <>
-                                  {(item.public_ip || item.ip_address) && (
-                                    <div
-                                      style={{
-                                        backgroundColor: "#f47c20",
-                                        border: "none",
-                                        borderRadius: "20px",
-                                        paddingLeft: "10px",
-                                        paddingBottom: "10px",
-                                        width: "max-content",
-                                      }}
-                                      onClick={() =>
-                                        handleSupportMachineClick(item.vm_id)
-                                      }
-                                    >
-                                      <label
-                                        className="radio-label"
-                                        style={{ marginTop: "8px" }}
-                                      >
-                                        <input
-                                          type="radio"
-                                          value={item.vm_id}
-                                          checked={supportMachineArr.includes(
-                                            item.vm_id
-                                          )}
-                                          onChange={handleOptionVM}
-                                          className="radio-input"
-                                          style={{ marginBottom: "-3px" }}
-                                        />
-                                        {item.vm_name}
-                                      </label>
-                                    </div>
-                                  )}
-                                </>
-                              ))}
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <p
-                            style={{
-                              borderRadius: "5px",
-                              paddingRight: "5px",
-                              paddingLeft: "5px",
-
-                              height: "25px",
-
-                              backgroundColor: "#f47c20",
-
-                              position: "absolute",
-                              color: "white",
-                            }}
-                          >
-                            No Machines
-                          </p>
-                        </>
-                      )}
-
-                      {activeButton === "Sales" ||
-                      activeButton === "Billing Query" ||
-                      activeButton === "Other" ? (
-                        <p
-                          style={{
-                            position: "absolute",
-                            left: "50%",
-                            color: "white",
-                            top: "21%",
-                          }}
-                        >
-                          (Optional)
-                        </p>
-                      ) : null}
-                      <div
-                        className="input-container"
-                        style={{ marginTop: "50px" }}
-                      >
-                        <textarea
-                          placeholder="Content"
-                          style={{
-                            minHeight: "200px",
-                            maxHeight: "500px",
-                            padding: "10px",
-                            height: "157px",
-                            width: "100%",
-                            backgroundColor: "transparent",
-                            color: "white",
-                            borderRadius: "30px",
-                            border: "none",
-                          }}
-                        ></textarea>
-                      </div>
-                      {/* File Selection */}
-                      <div
-                        style={{
-                          // width: "10rem",
-                          marginTop: "15px",
-                          display: "flex",
-                          alignItems: "center",
-                          // border: "2px solid white",
-                          // borderRadius: "25px",
-                          padding: "5px",
-                          alignContent: "center",
-                        }}
-                      >
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleImageChange}
-                          style={{
-                            marginTop: "0px",
-                            marginLeft: "15px",
-                            color: "grey",
-                            fontSize: "21px",
-                          }}
-                        />
-                      </div>
-                      <br />
-                      <label
-                        style={{
-                          width: "max-content",
-                          position: "absolute",
-                          /* left: 170px; */
-                          fontSize: "14px",
-                          fontStyle: "italic",
-                          color: "white",
-                          fontWeight: "600",
-                          marginTop: "-22px",
-                        }}
-                      >
-                        Note : Please upload .png .jpeg .jpg images only.
-                      </label>
-                    </div>
-                    <div style={{ display: "flex" }}>
-                      <div className="log-in">
-                        <a className="media-link">
-                          <div
-                            className="media-banner"
-                            style={{
-                              width: "auto",
-                              height: "50px",
-                              marginTop: "10px",
-                              marginLeft: "0.5rem",
-                            }}
-                          >
-                            <img
-                              className="normal-banner"
-                              src="/images/more-info-btn-bg.svg"
-                              alt=""
-                            />
-                            <img
-                              className="hover-img-banner"
-                              src="/images/search-btn-hover.png"
-                              alt="/images/search-btn-hover.png"
-                            />
-                            <span
-                              className="login-text"
-                              style={{
-                                fontSize: "20px",
-                                color: "white",
-                                marginTop: "0px",
-                                fontWeight: "600",
-                              }}
-                            >
-                              Submit
-                            </span>
-                          </div>
-                        </a>
-                      </div>
-                      <div
-                        className="log-in"
-                        onClick={() => setShowSupport(false)}
-                      >
-                        <a className="media-link">
-                          <div
-                            className="media-banner"
-                            style={{
-                              width: "auto",
-                              height: "50px",
-                              marginTop: "10px",
-                              marginLeft: "0.5rem",
-                            }}
-                          >
-                            <img
-                              className="normal-banner"
-                              src="/images/signup-btn-bg.png"
-                              alt=""
-                            />
-                            <img
-                              className="hover-img-banner"
-                              src="/images/search-btn-hover.png"
-                              alt="/images/search-btn-hover.png"
-                            />
-                            <span
-                              className="login-text"
-                              style={{
-                                fontSize: "20px",
-                                color: "#07528B",
-                                marginTop: "0px",
-                                fontWeight: "600",
-                              }}
-                            >
-                              Cancel
-                            </span>
-                          </div>
-                        </a>
-                      </div>
-                    </div>
-                  </form>
-                </div>
-              </div>
-            ) : (
-              <div style={{ position: "absolute" }}>
-                <Button
-                  style={{
-                    background: "#035189",
-                    border: "none",
-                    fontSize: "20px",
-                    padding: "5px 15px",
-                    color: "#fff",
-                    fontWeight: "600",
-                    // borderRadius: "20px",
-                    marginBottom: "10px",
-                  }}
-                  onClick={() => setShowSupport(true)}
-                >
-                  Create Ticket
-                </Button>
-              </div>
-            )}
-
-            {/* Present Tickets */}
-            <div
-              className="heading-dotted-support"
-              style={{ marginLeft: "-4px" }}
-            >
-              tickets{" "}
-            </div>
-            <div
-              className="buttons-container"
-              style={{
-                display: "flex",
-                marginTop: "15px",
-                marginLeft: "-5px",
-                marginBottom: "-15px",
-              }}
-            >
-              <div style={{ marginLeft: "auto" }}>
-                {ticketButtons.map((title, idx) => (
-                  <Button
-                    key={idx}
-                    style={{
-                      background: `${
-                        idx === 1 && ticketType === "inProgress"
-                          ? "#f47c20"
-                          : ticketType === title
-                          ? "#f47c20"
-                          : "#035189"
-                      }`,
-                      border: "none",
-                      fontSize: "14px",
-                      padding: "5px 15px",
-                      color: "#fff",
-                      fontWeight: "600",
-                      borderRadius: "20px",
-                      marginBottom: "10px",
-                    }}
-                    onClick={() => setTicketType(title)}
-                  >
-                    {idx == 0
-                      ? "Open"
-                      : idx == 1
-                      ? "inProgress"
-                      : idx == 2
-                      ? "Closed"
-                      : idx == 3
-                      ? "Archive"
-                      : idx == 4
-                      ? "All"
-                      : ""}
-                  </Button>
-                ))}
-              </div>
-            </div>
-            <div style={{ display: "flex", marginTop: "35px" }}>
-              <Button
-                style={{
-                  background: "#035189",
-                  border: "none",
-                  fontSize: "20px",
-                  padding: "5px 15px",
-                  color: "#fff",
-                  fontWeight: "600",
-                  // borderRadius: "20px",
-                  marginBottom: "10px",
-                }}
-              >
-                Latest
-              </Button>
-              <div
-                className="input-container"
-                style={{
-                  border: "2px solid #035189",
-                  width: "10rem",
-                  marginTop: "0px",
-                  height: "45px",
-                }}
-              >
-                <input
-                  type="text"
-                  name="search"
-                  className="input-signup input-tickets"
-                  placeholder="Search"
-                  value={searchText}
-                  style={{
-                    color: "black",
-                    textAlign: "center",
-                    width: "10px",
-                  }}
-                  onChange={(e) => setSearchText(e.target.value)}
-                />
-                {searchText && (
-                  <button
-                    style={{
-                      backgroundColor: "transparent",
-                      border: "none",
-                    }}
-                    onClick={() => setSearchText("")}
-                  >
-                    <FaX
-                      style={{
-                        marginBottom: "2px",
-                        color: "#154e7a",
-                        display: "inline-block",
-                        fontSize: "19px",
-                      }}
-                    />
-                  </button>
-                )}
-              </div>
-            </div>
-
-            <div
-              className="notification-cont"
-              style={{ height: "50vh", marginBottom: "3rem" }}
-            >
-              {/* inProgress */}
-              {ticketType === "progress" || ticketType === "inProgress" ? (
-                <>
-                  {enquiries &&
-                    filterByStatus(enquiries, "")
-                      .filter(
-                        (item) =>
-                          item.status === "progress" &&
-                          item.enquiry_unique_id
-                            .toLowerCase()
-                            .includes(searchText.toLowerCase())
-                      )
-                      .map((item, idx) => (
-                        <div className="table-row-noti" key={idx}>
-                          <div className="bar"></div>
-                          <div className="message">
-                            <Button
-                              style={{
-                                marginLeft: "0px",
-                                marginTop: "5px",
-                                background: "#035189",
-                                border: "none",
-                                fontSize: "20px",
-                                padding: "5px 15px",
-                                color: "#fff",
-                                fontWeight: "600",
-                                // width: "17%",
-                              }}
-                            >
-                              Ticket No. : {item.enquiry_unique_id}
-                            </Button>
-                            {/* {item.vm_id !== "null" && item.vm_id !== null && (
-                              <div class="desc">Machine : {item.vm_name}</div>
-                            )} */}
-                            <div
-                              class="desc"
-                              style={{
-                                fontSize: "12px",
-                                marginTop: "10px",
-                                color: "#035189",
-                                maxHeight: "100px",
-                                fontWeight: "600",
-                                maxWidth: "150px",
-                              }}
-                            >
-                              Subject : {item.type}
-                            </div>
-                            <div
-                              class="desc"
-                              style={{
-                                fontSize: "12px",
-                                marginTop: "10px",
-                                color: "#f47c20",
-                                maxHeight: "100px",
-                                fontWeight: "600",
-                                maxWidth: "100rem",
-                              }}
-                            >
-                              Desc. : {item.enquiry}
-                            </div>
-                            {item.image !== null && item.image !== "" && (
-                              <div style={{ marginTop: "10px" }}>
-                                {item.image !== null && item.image !== "" ? (
-                                  <button
-                                    onClick={() => {
-                                      setPreviewImagePopup(item.image);
-                                      setShowImagePopup(true);
-                                    }}
-                                    style={{
-                                      border: "none",
-                                      background: "none",
-                                      padding: 0,
-                                    }}
-                                  >
-                                    <img
-                                      //src={`https://console.upnetcloud.com/public/uploads/tickets/${msg.image}`}
-                                      src={`${item.image}`}
-                                      style={{
-                                        maxWidth: "150px",
-                                        maxHeight: "150px",
-                                        border: "2px solid #f47c20",
-                                        borderRadius: "8px",
-                                        // backgroundColor: "#f47c20",
-                                      }}
-                                    />
-                                  </button>
-                                ) : (
-                                  ""
-                                )}
-                              </div>
-                            )}
-
-                            <div
-                              class=""
-                              style={{ fontSize: "24px" }}
-                              onClick={() => {
-                                setShowMore(!showMore);
-                                setShowMoreID(idx);
-                              }}
-                            >
-                              <Button
-                                style={{
-                                  marginLeft: "0px",
-                                  marginTop: "10px",
-                                  background: "#035189",
-                                  border: "none",
-                                  fontSize: "20px",
-                                  padding: "5px 15px",
-                                  color: "#fff",
-                                  fontWeight: "600",
-                                  marginBottom: "10px",
-                                }}
-                              >
-                                {" "}
-                                {showMore && showMoreID === idx
-                                  ? "Hide"
-                                  : "Show More"}{" "}
-                              </Button>
-                            </div>
-                            {showMore && showMoreID === idx && (
-                              <>
-                                {/* <div> Description: {item.enquiry}</div> */}
-                                <div
-                                  className="you-title"
-                                  style={{
-                                    fontSize: "24px",
-                                    marginBottom: "20px",
-                                  }}
-                                >
-                                  {filterByEnquiryId(replyArr, item.id).map(
-                                    (msg, idx) => (
-                                      <>
-                                        <div
-                                          //class="desc"
-                                          style={{ maxHeight: "none" }}
-                                        >
-                                          <p
-                                            style={{
-                                              //marginBottom: "0rem",
-                                              marginTop: "10px",
-                                              marginRight: "200px",
-                                            }}
-                                          >
-                                            {" "}
-                                            {msg.admin_reply !== null ? (
-                                              <span
-                                                className="spanWithMargin"
-                                                style={{
-                                                  color: "#035189",
-                                                  //marginBottom: "10px",
-                                                  fontWeight: "600",
-                                                }}
-                                              >
-                                                Support :{" "}
-                                                <span
-                                                // style={{
-                                                //   color: "black",
-                                                //   fontWeight: "300",
-                                                //   fontSize: "13px",
-                                                // }}
-                                                >
-                                                  {msg.admin_reply}
-                                                </span>
-                                              </span>
-                                            ) : null}
-                                            {msg.reply !== null ? (
-                                              <span
-                                                style={{
-                                                  color: "#f47c20",
-                                                  fontWeight: "600",
-                                                }}
-                                              >
-                                                You:{" "}
-                                                <span
-                                                  style={{
-                                                    whiteSpace: "pre-wrap",
-                                                  }}
-                                                >
-                                                  {msg.reply}
-                                                </span>
-                                              </span>
-                                            ) : null}
-                                          </p>
-                                          {msg.image !== null &&
-                                          msg.image !== "" ? (
-                                            <img
-                                              //src={`https://console.upnetcloud.com/public/uploads/tickets/${msg.image}`}
-                                              src={`${msg.image}`}
-                                              style={{
-                                                maxWidth: "150px",
-                                                maxHeight: "150px",
-                                                border: "2px solid #f47c20",
-                                                borderRadius: "8px",
-                                              }}
-                                            />
-                                          ) : null}
-                                        </div>
-                                      </>
-                                    )
-                                  )}
-                                </div>
-                              </>
-                            )}
-                          </div>
-                          <div
-                            className="datetime"
-                            style={{
-                              // display: "flex",
-                              marginLeft: "80%",
-                              marginRight: "0px",
-                              position: "absolute",
-                              top: "15px",
-                            }}
-                          >
-                            Created at : {item.createdAt}
-                            <select
-                              name="plan_time"
-                              style={{
-                                borderRadius: "4px",
-                                background:
-                                  item.status === "completed"
-                                    ? "green"
-                                    : item.status === "progress"
-                                    ? "#aaaa00" //YELLOW
-                                    : item.status === "open"
-                                    ? "#f47c20"
-                                    : "#aa0000", // RED
-                                border: "none",
-                                fontSize: "18px",
-                                padding: "5px 15px",
-                                color: "#fff",
-                                fontWeight: "600",
-                                // borderRadius: "20px",
-                                marginBottom: "10px",
-                              }}
-                              value={item.status}
-                              onChange={(e) => {
-                                // setSupportMachine(e.target.value);
-                                ArchiveTicket({
-                                  id: item.id,
-                                  status: e.target.value,
-                                });
-                              }}
-                            >
-                              <option value="completed" disabled="true">
-                                Complete
-                              </option>
-                              <option value="progress" disabled="true">
-                                inProgress
-                              </option>
-                              <option value="open" disabled="true">
-                                Open
-                              </option>
-                              <option value="pending" disabled="true">
-                                Pending
-                              </option>
-                              <option
-                                value="archived"
-                                disabled={item.archived === "archived"}
-                              >
-                                Archive
-                              </option>
-                              <option value="close">Close</option>
-                            </select>
-                          </div>
-                        </div>
-                      ))}
-                </>
-              ) : (
-                <></>
-              )}
-
-              {/* Complete */}
-              {console.log("ticketType=", ticketType)}
-              {ticketType === "complete" ? (
-                <>
-                  {enquiries &&
-                    filterByStatus(enquiries, "")
-                      .filter(
-                        (item) =>
-                          item.status === "completed" &&
-                          item.enquiry_unique_id
-                            .toLowerCase()
-                            .includes(searchText.toLowerCase())
-                      )
-                      .map((item, idx) => (
-                        <div className="table-row-noti" key={idx}>
-                          <div className="bar"></div>
-                          <div className="message">
-                            {item.archived !== "archived" ? (
-                              <div
-                                className="archive-noti"
-                                style={{
-                                  top: "1px",
-                                  left: "85%",
-                                  position: "absolute",
-                                }}
-                              >
-                                <button
-                                  style={{
-                                    border: "none",
-                                    backgroundColor: "transparent",
-                                  }}
-                                  onClick={() => {
-                                    setEnqID(item.id);
-                                    ArchiveTicket();
-                                  }}
-                                >
-                                  <img
-                                    src="/images/admin/17-Notification/archive.png"
-                                    title="Move to Archive"
-                                  />
-                                </button>
-                              </div>
-                            ) : null}
-
-                            <Button
-                              style={{
-                                fontWeight: "600",
-                                marginLeft: "0px",
-                                marginTop: "5px",
-                                background: "#035189",
-                                border: "none",
-                                fontSize: "10px",
-                                padding: "5px 15px",
-                                color: "#fff",
-                              }}
-                            >
-                              Ticket No. : {item.enquiry_unique_id}
-                            </Button>
-                            {/* {item.vm_id !== "null" && item.vm_id !== null && (
-                              <div class="desc">Machine : {item.vm_name}</div>
-                            )} */}
-                            <div
-                              class="desc"
-                              style={{
-                                fontSize: "12px",
-                                marginTop: "10px",
-                                color: "#035189",
-                                maxHeight: "100px",
-                                fontWeight: "600",
-                                maxWidth: "150px",
-                              }}
-                            >
-                              Subject : {item.type}
-                            </div>
-                            <div
-                              class=""
-                              style={{
-                                color: "#f47c20",
-                                fontSize: "12px",
-                                marginTop: "15px",
-                                maxHeight: "4.5rem",
-                                paddingRight: "100px",
-                                fontWeight: "600",
-                                //maxWidth: "50rem",
-                                wordWrap: "break-word",
-                                overflow: "hidden",
-                              }}
-                            >
-                              Desc. : {item.enquiry}
-                            </div>
-                            {item.image !== null && item.image !== "" && (
-                              <div style={{ marginTop: "10px" }}>
-                                {item.image !== null && item.image !== "" ? (
-                                  <button
-                                    onClick={() => {
-                                      setPreviewImagePopup(item.image);
-                                      setShowImagePopup(true);
-                                    }}
-                                    style={{
-                                      border: "none",
-                                      background: "none",
-                                      padding: 0,
-                                    }}
-                                  >
-                                    <img
-                                      //src={`https://console.upnetcloud.com/public/uploads/tickets/${msg.image}`}
-                                      src={`${item.image}`}
-                                      style={{
-                                        maxWidth: "150px",
-                                        maxHeight: "150px",
-                                        border: "2px solid #f47c20",
-                                        borderRadius: "8px",
-                                        // backgroundColor: "#f47c20",
-                                      }}
-                                    />
-                                  </button>
-                                ) : (
-                                  ""
-                                )}
-                              </div>
-                            )}
-
-                            <div
-                              class=""
-                              style={{ marginTop: "10px" }}
-                              onClick={() => {
-                                setShowMore(!showMore);
-                                setShowMoreID(idx);
-                              }}
-                            >
-                              <Button
-                                style={{
-                                  marginLeft: "0px",
-                                  marginTop: "15px",
-                                  background: "#035189",
-                                  border: "none",
-                                  fontSize: "12px",
-                                  padding: "5px 15px",
-                                  color: "#fff",
-                                  fontWeight: "600",
-                                  marginBottom: "10px",
-                                }}
-                              >
-                                {" "}
-                                {showMore && showMoreID === idx
-                                  ? "Hide"
-                                  : "Show More"}{" "}
-                              </Button>
-                            </div>
-                            {showMore && showMoreID === idx && (
-                              <>
-                                {/* <div> Description: {item.enquiry}</div> */}
-                                <div>
-                                  {filterByEnquiryId(replyArr, item.id).map(
-                                    (msg, idx) => (
-                                      <>
-                                        <div
-                                          class="desc"
-                                          style={{ maxHeight: "none" }}
-                                        >
-                                          <p style={{ marginBottom: "0rem" }}>
-                                            {" "}
-                                            {msg.admin_reply !== null ? (
-                                              <span
-                                                className="spanWithMargin"
-                                                style={{
-                                                  color: "#035189",
-                                                  fontSize: "12px",
-                                                  fontWeight: "600",
-                                                }}
-                                              >
-                                                Support :{" "}
-                                                <span>{msg.admin_reply}</span>
-                                              </span>
-                                            ) : null}
-                                            {msg.reply !== null ? (
-                                              <span
-                                                style={{
-                                                  color: "#f47c20",
-                                                  fontSize: "12px",
-                                                  fontWeight: "600",
-                                                }}
-                                              >
-                                                You:{" "}
-                                                <span
-                                                  style={{
-                                                    whiteSpace: "pre-wrap",
-                                                  }}
-                                                >
-                                                  {msg.reply}
-                                                </span>
-                                              </span>
-                                            ) : null}
-                                          </p>
-                                        </div>
-                                      </>
-                                    )
-                                  )}
-                                </div>
-                              </>
-                            )}
-                          </div>
-
-                          <div
-                            className="datetime"
-                            style={{
-                              marginTop: "10px",
-                              marginLeft: "60%",
-                              marginRight: "0px",
-                              position: "absolute",
-                              top: "15px",
-                              fontSize: "10px",
-                            }}
-                          >
-                            Created at : {item.createdAt}
-                            <select
-                              name="plan_time"
-                              style={{
-                                borderRadius: "4px",
-                                background:
-                                  item.status === "complete"
-                                    ? "green"
-                                    : item.status === "progress"
-                                    ? "#aaaa00" //YELLOW
-                                    : item.status === "open"
-                                    ? "#f47c20"
-                                    : "#aa0000", // RED
-                                border: "none",
-                                fontSize: "12px",
-                                width: "105px",
-                                padding: "5px 15px",
-                                color: "#fff",
-                                fontWeight: "600",
-                                // borderRadius: "20px",
-                                marginBottom: "10px",
-                              }}
-                              value={item.status}
-                              onChange={(e) => {
-                                // setSupportMachine(e.target.value);
-                                ArchiveTicket({
-                                  id: item.id,
-                                  status: e.target.value,
-                                });
-                              }}
-                            >
-                              <option value="complete" disabled="true">
-                                Complete
-                              </option>
-                              <option value="progress" disabled="true">
-                                inProgress
-                              </option>
-                              <option value="open" disabled="true">
-                                Open
-                              </option>
-                              <option value="pending" disabled="true">
-                                Pending
-                              </option>
-                              <option
-                                value="archived"
-                                disabled={item.archived === "archived"}
-                              >
-                                Archive
-                              </option>
-                              <option value="close">Close</option>
-                            </select>
-                          </div>
-                        </div>
-                      ))}
-                </>
-              ) : (
-                <></>
-              )}
-              {/* Archived */}
-              {ticketType === "archived" ? (
-                <>
-                  {enquiries &&
-                    filterByStatus(enquiries, "")
-                      .filter((item) => item.archived === "archived")
-                      .filter(
-                        (item) =>
-                          item.archived === "archived" &&
-                          item.enquiry_unique_id
-                            .toLowerCase()
-                            .includes(searchText.toLowerCase())
-                      )
-                      .map((item, idx) => (
-                        <div className="table-row-noti" key={idx}>
-                          <div className="bar"></div>
-                          <div className="message">
-                            {item.archived !== "archived" ? (
-                              <div
-                                className="archive-noti"
-                                style={{
-                                  top: "1px",
-                                  left: "85%",
-                                  position: "absolute",
-                                }}
-                              >
-                                <button
-                                  style={{
-                                    border: "none",
-                                    backgroundColor: "transparent",
-                                  }}
-                                  onClick={() => {
-                                    setEnqID(item.id);
-                                    ArchiveTicket();
-                                  }}
-                                >
-                                  <img
-                                    src="/images/admin/17-Notification/archive.png"
-                                    title="Move to Archive"
-                                  />
-                                </button>
-                              </div>
-                            ) : null}
-
-                            <Button
-                              style={{
-                                fontWeight: "600",
-                                marginLeft: "0px",
-                                marginTop: "5px",
-                                background: "#035189",
-                                border: "none",
-                                fontSize: "10px",
-                                padding: "5px 15px",
-                                color: "#fff",
-                              }}
-                            >
-                              Ticket No. : {item.enquiry_unique_id}
-                            </Button>
-                            {/* {item.vm_id !== "null" && item.vm_id !== null && (
-                              <div class="desc"> Machine : {item.vm_name}</div>
-                            )} */}
-                            <div
-                              class="desc"
-                              style={{
-                                fontSize: "12px",
-                                marginTop: "10px",
-                                color: "#035189",
-                                maxHeight: "100px",
-                                fontWeight: "600",
-                                maxWidth: "150px",
-                              }}
-                            >
-                              Subject : {item.type}
-                            </div>
-                            <div
-                              class=""
-                              style={{
-                                color: "#f47c20",
-                                fontSize: "12px",
-                                marginTop: "10px",
-                                maxHeight: "4.5rem",
-                                paddingRight: "100px",
-                                fontWeight: "600",
-                                //maxWidth: "50rem",
-                                wordWrap: "break-word",
-                                overflow: "hidden",
-                              }}
-                            >
-                              Desc. : {item.enquiry}
-                            </div>
-                            {item.image !== null && item.image !== "" && (
-                              <div style={{ marginTop: "10px" }}>
-                                {item.image !== null && item.image !== "" ? (
-                                  <button
-                                    onClick={() => {
-                                      setPreviewImagePopup(item.image);
-                                      setShowImagePopup(true);
-                                    }}
-                                    style={{
-                                      border: "none",
-                                      background: "none",
-                                      padding: 0,
-                                    }}
-                                  >
-                                    <img
-                                      //src={`https://console.upnetcloud.com/public/uploads/tickets/${msg.image}`}
-                                      src={`${item.image}`}
-                                      style={{
-                                        maxWidth: "150px",
-                                        maxHeight: "150px",
-                                        border: "2px solid #f47c20",
-                                        borderRadius: "8px",
-                                        // backgroundColor: "#f47c20",
-                                      }}
-                                    />
-                                  </button>
-                                ) : (
-                                  ""
-                                )}
-                              </div>
-                            )}
-
-                            <div
-                              class=""
-                              style={{ marginTop: "10px" }}
-                              onClick={() => {
-                                setShowMore(!showMore);
-                                setShowMoreID(idx);
-                              }}
-                            >
-                              <Button
-                                style={{
-                                  marginLeft: "0px",
-                                  marginTop: "10px",
-                                  background: "#035189",
-                                  border: "none",
-                                  fontSize: "12px",
-                                  padding: "5px 15px",
-                                  color: "#fff",
-                                  fontWeight: "600",
-                                  marginBottom: "10px",
-                                }}
-                              >
-                                {" "}
-                                {showMore && showMoreID === idx
-                                  ? "Hide"
-                                  : "Show More"}{" "}
-                              </Button>
-                            </div>
-                            {showMore && showMoreID === idx && (
-                              <>
-                                {/* <div> Description: {item.enquiry}</div> */}
-                                <div>
-                                  {filterByEnquiryId(replyArr, item.id).map(
-                                    (msg, idx) => (
-                                      <>
-                                        <div
-                                          class="desc"
-                                          style={{ maxHeight: "none" }}
-                                        >
-                                          <p style={{ marginBottom: "0rem" }}>
-                                            {" "}
-                                            {msg.admin_reply !== null ? (
-                                              <span
-                                                className="spanWithMargin"
-                                                style={{
-                                                  color: "#035189",
-                                                  fontSize: "12px",
-                                                  fontWeight: "600",
-                                                }}
-                                              >
-                                                Support :{" "}
-                                                <span>{msg.admin_reply}</span>
-                                              </span>
-                                            ) : null}
-                                            {msg.reply !== null ? (
-                                              <span
-                                                style={{
-                                                  color: "#f47c20",
-                                                  fontSize: "12px",
-                                                  fontWeight: "600",
-                                                }}
-                                              >
-                                                You:{" "}
-                                                <span
-                                                  style={{
-                                                    whiteSpace: "pre-wrap",
-                                                  }}
-                                                >
-                                                  {msg.reply}
-                                                </span>
-                                              </span>
-                                            ) : null}
-                                          </p>
-                                        </div>
-                                      </>
-                                    )
-                                  )}
-                                </div>
-                              </>
-                            )}
-                          </div>
-
-                          <div
-                            className="datetime"
-                            style={{
-                              marginTop: "10px",
-                              marginLeft: "60%",
-                              marginRight: "0px",
-                              position: "absolute",
-                              top: "15px",
-                              fontSize: "10px",
-                            }}
-                          >
-                            Created at : {item.createdAt}
-                            <select
-                              name="plan_time"
-                              style={{
-                                borderRadius: "4px",
-                                background:
-                                  item.status === "complete"
-                                    ? "green"
-                                    : item.status === "progress"
-                                    ? "#aaaa00" //YELLOW
-                                    : item.status === "open"
-                                    ? "#f47c20"
-                                    : "#aa0000", // RED
-                                border: "none",
-                                fontSize: "12px",
-                                width: "105px",
-                                padding: "5px 15px",
-                                color: "#fff",
-                                fontWeight: "600",
-                                // borderRadius: "20px",
-                                marginBottom: "10px",
-                              }}
-                              value={item.status}
-                              onChange={(e) => {
-                                // setSupportMachine(e.target.value);
-                                ArchiveTicket({
-                                  id: item.id,
-                                  status: e.target.value,
-                                });
-                              }}
-                            >
-                              <option value="complete" disabled="true">
-                                Complete
-                              </option>
-                              <option value="progress" disabled="true">
-                                inProgress
-                              </option>
-                              <option value="open" disabled="true">
-                                Open
-                              </option>
-                              <option value="pending" disabled="true">
-                                Pending
-                              </option>
-                              <option
-                                value="archived"
-                                disabled={item.archived === "archived"}
-                              >
-                                Archive
-                              </option>
-                              <option value="close">Close</option>
-                            </select>
-                          </div>
-                        </div>
-                      ))}
-                </>
-              ) : (
-                <>
-                  {enquiries &&
-                    filterByStatus(enquiries, ticketType)
-                      .filter((item) =>
-                        // item.archived === "archived" &&
-                        item.enquiry_unique_id
-                          .toLowerCase()
-                          .includes(searchText.toLowerCase())
-                      )
-                      .map((item, idx) => (
-                        <div className="table-row-noti" key={idx}>
-                          <div
-                            className="bar"
-                            style={{ margin: "0px 5px" }}
-                          ></div>
-                          <div className="message">
-                            {item.archived !== "archived" ? (
-                              <div
-                                className="archive-noti"
-                                style={{
-                                  top: "1px",
-                                  left: "85%",
-                                  position: "absolute",
-                                }}
-                              >
-                                <button
-                                  style={{
-                                    border: "none",
-                                    backgroundColor: "transparent",
-                                  }}
-                                  onClick={() => {
-                                    setEnqID(item.id);
-                                    ArchiveTicket();
-                                  }}
-                                >
-                                  <img
-                                    src="/images/admin/17-Notification/archive.png"
-                                    title="Move to Archive"
-                                  />
-                                </button>
-                              </div>
-                            ) : null}
-
-                            <Button
-                              style={{
-                                fontWeight: "600",
-                                marginLeft: "0px",
-                                marginTop: "5px",
-                                background: "#035189",
-                                border: "none",
-                                fontSize: "10px",
-                                padding: "5px 15px",
-                                color: "#fff",
-                              }}
-                            >
-                              Ticket No. : {item.enquiry_unique_id}
-                            </Button>
-                            {/* {item.vm_id !== "null" && item.vm_id !== null && (
-                              <div class="desc"> Machine : {item.vm_name}</div>
-                            )} */}
-                            <div
-                              class="desc"
-                              style={{
-                                fontSize: "12px",
-                                marginTop: "10px",
-                                color: "#035189",
-                                maxHeight: "100px",
-                                fontWeight: "600",
-                                maxWidth: "150px",
-                              }}
-                            >
-                              Subject : {item.type}
-                            </div>
-                            <div
-                              class=""
-                              style={{
-                                color: "#f47c20",
-                                fontSize: "12px",
-                                marginTop: "10px",
-                                maxHeight: "4.5rem",
-                                paddingRight: "100px",
-                                fontWeight: "600",
-                                //maxWidth: "50rem",
-                                wordWrap: "break-word",
-                                overflow: "hidden",
-                              }}
-                            >
-                              Desc. : {item.enquiry}
-                            </div>
-                            {item.image !== null && item.image !== "" && (
-                              <div style={{ marginTop: "10px" }}>
-                                {item.image !== null && item.image !== "" ? (
-                                  <button
-                                    onClick={() => {
-                                      setPreviewImagePopup(item.image);
-                                      setShowImagePopup(true);
-                                    }}
-                                    style={{
-                                      border: "none",
-                                      background: "none",
-                                      padding: 0,
-                                    }}
-                                  >
-                                    <img
-                                      //src={`https://console.upnetcloud.com/public/uploads/tickets/${msg.image}`}
-                                      src={`${item.image}`}
-                                      style={{
-                                        maxWidth: "150px",
-                                        maxHeight: "150px",
-                                        border: "2px solid #f47c20",
-                                        borderRadius: "8px",
-                                        // backgroundColor: "#f47c20",
-                                      }}
-                                    />
-                                  </button>
-                                ) : (
-                                  ""
-                                )}
-                              </div>
-                            )}
-
-                            <div
-                              class=""
-                              style={{ marginTop: "10px" }}
-                              onClick={() => {
-                                setShowMore(!showMore);
-                                setShowMoreID(idx);
-                              }}
-                            >
-                              <Button
-                                style={{
-                                  marginLeft: "0px",
-                                  marginTop: "10px",
-                                  background: "#035189",
-                                  border: "none",
-                                  fontSize: "12px",
-                                  padding: "5px 15px",
-                                  color: "#fff",
-                                  fontWeight: "600",
-                                  marginBottom: "10px",
-                                }}
-                              >
-                                {" "}
-                                {showMore && showMoreID === idx
-                                  ? "Hide"
-                                  : "Show More"}{" "}
-                              </Button>
-                            </div>
-                            {showMore && showMoreID === idx && (
-                              <>
-                                {/* <div> Description: {item.enquiry}</div> */}
-                                <div>
-                                  {filterByEnquiryId(replyArr, item.id).map(
-                                    (msg, idx) => (
-                                      <>
-                                        <div
-                                          class="desc"
-                                          style={{ maxHeight: "none" }}
-                                        >
-                                          <p style={{ marginBottom: "0rem" }}>
-                                            {" "}
-                                            {msg.admin_reply !== null ? (
-                                              <span
-                                                className="spanWithMargin"
-                                                style={{
-                                                  color: "#035189",
-                                                  fontSize: "12px",
-                                                  fontWeight: "600",
-                                                }}
-                                              >
-                                                Support :{" "}
-                                                <span>{msg.admin_reply}</span>
-                                              </span>
-                                            ) : null}
-                                            {msg.reply !== null ? (
-                                              <span
-                                                style={{
-                                                  color: "#f47c20",
-                                                  fontSize: "12px",
-                                                  fontWeight: "600",
-                                                }}
-                                              >
-                                                You:{" "}
-                                                <span
-                                                  style={{
-                                                    whiteSpace: "pre-wrap",
-                                                  }}
-                                                >
-                                                  {msg.reply}
-                                                </span>
-                                              </span>
-                                            ) : null}
-                                          </p>
-                                        </div>
-                                      </>
-                                    )
-                                  )}
-
-                                  <div
-                                    style={{
-                                      display: "flex",
-                                      marginTop: "15px",
-                                    }}
-                                  >
-                                    <input
-                                      ref={fileInputRef}
-                                      type="file"
-                                      accept="image/*"
-                                      onChange={handleImageUpdateRply}
-                                      style={{
-                                        display: "none",
-                                        position: "absolute",
-
-                                        marginLeft: "-5px",
-                                        height: "40px",
-                                        width: "40px",
-                                        color: "rgb(255 0 0 / 0%)",
-                                        fontSize: "0px",
-                                        backgroundColor: "#ff0000",
-                                      }}
-                                    />
-                                    {selectedImageRply && (
-                                      <div
-                                        style={{
-                                          position: "absolute",
-                                          zIndex: "1",
-                                          width: "10px",
-                                          height: "10px",
-                                          backgroundColor: "red",
-                                          borderRadius: "50%",
-                                        }}
-                                      ></div>
-                                    )}
-
-                                    <Button
-                                      style={{
-                                        width: "30px",
-                                        height: "30px",
-                                        marginLeft: "0px",
-                                        backgroundColor: "#f47c2000",
-                                        border: "none",
-                                        color: "white",
-                                      }}
-                                      onClick={handleButtonClick}
-                                    >
-                                      <img
-                                        src="./filepin.png"
-                                        style={{ opacity: "1" }}
-                                      />
-                                    </Button>
-
-                                    <textarea
-                                      placeholder="Content"
-                                      style={{
-                                        minHeight: "100px",
-                                        maxHeight: "300px",
-                                        padding: "10px",
-
-                                        width: "50%",
-                                        backgroundColor: "transparent",
-                                        color: "black",
-                                        borderRadius: "30px",
-                                        border: "2px solid grey",
-                                      }}
-                                      value={supportMsg}
-                                      onChange={(e) =>
-                                        setSupportMsg(e.target.value)
-                                      }
-                                    />
-                                    <Button
-                                      style={{
-                                        height: "40px",
-                                        marginLeft: "10px",
-                                        backgroundColor: "#f47c20",
-                                        border: "none",
-                                        color: "white",
-                                        marginTop: "30px",
-                                      }}
-                                      onClick={() => {
-                                        setEnqID(item.id);
-                                        const filteredReplies =
-                                          filterByEnquiryId(replyArr, item.id);
-                                        const lastReplyID =
-                                          filteredReplies[
-                                            filteredReplies.length - 1
-                                          ].id;
-                                        TicketsReply(lastReplyID, item.id);
-                                      }}
-                                    >
-                                      {" "}
-                                      Reply
-                                    </Button>
-                                  </div>
-                                </div>
-                              </>
-                            )}
-                          </div>
-
-                          <div
-                            className="datetime"
-                            style={{
-                              marginTop: "10px",
-                              marginLeft: "60%",
-                              marginRight: "0px",
-                              position: "absolute",
-                              top: "15px",
-                              fontSize: "10px",
-                            }}
-                          >
-                            Created at : {item.createdAt}
-                            <select
-                              name="plan_time"
-                              style={{
-                                borderRadius: "4px",
-                                background:
-                                  item.status === "complete"
-                                    ? "green"
-                                    : item.status === "progress"
-                                    ? "#aaaa00" //YELLOW
-                                    : item.status === "open"
-                                    ? "#f47c20"
-                                    : "#aa0000", // RED
-                                border: "none",
-                                fontSize: "12px",
-                                width: "100px",
-                                padding: "5px 15px",
-                                color: "#fff",
-                                fontWeight: "600",
-                                // borderRadius: "20px",
-                                marginBottom: "10px",
-                              }}
-                              value={item.status}
-                              onChange={(e) => {
-                                // setSupportMachine(e.target.value);
-                                ArchiveTicket({
-                                  id: item.id,
-                                  status: e.target.value,
-                                });
-                              }}
-                            >
-                              <option value="complete" disabled="true">
-                                Complete
-                              </option>
-                              <option value="progress" disabled="true">
-                                inProgress
-                              </option>
-                              <option value="open" disabled="true">
-                                Open
-                              </option>
-                              <option value="pending" disabled="true">
-                                Pending
-                              </option>
-                              <option
-                                value="archived"
-                                disabled={item.archived === "archived"}
-                              >
-                                Archive
-                              </option>
-                              <option value="close">Close</option>
-                            </select>
-                          </div>
-                        </div>
-                      ))}
-                </>
-              )}
-            </div>
-          </div>
+      <main className="sp-main">
+        {/* Stats */}
+        <div className="sp-stats">
+          {TABS.map(t => (
+            <button key={t.key} className={`sp-stat ${tab === t.key ? "sp-stat-active" : ""}`} onClick={() => setTab(t.key)}>
+              <span className="sp-stat-icon">{t.icon}</span>
+              <span className="sp-stat-num">{counts[t.key]}</span>
+              <span className="sp-stat-label">{t.label}</span>
+            </button>
+          ))}
         </div>
-      ) : (
-        // WEBVIEW
 
-        <div
-          className="features-page-solution"
-          style={{ height: "100%", padding: "5rem" }}
-        >
-          <div className="heading-dotted-support">
-            Support <span></span>
+        {/* Search */}
+        <div className="sp-search-row">
+          <div className="sp-search-box">
+            <I.Search />
+            <input className="sp-search-input" placeholder="Search by ticket ID, subject, or description..." value={search} onChange={e => setSearch(e.target.value)} />
+            {search && <button className="sp-search-clear" onClick={() => setSearch("")}><I.X /></button>}
           </div>
-          <div className="features-section-solution">
-            <Row>
-              <div className="col-md-1"></div>
-              <div className="col-md-10">
-                {showSupport ? (
-                  <div>
-                    <div
-                      className="buttons-container"
-                      style={{
-                        marginLeft: "-5px",
-                        marginBottom: "-15px",
-                      }}
-                    >
-                      {innerButtons.map((title, idx) => (
-                        <Button
-                          key={idx}
-                          style={{
-                            background: `${
-                              activeButton === title ? "#f47c20" : "#035189"
-                            }`,
-                            border: "none",
-                            fontSize: "20px",
-                            padding: "5px 15px",
-                            color: "#fff",
-                            fontWeight: "600",
-                            borderRadius: "20px",
-                            marginBottom: "10px",
-                          }}
-                          onClick={() => setActiveButton(title)}
-                        >
-                          {title}
-                        </Button>
-                      ))}
+          <span className="sp-result-count">{filtered.length} result{filtered.length !== 1 ? "s" : ""}</span>
+        </div>
+
+        {/* Ticket List */}
+        <div className="sp-tickets">
+          {filtered.length === 0 ? (
+            <div className="sp-empty">
+              <I.Empty />
+              <p className="sp-empty-title">{search ? "No matching tickets" : "No tickets yet"}</p>
+              <p className="sp-empty-sub">{search ? "Try different search terms." : "Create your first support ticket."}</p>
+            </div>
+          ) : (
+            filtered.map(tk => {
+              const open = expanded === tk.id;
+              const replies = getReplies(tk.id);
+              const s = ST[tk.status] || ST.open;
+              return (
+                <div key={tk.id} className="sp-card" style={{ "--accent": s.color }}>
+                  <div className="sp-card-head" onClick={() => setExpanded(open ? null : tk.id)}>
+                    <div className="sp-card-head-l">
+                      <code className="sp-card-id">{tk.enquiry_unique_id}</code>
+                      <span className="sp-badge" style={{ color: s.color, background: s.bg }}>
+                        <span className="sp-badge-dot" style={{ background: s.dot }} />{s.label}
+                      </span>
                     </div>
-                    <div
-                      className="register-main see-full"
-                      style={{ marginTop: "2rem" }}
-                    >
-                      <div className="bg-img">
-                        <img src="/images/blue-box-bg.svg" alt="" />
-                        <img src="/images/blue-box-bg.svg" alt="" />
-                      </div>
-                      <form className="see-full">
-                        <input
-                          type="hidden"
-                          name="_token"
-                          value="IHks1cEdGGmsvouWsdVeWVHE29KFoaLV0iN8cPkE"
-                        />
-
-                        <div className="form-top">
-                          <h4 className="text-white">Send us your question</h4>
-                          <p
-                            style={{
-                              color: "white",
-                              marginTop: "15px",
-                              fontSize: "16px",
-                              lineHeight: "150%",
-                            }}
-                          >
-                            To help us resolve your Server related problem
-                            quickly, We might Require Temporary access
-                            credentials (root/admin) to your server. Please
-                            provide us with a detailed specification of what the
-                            issue is.
-                          </p>
-
-                          {machineData.length > 0 ? (
-                            <>
-                              <div
-                                style={{
-                                  display: "flex",
-                                  gap: "10px",
-                                  flexWrap: "wrap",
-                                  marginTop: "40px",
-                                }}
-                              >
-                                {machineData &&
-                                  machineData.map((item, idx) => (
-                                    <>
-                                      {(item.public_ip || item.ip_address) && (
-                                        <div
-                                          style={{
-                                            backgroundColor: "#f47c20",
-                                            border: "none",
-                                            borderRadius: "20px",
-                                            paddingLeft: "10px",
-                                            paddingBottom: "10px",
-                                            width: "max-content",
-                                          }}
-                                          onClick={() =>
-                                            handleSupportMachineClick(
-                                              item.vm_id
-                                            )
-                                          }
-                                        >
-                                          <label
-                                            className="radio-label"
-                                            style={{ marginTop: "8px" }}
-                                          >
-                                            <input
-                                              type="radio"
-                                              value={item.vm_id}
-                                              checked={supportMachineArr.includes(
-                                                item.vm_id
-                                              )}
-                                              onChange={handleOptionVM}
-                                              className="radio-input"
-                                              style={{
-                                                marginBottom: "-3px",
-                                                backgroundColor: "white",
-                                              }}
-                                            />
-                                            {item.vm_name}
-                                          </label>
-                                        </div>
-                                      )}
-                                    </>
-                                  ))}
-                              </div>
-                            </>
-                          ) : (
-                            <>
-                              <p
-                                style={{
-                                  borderRadius: "5px",
-                                  paddingRight: "5px",
-                                  paddingLeft: "5px",
-
-                                  height: "25px",
-
-                                  backgroundColor: "#f47c20",
-
-                                  position: "absolute",
-                                  color: "white",
-                                  marginTop: "-0.5%",
-                                }}
-                              >
-                                No Machines
-                              </p>
-                            </>
-                          )}
-
-                          {activeButton === "Sales" ||
-                          activeButton === "Billing Query" ||
-                          activeButton === "Other" ? (
-                            <p
-                              style={{
-                                position: "absolute",
-                                color: "white",
-                                top: machineData.length > 0 ? "28%" : "20%",
-                              }}
-                            >
-                              (Optional)
-                            </p>
-                          ) : null}
-                          <div
-                            className="input-container"
-                            style={{ marginTop: "65px" }}
-                          >
-                            <textarea
-                              placeholder="Content"
-                              style={{
-                                minHeight: "200px",
-                                maxHeight: "500px",
-                                padding: "10px",
-                                height: "157px",
-                                width: "100%",
-                                backgroundColor: "transparent",
-                                color: "white",
-                                borderRadius: "30px",
-                                border: "none",
-                              }}
-                              value={supportMsg}
-                              onChange={(e) => setSupportMsg(e.target.value)}
-                            ></textarea>
-                          </div>
-                          {/* FILES */}
-                          <div
-                            style={{
-                              width: selectedImage !== null ? "25rem" : "15rem",
-                              marginTop: "15px",
-                              display: "flex",
-                              alignItems: "center",
-                              // border: "2px solid white",
-                              // borderRadius: "25px",
-                              padding: "5px",
-                              alignContent: "center",
-                            }}
-                          >
-                            <input
-                              type="file"
-                              accept="image/*"
-                              onChange={handleImageChange}
-                              style={{
-                                marginTop: "10px",
-                                marginLeft: "30px",
-                                height: "45px",
-                                color:
-                                  selectedImage !== null
-                                    ? "white"
-                                    : "#80808000", //"grey",
-                                fontSize: "21px",
-                              }}
-                            />
-                            {/* </Button> */}
-                          </div>
-
-                          <label
-                            style={{
-                              position: "absolute",
-                              transform: "translateY(-50%)",
-                              fontSize: "18px",
-                              fontStyle: "italic",
-                              color: "white",
-                              fontWeight: "500",
-                              marginTop: "1rem",
-                            }}
-                          >
-                            Note : Please upload .png .jpeg .jpg images only.
-                          </label>
-                        </div>
-                        <div style={{ display: "flex", marginTop: "40px" }}>
-                          <div
-                            className="log-in"
-                            onClick={() => UpdateSupport()}
-                          >
-                            <a className="media-link">
-                              <div
-                                className="media-banner"
-                                style={{
-                                  width: "auto",
-                                  height: "50px",
-                                  marginTop: "10px",
-                                  marginLeft: "0.5rem",
-                                }}
-                              >
-                                <img
-                                  className="normal-banner"
-                                  src="/images/more-info-btn-bg.svg"
-                                  alt=""
-                                />
-                                <img
-                                  className="hover-img-banner"
-                                  src="/images/search-btn-hover.png"
-                                  alt="/images/search-btn-hover.png"
-                                />
-                                <span
-                                  className="login-text"
-                                  style={{
-                                    fontSize: "20px",
-
-                                    marginTop: "0px",
-                                    fontWeight: "600",
-                                  }}
-                                  onMouseOver={(e) =>
-                                    (e.target.style.color = "#07528B")
-                                  } // Change color on hover
-                                  onMouseOut={(e) =>
-                                    (e.target.style.color = "white")
-                                  }
-                                >
-                                  Submit
-                                </span>
-                              </div>
-                            </a>
-                          </div>
-                          <div
-                            className="log-in"
-                            onClick={() => setShowSupport(false)}
-                          >
-                            <a className="media-link">
-                              <div
-                                className="media-banner"
-                                style={{
-                                  width: "auto",
-                                  height: "50px",
-                                  marginTop: "10px",
-                                  marginLeft: "0.5rem",
-                                }}
-                              >
-                                <img
-                                  className="normal-banner"
-                                  src="/images/signup-btn-bg.png"
-                                  alt=""
-                                />
-                                <img
-                                  className="hover-img-banner"
-                                  src="/images/search-btn-hover.png"
-                                  alt="/images/search-btn-hover.png"
-                                />
-                                <span
-                                  className="login-text"
-                                  style={{
-                                    fontSize: "20px",
-                                    color: "#07528B",
-                                    marginTop: "0px",
-                                    fontWeight: "600",
-                                  }}
-                                >
-                                  Cancel
-                                </span>
-                              </div>
-                            </a>
-                          </div>
-                        </div>
-                      </form>
+                    <div className="sp-card-head-r">
+                      <span className="sp-card-date"><I.Clock />{tk.createdAt}</span>
+                      {open ? <I.Up /> : <I.Down />}
                     </div>
                   </div>
-                ) : (
-                  <div style={{ position: "absolute" }}>
-                    <Button
-                      style={{
-                        background: "#035189",
-                        border: "none",
-                        fontSize: "20px",
-                        padding: "5px 15px",
-                        color: "#fff",
-                        fontWeight: "600",
-                        // borderRadius: "20px",
-                        marginBottom: "10px",
-                      }}
-                      onClick={() => setShowSupport(true)}
-                    >
-                      Create Ticket
-                    </Button>
+                  <div className="sp-card-meta">
+                    <span className="sp-type-pill">{tk.type}</span>
+                    {tk.vm_name && <span className="sp-vm-pill"><I.Server />{tk.vm_name}</span>}
                   </div>
-                )}
+                  <p className="sp-card-desc">{tk.enquiry}</p>
 
-                {/* enquiries */}
-                <div style={{}}>
-                  {enquiries && (
-                    <>
-                      <div
-                        className="heading-dotted-support"
-                        style={{
-                          marginLeft: "-27px",
-                          marginTop: showSupport ? "" : "5rem",
-                        }}
-                      >
-                        tickets{" "}
-                      </div>
-                      {enquiries.length > 0 && (
-                        <div
-                          className="buttons-container"
-                          style={{
-                            display: "flex",
-                            marginTop: "15px",
-                            marginLeft: "-5px",
-                            marginBottom: "-15px",
-                          }}
-                        >
-                          <Button
-                            style={{
-                              background: "#035189",
-                              border: "none",
-                              fontSize: "20px",
-                              padding: "5px 15px",
-                              color: "#fff",
-                              fontWeight: "600",
-                              // borderRadius: "20px",
-                              marginBottom: "10px",
-                            }}
-                          >
-                            Latest
-                          </Button>
-                          <div
-                            className="input-container"
-                            style={{
-                              border: "2px solid #035189",
-                              width: "10rem",
-                              marginTop: "0px",
-                              height: "45px",
-                            }}
-                          >
-                            <input
-                              type="text"
-                              name="search"
-                              className="input-signup input-tickets"
-                              placeholder="Search"
-                              value={searchText}
-                              style={{
-                                color: "black",
-                                textAlign: "center",
-                                width: "10px",
-                              }}
-                              onChange={(e) => setSearchText(e.target.value)}
-                            />
-                            {searchText && (
-                              <button
-                                style={{
-                                  backgroundColor: "transparent",
-                                  border: "none",
-                                }}
-                                onClick={() => setSearchText("")}
-                              >
-                                <FaX
-                                  style={{
-                                    marginBottom: "2px",
-                                    color: "#154e7a",
-                                    display: "inline-block",
-                                    fontSize: "19px",
-                                  }}
-                                />
-                              </button>
-                            )}
-                          </div>
-
-                          <div style={{ marginLeft: "auto" }}>
-                            {ticketButtons.map((title, idx) => (
-                              // console.log(idx, "idx=="),
-                              <Button
-                                key={idx}
-                                style={{
-                                  background: `${
-                                    idx === 1 && ticketType === "inProgress"
-                                      ? "#f47c20"
-                                      : ticketType === title
-                                      ? "#f47c20"
-                                      : "#035189"
-                                  }`,
-                                  border: "none",
-                                  fontSize: "14px",
-                                  padding: "5px 15px",
-                                  color: "#fff",
-                                  fontWeight: "600",
-                                  borderRadius: "20px",
-                                  marginBottom: "10px",
-                                }}
-                                onClick={() => setTicketType(title)}
-                              >
-                                {idx == 0
-                                  ? "Open"
-                                  : idx == 1
-                                  ? "inProgress"
-                                  : idx == 2
-                                  ? "Closed"
-                                  : idx == 3
-                                  ? "Archive"
-                                  : idx == 4
-                                  ? "All"
-                                  : ""}
-                              </Button>
-                            ))}
-                          </div>
+                  {open && (
+                    <div className="sp-expanded">
+                      <hr className="sp-hr" />
+                      <p className="sp-thread-title"><I.Msg /> Conversation <span className="sp-thread-count">{replies.length}</span></p>
+                      {replies.length === 0 ? <p className="sp-no-reply">No replies yet — support will respond shortly.</p> : (
+                        <div className="sp-thread">
+                          {replies.map(m => (
+                            <div key={m.id} className={`sp-bubble ${m.admin_reply ? "sp-bubble-admin" : "sp-bubble-user"}`}>
+                              <div className="sp-bubble-head">
+                                <span className="sp-bubble-who">{m.admin_reply ? "🛡️ Support" : "You"}</span>
+                                <span className="sp-bubble-time">{m.created_at}</span>
+                              </div>
+                              <p className="sp-bubble-text">{m.admin_reply || m.reply}</p>
+                              {m.image && <img src={m.image} alt="" className="sp-bubble-img" />}
+                            </div>
+                          ))}
                         </div>
                       )}
 
-                      <div
-                        // className="notification-cont"
-                        style={{ marginTop: "30px" }}
-                      >
-                        {console.log("enquiries==", enquiries)}
+                      {tk.status !== "completed" && tk.status !== "archived" && (
+                        <div className="sp-reply-box">
+                          <button className="sp-attach-btn" onClick={() => rRef.current?.click()}>
+                            <I.Clip />
+                            {replyImg && <span className="sp-attach-dot" />}
+                          </button>
+                          <input ref={rRef} type="file" accept="image/*" style={{ display: "none" }} onChange={e => { if (e.target.files[0]) setReplyImg(e.target.files[0]); }} />
+                          <textarea className="sp-reply-input" placeholder="Write your reply..." rows={2} value={replyText} onChange={e => setReplyText(e.target.value)} />
+                          <button className="sp-send-btn" onClick={() => reply(tk.id)}><I.Send /></button>
+                        </div>
+                      )}
 
-                        {/* inProgress */}
-                        {ticketType === "progress" ||
-                        ticketType === "inProgress" ? (
-                          <>
-                            {enquiries &&
-                              filterByStatus(enquiries, "")
-                                .filter(
-                                  (item) =>
-                                    item.status === "progress" &&
-                                    item.enquiry_unique_id
-                                      .toLowerCase()
-                                      .includes(searchText.toLowerCase())
-                                )
-                                .map((item, idx) => (
-                                  <div className="table-row-noti" key={idx}>
-                                    <div className="bar"></div>
-                                    <div className="message">
-                                      <Button
-                                        style={{
-                                          marginLeft: "0px",
-                                          marginTop: "5px",
-                                          background: "#035189",
-                                          border: "none",
-                                          fontSize: "20px",
-                                          padding: "5px 15px",
-                                          color: "#fff",
-                                          fontWeight: "600",
-                                          // width: "17%",
-                                        }}
-                                      >
-                                        Ticket No. : {item.enquiry_unique_id}
-                                      </Button>
-                                      {/* {item.vm_id !== "null" &&
-                                        item.vm_id !== null && (
-                                          <div class="desc">
-                                            Machine : {item.vm_name}
-                                          </div>
-                                        )} */}
-                                      <div
-                                        class="desc"
-                                        style={{
-                                          fontSize: "24px",
-                                          marginTop: "20px",
-                                          color: "#035189",
-                                          maxHeight: "100px",
-                                          fontWeight: "600",
-                                          maxWidth: "100rem",
-                                        }}
-                                      >
-                                        Subject : {item.type}
-                                      </div>
-                                      <div
-                                        class="desc"
-                                        style={{
-                                          fontSize: "24px",
-                                          marginTop: "15px",
-                                          color: "#f47c20",
-                                          maxHeight: "100px",
-                                          fontWeight: "600",
-                                          maxWidth: "100rem",
-                                        }}
-                                      >
-                                        Desc. : {item.enquiry}
-                                      </div>
-                                      {item.image !== null &&
-                                        item.image !== "" && (
-                                          <div style={{ marginTop: "10px" }}>
-                                            {item.image !== null &&
-                                            item.image !== "" ? (
-                                              <button
-                                                onClick={() => {
-                                                  setPreviewImagePopup(
-                                                    item.image
-                                                  );
-                                                  setShowImagePopup(true);
-                                                }}
-                                                style={{
-                                                  border: "none",
-                                                  background: "none",
-                                                  padding: 0,
-                                                }}
-                                              >
-                                                <img
-                                                  //src={`https://console.upnetcloud.com/public/uploads/tickets/${msg.image}`}
-                                                  src={`${item.image}`}
-                                                  style={{
-                                                    maxWidth: "40rem",
-                                                    maxHeight: "30rem",
-                                                    border: "2px solid #f47c20",
-                                                    borderRadius: "8px",
-                                                    // backgroundColor: "#f47c20",
-                                                  }}
-                                                />
-                                              </button>
-                                            ) : (
-                                              ""
-                                            )}
-                                          </div>
-                                        )}
-
-                                      <div
-                                        class=""
-                                        style={{ fontSize: "24px" }}
-                                        onClick={() => {
-                                          setShowMore(!showMore);
-                                          setShowMoreID(idx);
-                                        }}
-                                      >
-                                        <Button
-                                          style={{
-                                            marginLeft: "0px",
-                                            marginTop: "20px",
-                                            background: "#035189",
-                                            border: "none",
-                                            fontSize: "20px",
-                                            padding: "5px 15px",
-                                            color: "#fff",
-                                            fontWeight: "600",
-                                            marginBottom: "10px",
-                                          }}
-                                        >
-                                          {" "}
-                                          {showMore && showMoreID === idx
-                                            ? "Hide"
-                                            : "Show More"}{" "}
-                                        </Button>
-                                      </div>
-                                      {showMore && showMoreID === idx && (
-                                        <>
-                                          {/* <div> Description: {item.enquiry}</div> */}
-                                          <div
-                                            className="you-title"
-                                            style={{
-                                              fontSize: "24px",
-                                              marginBottom: "20px",
-                                            }}
-                                          >
-                                            {filterByEnquiryId(
-                                              replyArr,
-                                              item.id
-                                            ).map((msg, idx) => (
-                                              <>
-                                                <div
-                                                  //class="desc"
-                                                  style={{ maxHeight: "none" }}
-                                                >
-                                                  <p
-                                                    style={{
-                                                      //marginBottom: "0rem",
-                                                      marginTop: "10px",
-                                                      marginRight: "200px",
-                                                    }}
-                                                  >
-                                                    {" "}
-                                                    {msg.reply !== null ? (
-                                                      <div
-                                                        className="row"
-                                                        style={{
-                                                          color: "#f47c20",
-                                                          fontWeight: "600",
-                                                          width: "126%",
-                                                          marginBottom: "20px",
-                                                        }}
-                                                      >
-                                                        <div
-                                                          className="col-md-9"
-                                                          style={{
-                                                            wordBreak:
-                                                              "break-word",
-                                                            maxWidth: "100%",
-                                                            // whiteSpace:
-                                                            //   "pre-wrap",
-                                                          }}
-                                                        >
-                                                          <span
-                                                            style={{
-                                                              width: "4rem",
-                                                            }}
-                                                          >
-                                                            You:
-                                                          </span>
-
-                                                          <span
-                                                            style={{
-                                                              maxWidth: "80ch",
-                                                              // display: "flex",
-                                                              marginLeft:
-                                                                "10px",
-                                                              whiteSpace:
-                                                                "pre-wrap",
-                                                            }}
-                                                          >
-                                                            {msg.reply}
-                                                          </span>
-                                                        </div>
-                                                        <div className="col-md-3">
-                                                          <span
-                                                            className="datetime"
-                                                            style={{
-                                                              //display: "flex",
-                                                              // position:"absolute",
-                                                              // marginLeft: "20%",
-                                                              // marginRight: "0px",
-                                                              fontSize: "14px",
-                                                              // fontWeight: "300px",
-                                                              color: "#898989",
-                                                              marginLeft: "20%",
-                                                            }}
-                                                          >
-                                                            Created at :
-                                                            {msg.created_at}
-                                                            {/* {
-                                                              <DateTimeSplit
-                                                                datetime={
-                                                                  msg.created_at
-                                                                }
-                                                              />
-                                                            } */}
-                                                          </span>
-                                                        </div>
-                                                      </div>
-                                                    ) : null}
-                                                    {msg.admin_reply !==
-                                                    null ? (
-                                                      <span
-                                                        className="spanWithMargin"
-                                                        style={{
-                                                          color: "#035189",
-                                                          //marginBottom: "10px",
-                                                          fontWeight: "600",
-                                                        }}
-                                                      >
-                                                        Support :{" "}
-                                                        <span
-                                                        // style={{
-                                                        //   color: "black",
-                                                        //   fontWeight: "300",
-                                                        //   fontSize: "13px",
-                                                        // }}
-                                                        >
-                                                          {msg.admin_reply}
-                                                        </span>
-                                                      </span>
-                                                    ) : null}
-                                                  </p>
-                                                  {msg.image !== null &&
-                                                  msg.image !== "" ? (
-                                                    <img
-                                                      //src={`https://console.upnetcloud.com/public/uploads/tickets/${msg.image}`}
-                                                      src={`${msg.image}`}
-                                                      style={{
-                                                        maxWidth: "40rem",
-                                                        maxHeight: "30rem",
-                                                        border:
-                                                          "2px solid #f47c20",
-                                                        borderRadius: "8px",
-                                                      }}
-                                                    />
-                                                  ) : null}
-                                                </div>
-                                              </>
-                                            ))}
-                                            <div
-                                              style={{
-                                                display: "flex",
-                                                marginTop: "15px",
-                                              }}
-                                            >
-                                              <input
-                                                ref={fileInputRef}
-                                                type="file"
-                                                accept="image/*"
-                                                onChange={handleImageUpdateRply}
-                                                style={{
-                                                  display: "none",
-                                                  position: "absolute",
-                                                  zIndex: "1",
-
-                                                  marginLeft: "-5px",
-                                                  height: "40px",
-                                                  width: "40px",
-                                                  color: "rgb(255 0 0 / 0%)",
-                                                  fontSize: "0px",
-                                                  backgroundColor: "#ff0000",
-                                                }}
-                                              />
-                                              {selectedImageRply && (
-                                                <div
-                                                  style={{
-                                                    position: "absolute",
-                                                    zIndex: "1",
-                                                    width: "10px",
-                                                    height: "10px",
-                                                    backgroundColor: "red",
-                                                    borderRadius: "50%",
-                                                  }}
-                                                ></div>
-                                              )}
-                                              <Button
-                                                style={{
-                                                  width: "30px",
-                                                  height: "30px",
-                                                  marginLeft: "0px",
-                                                  backgroundColor: "#f47c2000",
-                                                  border: "none",
-                                                  color: "white",
-                                                }}
-                                                onClick={handleButtonClick}
-                                              >
-                                                <img
-                                                  src="./filepin.png"
-                                                  style={{ opacity: "1" }}
-                                                />
-                                              </Button>
-
-                                              <textarea
-                                                placeholder="Content"
-                                                style={{
-                                                  minHeight: "100px",
-                                                  maxHeight: "300px",
-                                                  padding: "10px",
-                                                  width: "100%",
-                                                  backgroundColor:
-                                                    "transparent",
-                                                  color: "black",
-                                                  borderRadius: "30px",
-                                                  border: "2px solid grey",
-                                                }}
-                                                value={replyText}
-                                                onChange={(e) =>
-                                                  setReplyText(e.target.value)
-                                                }
-                                              />
-                                              <Button
-                                                style={{
-                                                  height: "40px",
-                                                  marginLeft: "10px",
-                                                  marginTop: "30px",
-                                                  backgroundColor: "#f47c20",
-                                                  border: "none",
-                                                  color: "white",
-                                                }}
-                                                onClick={() => {
-                                                  setEnqID(item.id);
-
-                                                  const filteredReplies =
-                                                    filterByEnquiryId(
-                                                      replyArr,
-                                                      item.id
-                                                    );
-                                                  const lastReplyID =
-                                                    filteredReplies[
-                                                      filteredReplies.length - 1
-                                                    ].id;
-                                                  TicketsReply(
-                                                    lastReplyID,
-                                                    item.id
-                                                  );
-                                                }}
-                                              >
-                                                {" "}
-                                                Reply
-                                              </Button>
-                                            </div>
-                                          </div>
-                                        </>
-                                      )}
-                                    </div>
-                                    <div
-                                      className="datetime"
-                                      style={{
-                                        // display: "flex",
-                                        marginLeft: "80%",
-                                        marginRight: "0px",
-                                        position: "absolute",
-                                        top: "15px",
-                                      }}
-                                    >
-                                      Created at : {item.createdAt}
-                                      <select
-                                        name="plan_time"
-                                        style={{
-                                          borderRadius: "4px",
-                                          background:
-                                            item.status === "completed"
-                                              ? "green"
-                                              : item.status === "progress"
-                                              ? "#aaaa00" //YELLOW
-                                              : item.status === "open"
-                                              ? "#f47c20"
-                                              : "#aa0000", // RED
-                                          border: "none",
-                                          fontSize: "18px",
-                                          padding: "5px 15px",
-                                          color: "#fff",
-                                          fontWeight: "600",
-                                          // borderRadius: "20px",
-                                          marginBottom: "10px",
-                                        }}
-                                        value={item.status}
-                                        onChange={(e) => {
-                                          // setSupportMachine(e.target.value);
-                                          ArchiveTicket({
-                                            id: item.id,
-                                            status: e.target.value,
-                                          });
-                                        }}
-                                      >
-                                        <option
-                                          value="completed"
-                                          disabled="true"
-                                        >
-                                          Complete
-                                        </option>
-                                        <option
-                                          value="progress"
-                                          disabled="true"
-                                        >
-                                          inProgress
-                                        </option>
-                                        <option value="open" disabled="true">
-                                          Open
-                                        </option>
-                                        <option value="pending" disabled="true">
-                                          Pending
-                                        </option>
-                                        <option
-                                          value="archived"
-                                          disabled={
-                                            item.archived === "archived"
-                                          }
-                                        >
-                                          Archive
-                                        </option>
-                                        <option value="close">Close</option>
-                                      </select>
-                                    </div>
-                                  </div>
-                                ))}
-                            {filterByStatus(enquiries, "").filter(
-                              (item) =>
-                                item.status === "progress" &&
-                                item.enquiry_unique_id
-                                  .toLowerCase()
-                                  .includes(searchText.toLowerCase())
-                            ).length === 0 ? (
-                              <div
-                                style={{
-                                  position: "relative",
-                                  left: "40%",
-                                  marginTop: "15px",
-                                  fontSize: "24px",
-                                  fontWeight: "400",
-                                }}
-                              >
-                                No Records
-                              </div>
-                            ) : (
-                              ""
-                            )}
-                          </>
-                        ) : (
-                          <></>
+                      <div className="sp-actions">
+                        {tk.status !== "archived" && tk.archived !== "archived" && (
+                          <button className="sp-act-btn" onClick={() => changeStatus(tk, "archived")}><I.Archive /> Archive</button>
                         )}
-
-                        {/* Complete */}
-                        {ticketType === "complete" ? (
-                          <>
-                            {enquiries &&
-                              filterByStatus(enquiries, "")
-                                .filter(
-                                  (item) =>
-                                    item.status === "completed" &&
-                                    item.enquiry_unique_id
-                                      .toLowerCase()
-                                      .includes(searchText.toLowerCase())
-                                )
-                                .map((item, idx) => (
-                                  <div className="table-row-noti" key={idx}>
-                                    <div className="bar"></div>
-                                    <div className="message">
-                                      <Button
-                                        style={{
-                                          marginLeft: "0px",
-                                          marginTop: "5px",
-                                          background: "#035189",
-                                          border: "none",
-                                          fontSize: "20px",
-                                          padding: "5px 15px",
-                                          color: "#fff",
-                                          fontWeight: "600",
-                                          // width: "17%",
-                                        }}
-                                      >
-                                        Ticket No. : {item.enquiry_unique_id}
-                                      </Button>
-                                      {/* {item.vm_id !== "null" &&
-                                        item.vm_id !== null && (
-                                          <div class="desc">
-                                            Machine : {item.vm_name}
-                                          </div>
-                                        )} */}
-                                      <div
-                                        class="desc"
-                                        style={{
-                                          fontSize: "24px",
-                                          marginTop: "20px",
-                                          color: "#035189",
-                                          maxHeight: "100px",
-                                          fontWeight: "600",
-                                          maxWidth: "100rem",
-                                        }}
-                                      >
-                                        Subject : {item.type}
-                                      </div>
-                                      <div
-                                        class="desc"
-                                        style={{
-                                          fontSize: "24px",
-                                          marginTop: "15px",
-                                          color: "#f47c20",
-                                          maxHeight: "100px",
-                                          fontWeight: "600",
-                                          maxWidth: "100rem",
-                                        }}
-                                      >
-                                        Desc. : {item.enquiry}
-                                      </div>
-                                      {item.image !== null &&
-                                        item.image !== "" && (
-                                          <div style={{ marginTop: "10px" }}>
-                                            {item.image !== null &&
-                                            item.image !== "" ? (
-                                              <button
-                                                onClick={() => {
-                                                  setPreviewImagePopup(
-                                                    item.image
-                                                  );
-                                                  setShowImagePopup(true);
-                                                }}
-                                                style={{
-                                                  border: "none",
-                                                  background: "none",
-                                                  padding: 0,
-                                                }}
-                                              >
-                                                <img
-                                                  //src={`https://console.upnetcloud.com/public/uploads/tickets/${msg.image}`}
-                                                  src={`${item.image}`}
-                                                  style={{
-                                                    maxWidth: "40rem",
-                                                    maxHeight: "30rem",
-                                                    border: "2px solid #f47c20",
-                                                    borderRadius: "8px",
-                                                    // backgroundColor: "#f47c20",
-                                                  }}
-                                                />
-                                              </button>
-                                            ) : (
-                                              ""
-                                            )}
-                                          </div>
-                                        )}
-
-                                      <div
-                                        class=""
-                                        style={{ fontSize: "24px" }}
-                                        onClick={() => {
-                                          setShowMore(!showMore);
-                                          setShowMoreID(idx);
-                                        }}
-                                      >
-                                        <Button
-                                          style={{
-                                            marginLeft: "0px",
-                                            marginTop: "20px",
-                                            background: "#035189",
-                                            border: "none",
-                                            fontSize: "20px",
-                                            padding: "5px 15px",
-                                            color: "#fff",
-                                            fontWeight: "600",
-                                            marginBottom: "10px",
-                                          }}
-                                        >
-                                          {" "}
-                                          {showMore && showMoreID === idx
-                                            ? "Hide"
-                                            : "Show More"}{" "}
-                                        </Button>
-                                      </div>
-                                      {showMore && showMoreID === idx && (
-                                        <>
-                                          {/* <div> Description: {item.enquiry}</div> */}
-                                          <div
-                                            className="you-title"
-                                            style={{
-                                              fontSize: "24px",
-                                              marginBottom: "20px",
-                                            }}
-                                          >
-                                            {filterByEnquiryId(
-                                              replyArr,
-                                              item.id
-                                            ).map((msg, idx) => (
-                                              <>
-                                                <div
-                                                  //class="desc"
-                                                  style={{ maxHeight: "none" }}
-                                                >
-                                                  <p
-                                                    style={{
-                                                      //marginBottom: "0rem",
-                                                      marginTop: "10px",
-                                                      marginRight: "200px",
-                                                    }}
-                                                  >
-                                                    {" "}
-                                                    {msg.reply !== null ? (
-                                                      <div
-                                                        className="row"
-                                                        style={{
-                                                          color: "#f47c20",
-                                                          fontWeight: "600",
-                                                          width: "126%",
-                                                          marginBottom: "20px",
-                                                        }}
-                                                      >
-                                                        <div
-                                                          className="col-md-9"
-                                                          style={{
-                                                            wordBreak:
-                                                              "break-word",
-                                                            maxWidth: "100%",
-                                                            // whiteSpace:
-                                                            //   "pre-wrap",
-                                                          }}
-                                                        >
-                                                          <span
-                                                            style={{
-                                                              width: "4rem",
-                                                            }}
-                                                          >
-                                                            You:
-                                                          </span>
-
-                                                          <span
-                                                            style={{
-                                                              maxWidth: "80ch",
-                                                              // display: "flex",
-                                                              marginLeft:
-                                                                "10px",
-                                                              whiteSpace:
-                                                                "pre-wrap",
-                                                            }}
-                                                          >
-                                                            {msg.reply}
-                                                          </span>
-                                                        </div>
-                                                        <div className="col-md-3">
-                                                          <span
-                                                            className="datetime"
-                                                            style={{
-                                                              //display: "flex",
-                                                              // position:"absolute",
-                                                              // marginLeft: "20%",
-                                                              // marginRight: "0px",
-                                                              fontSize: "14px",
-                                                              // fontWeight: "300px",
-                                                              color: "#898989",
-                                                              marginLeft: "20%",
-                                                            }}
-                                                          >
-                                                            Created at :
-                                                            {msg.created_at}
-                                                            {/* {
-                                                              <DateTimeSplit
-                                                                datetime={
-                                                                  msg.created_at
-                                                                }
-                                                              />
-                                                            } */}
-                                                          </span>
-                                                        </div>
-                                                      </div>
-                                                    ) : null}
-                                                    {msg.admin_reply !==
-                                                    null ? (
-                                                      <span
-                                                        className="spanWithMargin"
-                                                        style={{
-                                                          color: "#035189",
-                                                          //marginBottom: "10px",
-                                                          fontWeight: "600",
-                                                        }}
-                                                      >
-                                                        Support :{" "}
-                                                        <span
-                                                        // style={{
-                                                        //   color: "black",
-                                                        //   fontWeight: "300",
-                                                        //   fontSize: "13px",
-                                                        // }}
-                                                        >
-                                                          {msg.admin_reply}
-                                                        </span>
-                                                      </span>
-                                                    ) : null}
-                                                  </p>
-                                                  {msg.image !== null &&
-                                                  msg.image !== "" ? (
-                                                    <img
-                                                      //src={`https://console.upnetcloud.com/public/uploads/tickets/${msg.image}`}
-                                                      src={`${msg.image}`}
-                                                      style={{
-                                                        maxWidth: "40rem",
-                                                        maxHeight: "30rem",
-                                                        border:
-                                                          "2px solid #f47c20",
-                                                        borderRadius: "8px",
-                                                      }}
-                                                    />
-                                                  ) : null}
-                                                </div>
-                                              </>
-                                            ))}
-                                          </div>
-                                        </>
-                                      )}
-                                    </div>
-                                    <div
-                                      className="datetime"
-                                      style={{
-                                        // display: "flex",
-                                        marginLeft: "80%",
-                                        marginRight: "0px",
-                                        position: "absolute",
-                                        top: "15px",
-                                      }}
-                                    >
-                                      Created at : {item.createdAt}
-                                      <select
-                                        name="plan_time"
-                                        style={{
-                                          borderRadius: "4px",
-                                          background:
-                                            item.status === "completed"
-                                              ? "green"
-                                              : item.status === "progress"
-                                              ? "#aaaa00" //YELLOW
-                                              : item.status === "open"
-                                              ? "#f47c20"
-                                              : "#aa0000", // RED
-                                          border: "none",
-                                          fontSize: "18px",
-                                          padding: "5px 15px",
-                                          color: "#fff",
-                                          fontWeight: "600",
-                                          // borderRadius: "20px",
-                                          marginBottom: "10px",
-                                        }}
-                                        value={item.status}
-                                        onChange={(e) => {
-                                          // setSupportMachine(e.target.value);
-                                          ArchiveTicket({
-                                            id: item.id,
-                                            status: e.target.value,
-                                          });
-                                        }}
-                                      >
-                                        <option
-                                          value="completed"
-                                          disabled="true"
-                                        >
-                                          Complete
-                                        </option>
-                                        <option
-                                          value="progress"
-                                          disabled="true"
-                                        >
-                                          inProgress
-                                        </option>
-                                        <option value="open" disabled="true">
-                                          Open
-                                        </option>
-                                        <option value="pending" disabled="true">
-                                          Pending
-                                        </option>
-                                        <option
-                                          value="archived"
-                                          disabled={
-                                            item.archived === "archived"
-                                          }
-                                        >
-                                          Archive
-                                        </option>
-                                        <option value="close">Close</option>
-                                      </select>
-                                    </div>
-                                  </div>
-                                ))}
-
-                            {filterByStatus(enquiries, "").filter(
-                              (item) =>
-                                item.status === "completed" &&
-                                item.enquiry_unique_id
-                                  .toLowerCase()
-                                  .includes(searchText.toLowerCase())
-                            ).length === 0 ? (
-                              <div
-                                style={{
-                                  position: "relative",
-                                  left: "40%",
-                                  marginTop: "15px",
-                                  fontSize: "24px",
-                                  fontWeight: "400",
-                                }}
-                              >
-                                No Records
-                              </div>
-                            ) : (
-                              ""
-                            )}
-                          </>
-                        ) : (
-                          <></>
-                        )}
-
-                        {/* Archived */}
-
-                        {ticketType === "archived" ? (
-                          <>
-                            {enquiries &&
-                              filterByStatus(enquiries, "")
-                                .filter(
-                                  (item) =>
-                                    item.status === "archived" &&
-                                    item.enquiry_unique_id
-                                      .toLowerCase()
-                                      .includes(searchText.toLowerCase())
-                                )
-                                .map((item, idx) => (
-                                  <div className="table-row-noti" key={idx}>
-                                    <div className="bar"></div>
-                                    <div className="message">
-                                      <Button
-                                        style={{
-                                          marginLeft: "0px",
-                                          marginTop: "5px",
-                                          background: "#035189",
-                                          border: "none",
-                                          fontSize: "20px",
-                                          padding: "5px 15px",
-                                          color: "#fff",
-                                          fontWeight: "600",
-                                          // width: "17%",
-                                        }}
-                                      >
-                                        Ticket No. : {item.enquiry_unique_id}
-                                      </Button>
-                                      {/* {item.vm_id !== "null" &&
-                                        item.vm_id !== null && (
-                                          <div class="desc">
-                                            Machine : {item.vm_name}
-                                          </div>
-                                        )} */}
-                                      <div
-                                        class="desc"
-                                        style={{
-                                          fontSize: "24px",
-                                          marginTop: "20px",
-                                          color: "#035189",
-                                          maxHeight: "100px",
-                                          fontWeight: "600",
-                                          maxWidth: "100rem",
-                                        }}
-                                      >
-                                        Subject : {item.type}
-                                      </div>
-                                      <div
-                                        class="desc"
-                                        style={{
-                                          fontSize: "24px",
-                                          marginTop: "15px",
-                                          color: "#f47c20",
-                                          maxHeight: "100px",
-                                          fontWeight: "600",
-                                          maxWidth: "100rem",
-                                        }}
-                                      >
-                                        Desc. : {item.enquiry}
-                                      </div>
-                                      {item.image !== null &&
-                                        item.image !== "" && (
-                                          <div style={{ marginTop: "10px" }}>
-                                            {item.image !== null &&
-                                            item.image !== "" ? (
-                                              <button
-                                                onClick={() => {
-                                                  setPreviewImagePopup(
-                                                    item.image
-                                                  );
-                                                  setShowImagePopup(true);
-                                                }}
-                                                style={{
-                                                  border: "none",
-                                                  background: "none",
-                                                  padding: 0,
-                                                }}
-                                              >
-                                                <img
-                                                  //src={`https://console.upnetcloud.com/public/uploads/tickets/${msg.image}`}
-                                                  src={`${item.image}`}
-                                                  style={{
-                                                    maxWidth: "40rem",
-                                                    maxHeight: "30rem",
-                                                    border: "2px solid #f47c20",
-                                                    borderRadius: "8px",
-                                                    // backgroundColor: "#f47c20",
-                                                  }}
-                                                />
-                                              </button>
-                                            ) : (
-                                              ""
-                                            )}
-                                          </div>
-                                        )}
-
-                                      <div
-                                        class=""
-                                        style={{ fontSize: "24px" }}
-                                        onClick={() => {
-                                          setShowMore(!showMore);
-                                          setShowMoreID(idx);
-                                        }}
-                                      >
-                                        <Button
-                                          style={{
-                                            marginLeft: "0px",
-                                            marginTop: "20px",
-                                            background: "#035189",
-                                            border: "none",
-                                            fontSize: "20px",
-                                            padding: "5px 15px",
-                                            color: "#fff",
-                                            fontWeight: "600",
-                                            // width: "17%",
-                                            marginBottom: "10px",
-                                          }}
-                                        >
-                                          {" "}
-                                          {showMore && showMoreID === idx
-                                            ? "Hide"
-                                            : "Show More"}{" "}
-                                        </Button>
-                                      </div>
-                                      {showMore && showMoreID === idx && (
-                                        <>
-                                          {/* <div> Description: {item.enquiry}</div> */}
-                                          <div
-                                            className="you-title"
-                                            style={{
-                                              fontSize: "24px",
-                                              marginBottom: "20px",
-                                            }}
-                                          >
-                                            {filterByEnquiryId(
-                                              replyArr,
-                                              item.id
-                                            ).map((msg, idx) => (
-                                              <>
-                                                <div
-                                                  //class="desc"
-                                                  style={{ maxHeight: "none" }}
-                                                >
-                                                  <p
-                                                    style={{
-                                                      //marginBottom: "0rem",
-                                                      marginTop: "10px",
-                                                      marginRight: "200px",
-                                                    }}
-                                                  >
-                                                    {" "}
-                                                    {msg.reply !== null ? (
-                                                      <div
-                                                        className="row"
-                                                        style={{
-                                                          color: "#f47c20",
-                                                          fontWeight: "600",
-                                                          width: "126%",
-                                                          marginBottom: "20px",
-                                                        }}
-                                                      >
-                                                        <div
-                                                          className="col-md-9"
-                                                          style={{
-                                                            wordBreak:
-                                                              "break-word",
-                                                            maxWidth: "100%",
-                                                            // whiteSpace:
-                                                            //   "pre-wrap",
-                                                          }}
-                                                        >
-                                                          <span
-                                                            style={{
-                                                              width: "4rem",
-                                                            }}
-                                                          >
-                                                            You:
-                                                          </span>
-
-                                                          <span
-                                                            style={{
-                                                              maxWidth: "80ch",
-                                                              // display: "flex",
-                                                              marginLeft:
-                                                                "10px",
-                                                              whiteSpace:
-                                                                "pre-wrap",
-                                                            }}
-                                                          >
-                                                            {msg.reply}
-                                                          </span>
-                                                        </div>
-                                                        <div className="col-md-3">
-                                                          <span
-                                                            className="datetime"
-                                                            style={{
-                                                              //display: "flex",
-                                                              // position:"absolute",
-                                                              // marginLeft: "20%",
-                                                              // marginRight: "0px",
-                                                              fontSize: "14px",
-                                                              // fontWeight: "300px",
-                                                              color: "#898989",
-                                                              marginLeft: "20%",
-                                                            }}
-                                                          >
-                                                            Created at :
-                                                            {msg.created_at}
-                                                            {/* {
-                                                              <DateTimeSplit
-                                                                datetime={
-                                                                  msg.created_at
-                                                                }
-                                                              />
-                                                            } */}
-                                                          </span>
-                                                        </div>
-                                                      </div>
-                                                    ) : null}
-                                                    {msg.admin_reply !==
-                                                    null ? (
-                                                      <span
-                                                        className="spanWithMargin"
-                                                        style={{
-                                                          color: "#035189",
-                                                          //marginBottom: "10px",
-                                                          fontWeight: "600",
-                                                        }}
-                                                      >
-                                                        Support :{" "}
-                                                        <span
-                                                        // style={{
-                                                        //   color: "black",
-                                                        //   fontWeight: "300",
-                                                        //   fontSize: "13px",
-                                                        // }}
-                                                        >
-                                                          {msg.admin_reply}
-                                                        </span>
-                                                      </span>
-                                                    ) : null}
-                                                  </p>
-                                                  {msg.image !== null &&
-                                                  msg.image !== "" ? (
-                                                    <img
-                                                      //src={`https://console.upnetcloud.com/public/uploads/tickets/${msg.image}`}
-                                                      src={`${msg.image}`}
-                                                      style={{
-                                                        maxWidth: "40rem",
-                                                        maxHeight: "30rem",
-                                                        border:
-                                                          "2px solid #f47c20",
-                                                        borderRadius: "8px",
-                                                      }}
-                                                    />
-                                                  ) : null}
-                                                </div>
-                                              </>
-                                            ))}
-                                          </div>
-                                        </>
-                                      )}
-                                    </div>
-                                    <div
-                                      className="datetime"
-                                      style={{
-                                        // display: "flex",
-                                        marginLeft: "80%",
-                                        marginRight: "0px",
-                                        position: "absolute",
-                                        top: "15px",
-                                      }}
-                                    >
-                                      Created at : {item.createdAt}
-                                      <select
-                                        name="plan_time"
-                                        style={{
-                                          borderRadius: "4px",
-                                          background:
-                                            item.status === "completed"
-                                              ? "green"
-                                              : item.status === "progress"
-                                              ? "#aaaa00" //YELLOW
-                                              : item.status === "open"
-                                              ? "#f47c20"
-                                              : "#aa0000", // RED
-                                          border: "none",
-                                          fontSize: "18px",
-                                          padding: "5px 15px",
-                                          color: "#fff",
-                                          fontWeight: "600",
-                                          // borderRadius: "20px",
-                                          marginBottom: "10px",
-                                        }}
-                                        value={item.status}
-                                        onChange={(e) => {
-                                          // setSupportMachine(e.target.value);
-                                          ArchiveTicket({
-                                            id: item.id,
-                                            status: e.target.value,
-                                          });
-                                        }}
-                                      >
-                                        <option
-                                          value="completed"
-                                          disabled="true"
-                                        >
-                                          Complete
-                                        </option>
-                                        <option
-                                          value="progress"
-                                          disabled="true"
-                                        >
-                                          inProgress
-                                        </option>
-                                        <option value="open" disabled="true">
-                                          Open
-                                        </option>
-                                        <option value="pending" disabled="true">
-                                          Pending
-                                        </option>
-                                        <option
-                                          value="archived"
-                                          disabled={
-                                            item.archived === "archived"
-                                          }
-                                        >
-                                          Archive
-                                        </option>
-                                        <option value="close">Close</option>
-                                      </select>
-                                    </div>
-                                  </div>
-                                ))}
-                            {filterByStatus(enquiries, "").filter(
-                              (item) =>
-                                item.status === "archived" &&
-                                item.enquiry_unique_id
-                                  .toLowerCase()
-                                  .includes(searchText.toLowerCase())
-                            ).length === 0 ? (
-                              <div
-                                style={{
-                                  position: "relative",
-                                  left: "40%",
-                                  marginTop: "15px",
-                                  fontSize: "24px",
-                                  fontWeight: "400",
-                                }}
-                              >
-                                No Records
-                              </div>
-                            ) : (
-                              ""
-                            )}
-                          </>
-                        ) : (
-                          <>
-                            {/* {console.log(enquiries, ticketType,"ENQ&Tic")} */}
-                            {enquiries &&
-                              filterByStatus(enquiries, ticketType)
-                                .filter((item) =>
-                                  // item.archived === "archived" &&
-                                  item.enquiry_unique_id
-                                    .toLowerCase()
-                                    .includes(searchText.toLowerCase())
-                                )
-                                .map((item, idx) => (
-                                  <div className="table-row-noti" key={idx}>
-                                    <div className="bar"></div>
-                                    <div className="message">
-                                      <div>
-                                        <Button
-                                          style={{
-                                            marginLeft: "0px",
-                                            marginTop: "5px",
-                                            background: "#035189",
-                                            border: "none",
-                                            fontSize: "20px",
-                                            padding: "5px 15px",
-                                            color: "#fff",
-                                            fontWeight: "600",
-                                            // width: "17%",
-                                          }}
-                                        >
-                                          Ticket No. : {item.enquiry_unique_id}
-                                        </Button>
-                                      </div>
-                                      {/* {item.vm_id !== "null" &&
-                                        item.vm_id !== null && (
-                                          <div class="desc">
-                                            Machine : {item.vm_name}
-                                          </div>
-                                        )} */}
-                                      <div
-                                        class="desc"
-                                        style={{
-                                          fontSize: "24px",
-                                          marginTop: "20px",
-                                          color: "#035189",
-                                          maxHeight: "100px",
-                                          fontWeight: "600",
-                                          maxWidth: "100rem",
-                                        }}
-                                      >
-                                        Subject : {item.type}
-                                      </div>
-                                      <div
-                                        class="desc"
-                                        style={{
-                                          fontSize: "24px",
-                                          marginTop: "15px",
-                                          color: "#f47c20",
-                                          maxHeight: "100px",
-                                          fontWeight: "600",
-                                          maxWidth: "100rem",
-                                        }}
-                                      >
-                                        Desc. : {item.enquiry}
-                                      </div>
-
-                                      {item.image !== null &&
-                                        item.image !== "" && (
-                                          <div style={{ marginTop: "10px" }}>
-                                            {item.image !== null &&
-                                            item.image !== "" ? (
-                                              <button
-                                                onClick={() => {
-                                                  setPreviewImagePopup(
-                                                    item.image
-                                                  );
-                                                  setShowImagePopup(true);
-                                                }}
-                                                style={{
-                                                  border: "none",
-                                                  background: "none",
-                                                  padding: 0,
-                                                }}
-                                              >
-                                                <img
-                                                  //src={`https://console.upnetcloud.com/public/uploads/tickets/${msg.image}`}
-                                                  src={`${item.image}`}
-                                                  style={{
-                                                    maxWidth: "40rem",
-                                                    maxHeight: "30rem",
-                                                    border: "2px solid #f47c20",
-                                                    borderRadius: "8px",
-                                                    // backgroundColor: "#f47c20",
-                                                  }}
-                                                />
-                                              </button>
-                                            ) : (
-                                              ""
-                                            )}
-                                          </div>
-                                        )}
-
-                                      <div
-                                        class=""
-                                        style={{ fontSize: "24px" }}
-                                        onClick={() => {
-                                          setShowMore(!showMore);
-                                          setShowMoreID(idx);
-                                        }}
-                                      >
-                                        <Button
-                                          style={{
-                                            marginLeft: "0px",
-                                            marginTop: "20px",
-                                            background: "#035189",
-                                            border: "none",
-                                            fontSize: "20px",
-                                            padding: "5px 15px",
-                                            color: "#fff",
-                                            fontWeight: "600",
-                                            // width: "17%",
-                                            marginBottom: "10px",
-                                          }}
-                                        >
-                                          {" "}
-                                          {showMore && showMoreID === idx
-                                            ? "Hide"
-                                            : "Show More"}{" "}
-                                        </Button>
-                                      </div>
-                                      {showMore && showMoreID === idx && (
-                                        <>
-                                          {/* <div> Description: {item.enquiry}</div> */}
-                                          <div
-                                            className="you-title"
-                                            style={{
-                                              fontSize: "24px",
-                                              marginBottom: "20px",
-                                            }}
-                                          >
-                                            {filterByEnquiryId(
-                                              replyArr,
-                                              item.id
-                                            ).map((msg, idx) => (
-                                              <>
-                                                <div
-                                                  //class="desc"
-                                                  style={{ maxHeight: "none" }}
-                                                >
-                                                  <p
-                                                    style={{
-                                                      //marginBottom: "0rem",
-                                                      marginTop: "10px",
-                                                      marginRight: "200px",
-                                                    }}
-                                                  >
-                                                    {" "}
-                                                    {msg.reply !== null ? (
-                                                      <div
-                                                        className="row"
-                                                        style={{
-                                                          color: "#f47c20",
-                                                          fontWeight: "600",
-                                                          width: "126%",
-                                                          marginBottom: "20px",
-                                                        }}
-                                                      >
-                                                        <div
-                                                          className="col-md-9"
-                                                          style={{
-                                                            wordBreak:
-                                                              "break-word",
-                                                            maxWidth: "100%",
-                                                            // whiteSpace:
-                                                            //   "pre-wrap",
-                                                          }}
-                                                        >
-                                                          <span
-                                                            style={{
-                                                              width: "4rem",
-                                                            }}
-                                                          >
-                                                            You:
-                                                          </span>
-
-                                                          <span
-                                                            style={{
-                                                              maxWidth: "80ch",
-                                                              // display: "flex",
-                                                              marginLeft:
-                                                                "10px",
-                                                              whiteSpace:
-                                                                "pre-wrap",
-                                                            }}
-                                                          >
-                                                            {msg.reply}
-                                                          </span>
-                                                        </div>
-                                                        <div className="col-md-3">
-                                                          <span
-                                                            className="datetime"
-                                                            style={{
-                                                              //display: "flex",
-                                                              // position:"absolute",
-                                                              // marginLeft: "20%",
-                                                              // marginRight: "0px",
-                                                              fontSize: "14px",
-                                                              // fontWeight: "300px",
-                                                              color: "#898989",
-                                                              marginLeft: "20%",
-                                                            }}
-                                                          >
-                                                            Created at :
-                                                            {msg.created_at}
-                                                            {/* {
-                                                              <DateTimeSplit
-                                                                datetime={
-                                                                  msg.created_at
-                                                                }
-                                                              />
-                                                            } */}
-                                                          </span>
-                                                        </div>
-                                                      </div>
-                                                    ) : null}
-                                                    {msg.admin_reply !==
-                                                    null ? (
-                                                      <span
-                                                        className="spanWithMargin"
-                                                        style={{
-                                                          color: "#035189",
-                                                          //marginBottom: "10px",
-                                                          fontWeight: "600",
-                                                        }}
-                                                      >
-                                                        Support :{" "}
-                                                        <span
-                                                        // style={{
-                                                        //   color: "black",
-                                                        //   fontWeight: "300",
-                                                        //   fontSize: "13px",
-                                                        // }}
-                                                        >
-                                                          {msg.admin_reply}
-                                                        </span>
-                                                      </span>
-                                                    ) : null}
-                                                  </p>
-                                                  {msg.image !== null &&
-                                                  msg.image !== "" ? (
-                                                    <img
-                                                      //src={`https://console.upnetcloud.com/public/uploads/tickets/${msg.image}`}
-                                                      src={`${msg.image}`}
-                                                      style={{
-                                                        maxWidth: "40rem",
-                                                        maxHeight: "30rem",
-                                                        border:
-                                                          "2px solid #f47c20",
-                                                        borderRadius: "8px",
-                                                      }}
-                                                    />
-                                                  ) : null}
-                                                </div>
-                                              </>
-                                            ))}
-
-                                            {item.status !== "completed" &&
-                                              item.status !== "archived" && (
-                                                <div
-                                                  style={{
-                                                    display: "flex",
-                                                    marginTop: "15px",
-                                                  }}
-                                                >
-                                                  <input
-                                                    ref={fileInputRef}
-                                                    type="file"
-                                                    accept="image/*"
-                                                    onChange={
-                                                      handleImageUpdateRply
-                                                    }
-                                                    style={{
-                                                      display: "none",
-                                                      position: "absolute",
-                                                      zIndex: "1",
-
-                                                      marginLeft: "-5px",
-                                                      height: "40px",
-                                                      width: "40px",
-                                                      color:
-                                                        "rgb(255 0 0 / 0%)",
-                                                      fontSize: "0px",
-                                                      backgroundColor:
-                                                        "#ff0000",
-                                                    }}
-                                                  />
-                                                  {selectedImageRply && (
-                                                    <div
-                                                      style={{
-                                                        position: "absolute",
-                                                        zIndex: "1",
-                                                        width: "10px",
-                                                        height: "10px",
-                                                        backgroundColor: "red",
-                                                        borderRadius: "50%",
-                                                      }}
-                                                    ></div>
-                                                  )}
-                                                  <Button
-                                                    style={{
-                                                      width: "30px",
-                                                      height: "30px",
-                                                      marginLeft: "0px",
-                                                      backgroundColor:
-                                                        "#f47c2000",
-                                                      border: "none",
-                                                      color: "white",
-                                                    }}
-                                                    onClick={handleButtonClick}
-                                                  >
-                                                    <img
-                                                      src="./filepin.png"
-                                                      style={{ opacity: "1" }}
-                                                    />
-                                                  </Button>
-
-                                                  <textarea
-                                                    placeholder="Content"
-                                                    style={{
-                                                      minHeight: "100px",
-                                                      maxHeight: "300px",
-                                                      padding: "10px",
-                                                      width: "100%",
-                                                      backgroundColor:
-                                                        "transparent",
-                                                      color: "black",
-                                                      borderRadius: "30px",
-                                                      border: "2px solid grey",
-                                                    }}
-                                                    value={replyText}
-                                                    onChange={(e) =>
-                                                      setReplyText(
-                                                        e.target.value
-                                                      )
-                                                    }
-                                                  />
-                                                  <Button
-                                                    style={{
-                                                      height: "40px",
-                                                      marginLeft: "10px",
-                                                      marginTop: "30px",
-                                                      width: "95px",
-                                                      backgroundColor:
-                                                        "#f47c20",
-                                                      border: "none",
-                                                      color: "white",
-                                                    }}
-                                                    onClick={() => {
-                                                      setEnqID(item.id);
-
-                                                      const filteredReplies =
-                                                        filterByEnquiryId(
-                                                          replyArr,
-                                                          item.id
-                                                        );
-                                                      const lastReplyID =
-                                                        filteredReplies[
-                                                          filteredReplies.length -
-                                                            1
-                                                        ].id;
-                                                      TicketsReply(
-                                                        lastReplyID,
-                                                        item.id
-                                                      );
-                                                    }}
-                                                  >
-                                                    {" "}
-                                                    Reply
-                                                  </Button>
-                                                </div>
-                                              )}
-                                          </div>
-                                        </>
-                                      )}
-                                    </div>
-                                    <div
-                                      className="datetime"
-                                      style={{
-                                        // display: "flex",
-                                        marginLeft: "80%",
-                                        marginRight: "0px",
-                                        position: "absolute",
-                                        top: "15px",
-                                      }}
-                                    >
-                                      Created at : {item.createdAt}
-                                      <select
-                                        name="plan_time"
-                                        style={{
-                                          borderRadius: "4px",
-                                          background:
-                                            item.status === "completed"
-                                              ? "green"
-                                              : item.status === "progress"
-                                              ? "#aaaa00" //YELLOW
-                                              : item.status === "open"
-                                              ? "#f47c20"
-                                              : "#aa0000", // RED
-                                          border: "none",
-                                          fontSize: "18px",
-                                          padding: "5px 15px",
-                                          color: "#fff",
-                                          fontWeight: "600",
-                                          // borderRadius: "20px",
-                                          marginBottom: "10px",
-                                        }}
-                                        value={item.status}
-                                        onChange={(e) => {
-                                          // setSupportMachine(e.target.value);
-                                          ArchiveTicket({
-                                            id: item.id,
-                                            status: e.target.value,
-                                          });
-                                        }}
-                                      >
-                                        <option
-                                          value="completed"
-                                          disabled="true"
-                                        >
-                                          Complete
-                                        </option>
-                                        <option
-                                          value="progress"
-                                          disabled="true"
-                                        >
-                                          inProgress
-                                        </option>
-                                        <option value="open" disabled="true">
-                                          Open
-                                        </option>
-                                        <option value="pending" disabled="true">
-                                          Pending
-                                        </option>
-                                        <option
-                                          value="archived"
-                                          disabled={
-                                            item.archived === "archived"
-                                          }
-                                        >
-                                          Archive
-                                        </option>
-                                        <option value="close">Close</option>
-                                      </select>
-                                    </div>
-                                  </div>
-                                ))}
-                            {ticketType === "open" &&
-                            filterByStatus(enquiries, ticketType).length ===
-                              0 ? (
-                              <div
-                                style={{
-                                  position: "relative",
-                                  left: "40%",
-                                  marginTop: "15px",
-                                  fontSize: "24px",
-                                  fontWeight: "400",
-                                }}
-                              >
-                                No Records
-                              </div>
-                            ) : (
-                              ""
-                            )}
-                          </>
+                        {tk.status === "open" && (
+                          <button className="sp-act-btn sp-act-close" onClick={() => changeStatus(tk, "completed")}><I.Check /> Close Ticket</button>
                         )}
                       </div>
-
-                      {filterByStatus(enquiries, ticketType).length === 0 ? (
-                        //
-                        ""
-                      ) : (
-                        <></>
-                      )}
-                      {/* {console.log("ticketType=1", ticketType)} */}
-                    </>
+                    </div>
                   )}
                 </div>
-              </div>
-              <div className="col-md-1"></div>
-            </Row>
-          </div>
+              );
+            })
+          )}
         </div>
-      )}
-      <div className="apptoast-align">
-        <Toaster
-          position={isMobile ? "top-center" : "bottom-right"}
-          reverseOrder={false}
-        />
-      </div>
-      {loading && (
-        <div className="loading-overlay" style={{ zIndex: "9999999999999999" }}>
-          <Loader isLoading={loading} />
-          {/* <Spinner animation="border" /> */}
+      </main>
+
+      {/* Create Modal */}
+      {modal && (
+        <div className="sp-overlay" onClick={() => { setModal(false); resetForm(); }}>
+          <div className="sp-modal" onClick={e => e.stopPropagation()}>
+            <div className="sp-modal-head">
+              <h2>Create New Ticket</h2>
+              <button className="sp-modal-x" onClick={() => { setModal(false); resetForm(); }}><I.X /></button>
+            </div>
+            <div className="sp-modal-body">
+              <label className="sp-label">Issue Type <span className="sp-req">*</span></label>
+              <div className="sp-type-grid">
+                {TYPES.map(t => (
+                  <button key={t} className={`sp-type-btn ${fType === t ? "sp-type-btn-on" : ""}`} onClick={() => setFType(t)}>{t}</button>
+                ))}
+              </div>
+
+              <label className="sp-label">Select Machine {OPTIONAL_VM.includes(fType) && <span className="sp-opt">(optional)</span>} {!OPTIONAL_VM.includes(fType) && <span className="sp-req">*</span>}</label>
+              <div className="sp-vm-grid">
+                {machines.filter(m => m.public_ip || m.ip_address).map(m => (
+                  <button key={m.vm_id} className={`sp-vm-btn ${fVMs.includes(m.vm_id) ? "sp-vm-btn-on" : ""}`} onClick={() => toggleVM(m.vm_id)}>
+                    <I.Server /><span>{m.vm_name}</span><code className="sp-vm-ip">{m.public_ip || m.ip_address}</code>
+                  </button>
+                ))}
+                {machines.filter(m => m.public_ip || m.ip_address).length === 0 && <p className="sp-no-vm">No machines available.</p>}
+              </div>
+
+              <label className="sp-label">Description <span className="sp-req">*</span></label>
+              <textarea className="sp-form-ta" rows={5} placeholder="Describe your issue in detail..." value={fMsg} onChange={e => setFMsg(e.target.value)} />
+
+              <label className="sp-label">Attachment</label>
+              <div className="sp-upload" onClick={() => fRef.current?.click()}>
+                <input ref={fRef} type="file" accept="image/*" style={{ display: "none" }} onChange={e => { const f = e.target.files[0]; if (f && f.size > 2 * 1024 * 1024) { notify("File exceeds 2MB.", false); e.target.value = null; return; } setFImg(f || null); }} />
+                {fImg ? (
+                  <div className="sp-upload-file">📎 {fImg.name}<button className="sp-upload-rm" onClick={e => { e.stopPropagation(); setFImg(null); }}><I.X /></button></div>
+                ) : (
+                  <div className="sp-upload-empty"><I.Clip /> Click to attach image (PNG, JPG — max 2MB)</div>
+                )}
+              </div>
+            </div>
+            <div className="sp-modal-foot">
+              <button className="sp-cancel-btn" onClick={() => { setModal(false); resetForm(); }}>Cancel</button>
+              <button className="sp-submit-btn" onClick={create}>Submit Ticket</button>
+            </div>
+          </div>
         </div>
       )}
     </div>
   );
-};
+}
 
-export default SupportPage;
+// ── CSS ─────────────────────────────────────────────────────────────────
+const CSS = `
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Source+Code+Pro:wght@400;500&display=swap');
+
+*{box-sizing:border-box;margin:0;padding:0}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#d5cfc6;border-radius:4px}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes toastSlide{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+
+/* Root */
+.sp-root{
+  font-family:'Outfit',sans-serif;
+  background:#faf8f5;
+  min-height:100vh;
+  color:#3a3226;
+}
+
+/* Toast */
+.sp-toast{
+  position:fixed;top:20px;right:20px;z-index:100000;
+  padding:12px 22px;border-radius:10px;font-size:14px;font-weight:500;
+  box-shadow:0 6px 24px rgba(0,0,0,.12);animation:toastSlide .3s ease;
+  color:#fff;display:flex;align-items:center;gap:8px;
+}
+.sp-toast-ok{background:#27ae60}
+.sp-toast-err{background:#e74c3c}
+
+/* Loader */
+.sp-loader-overlay{
+  position:fixed;inset:0;background:rgba(250,248,245,.85);
+  display:flex;align-items:center;justify-content:center;z-index:99999;
+  backdrop-filter:blur(3px);
+}
+.sp-loader{
+  width:36px;height:36px;border:3px solid #ece7df;
+  border-top-color:#c9956b;border-radius:50%;animation:spin .7s linear infinite;
+}
+
+/* Header */
+.sp-header{
+  background:#fff;border-bottom:1px solid #ece7df;
+  position:sticky;top:0;z-index:100;
+  box-shadow:0 1px 8px rgba(0,0,0,.04);
+}
+.sp-header-inner{
+  max-width:1120px;margin:0 auto;padding:14px 24px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.sp-header-left{display:flex;align-items:center;gap:12px}
+.sp-logo{
+  width:42px;height:42px;border-radius:11px;
+  background:#E97730;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 3px 12px rgba(169,114,72,.25);
+}
+.sp-title{font-size:19px;font-weight:700;color:#2a2016;letter-spacing:-.3px}
+.sp-subtitle{font-size:12.5px;color:#9a8e7f;margin-top:1px}
+.sp-create-btn{
+  display:flex;align-items:center;gap:7px;
+  padding:9px 18px;border-radius:9px;border:none;
+  background:#E97730;
+  color:#fff;font-size:13.5px;font-weight:600;cursor:pointer;
+  font-family:'Outfit',sans-serif;
+  box-shadow:0 3px 14px rgba(169,114,72,.28);
+  transition:all .2s;
+}
+.sp-create-btn:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(169,114,72,.35)}
+
+/* Main */
+.sp-main{max-width:1120px;margin:0 auto;padding:24px}
+
+/* Stats */
+.sp-stats{display:flex;gap:10px;margin-bottom:24px;flex-wrap:wrap}
+.sp-stat{
+  flex:1;min-width:100px;padding:16px 12px;border-radius:14px;
+  background:#fff;border:2px solid #ece7df;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  transition:all .2s;font-family:'Outfit',sans-serif;
+  box-shadow:0 1px 4px rgba(0,0,0,.03);
+}
+.sp-stat:hover{border-color:#d4c8b8;box-shadow:0 3px 12px rgba(0,0,0,.06)}
+.sp-stat-active{border-color:#c9956b;background:#fdf8f3;box-shadow:0 3px 14px rgba(169,114,72,.1)}
+.sp-stat-icon{font-size:20px;line-height:1}
+.sp-stat-num{font-size:26px;font-weight:700;color:#2a2016;font-family:'Source Code Pro',monospace}
+.sp-stat-label{font-size:11.5px;color:#9a8e7f;font-weight:500;text-transform:uppercase;letter-spacing:.6px}
+
+/* Search */
+.sp-search-row{display:flex;align-items:center;gap:14px;margin-bottom:20px;flex-wrap:wrap}
+.sp-search-box{
+  flex:1;min-width:200px;display:flex;align-items:center;gap:10px;
+  padding:10px 16px;border-radius:11px;
+  background:#fff;border:1.5px solid #ece7df;color:#9a8e7f;
+  transition:border-color .2s;
+}
+.sp-search-box:focus-within{border-color:#c9956b}
+.sp-search-input{
+  flex:1;background:none;border:none;color:#3a3226;
+  font-size:13.5px;font-family:'Outfit',sans-serif;
+}
+.sp-search-input::placeholder{color:#c4b8a8}
+.sp-search-input:focus{outline:none}
+.sp-search-clear{background:none;border:none;color:#b8a898;cursor:pointer;padding:3px;display:flex}
+.sp-result-count{font-size:12.5px;color:#b8a898;white-space:nowrap}
+
+/* Tickets */
+.sp-tickets{display:flex;flex-direction:column;gap:10px}
+
+/* Empty */
+.sp-empty{text-align:center;padding:72px 24px;animation:fadeUp .4s ease}
+.sp-empty-title{font-size:17px;font-weight:600;color:#6b5e50;margin-top:14px}
+.sp-empty-sub{font-size:13px;color:#b8a898;margin-top:4px}
+
+/* Card */
+.sp-card{
+  background:#fff;border-radius:14px;
+  border:1px solid #ece7df;border-left:4px solid var(--accent,#c9956b);
+  padding:18px 22px;animation:fadeUp .35s ease;
+  transition:box-shadow .2s;
+  box-shadow:0 1px 4px rgba(0,0,0,.03);
+}
+.sp-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.06)}
+
+.sp-card-head{display:flex;align-items:center;justify-content:space-between;cursor:pointer;gap:10px;flex-wrap:wrap}
+.sp-card-head-l{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.sp-card-head-r{display:flex;align-items:center;gap:10px;color:#b8a898}
+.sp-card-id{font-family:'Source Code Pro',monospace;font-size:12.5px;color:#9a8e7f;font-weight:500;background:#f5f1ec;padding:2px 8px;border-radius:5px}
+.sp-badge{
+  font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;
+  display:inline-flex;align-items:center;gap:5px;
+}
+.sp-badge-dot{width:6px;height:6px;border-radius:50%;animation:pulse 2s infinite}
+.sp-card-date{display:flex;align-items:center;gap:4px;font-size:12px;color:#b8a898}
+.sp-card-meta{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.sp-type-pill{
+  font-size:12px;color:#6b5e50;font-weight:500;
+  padding:3px 10px;border-radius:6px;background:#f5f1ec;
+}
+.sp-vm-pill{
+  font-size:11.5px;color:#9a8e7f;display:inline-flex;
+  align-items:center;gap:5px;padding:3px 10px;border-radius:6px;
+  background:#f5f1ec;border:1px solid #ece7df;
+}
+.sp-card-desc{
+  font-size:13.5px;color:#7a6e60;margin-top:10px;line-height:1.6;
+  overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+}
+
+/* Expanded */
+.sp-expanded{animation:fadeUp .3s ease}
+.sp-hr{border:none;border-top:1px solid #ece7df;margin:18px 0}
+.sp-thread-title{
+  display:flex;align-items:center;gap:7px;
+  font-size:13.5px;font-weight:600;color:#4a3f33;margin-bottom:14px;
+}
+.sp-thread-count{
+  font-size:11px;background:#f5f1ec;color:#9a8e7f;
+  padding:1px 7px;border-radius:10px;font-weight:500;
+}
+.sp-no-reply{font-size:13px;color:#c4b8a8;font-style:italic;padding:8px 0}
+
+/* Bubbles */
+.sp-thread{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.sp-bubble{padding:12px 16px;border-radius:12px}
+.sp-bubble-admin{background:#eef5fc;border-left:3px solid #a3ccee}
+.sp-bubble-user{background:#fdf5ec;border-left:3px solid #ddb88a}
+.sp-bubble-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.sp-bubble-who{font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:#6b5e50}
+.sp-bubble-admin .sp-bubble-who{color:#2d7dd2}
+.sp-bubble-user .sp-bubble-who{color:#b37a3a}
+.sp-bubble-time{font-size:10.5px;color:#c4b8a8;font-family:'Source Code Pro',monospace}
+.sp-bubble-text{font-size:13.5px;color:#4a3f33;line-height:1.6;white-space:pre-wrap}
+.sp-bubble-img{max-width:260px;max-height:180px;border-radius:8px;margin-top:8px;border:1px solid #ece7df}
+
+/* Reply */
+.sp-reply-box{
+  display:flex;align-items:flex-end;gap:8px;
+  background:#f9f6f2;border-radius:12px;padding:10px 12px;
+  border:1px solid #ece7df;margin-bottom:12px;
+}
+.sp-attach-btn{
+  width:34px;height:34px;border-radius:8px;flex-shrink:0;
+  background:#fff;border:1px solid #ece7df;color:#b8a898;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  position:relative;transition:all .2s;
+}
+.sp-attach-btn:hover{border-color:#c9956b;color:#c9956b}
+.sp-attach-dot{position:absolute;top:-3px;right:-3px;width:7px;height:7px;background:#e74c3c;border-radius:50%}
+.sp-reply-input{
+  flex:1;background:none;border:none;color:#3a3226;
+  font-size:13.5px;font-family:'Outfit',sans-serif;resize:vertical;min-height:36px;line-height:1.5;
+}
+.sp-reply-input::placeholder{color:#c4b8a8}
+.sp-reply-input:focus{outline:none}
+.sp-send-btn{
+  width:38px;height:38px;border-radius:9px;flex-shrink:0;
+  background:linear-gradient(135deg,#c9956b,#a57248);
+  border:none;color:#fff;cursor:pointer;display:flex;
+  align-items:center;justify-content:center;
+  box-shadow:0 2px 10px rgba(169,114,72,.25);transition:all .2s;
+}
+.sp-send-btn:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(169,114,72,.35)}
+
+/* Actions */
+.sp-actions{display:flex;gap:8px;flex-wrap:wrap}
+.sp-act-btn{
+  display:flex;align-items:center;gap:5px;
+  padding:7px 13px;border-radius:8px;font-size:12px;font-weight:500;
+  background:#f5f1ec;border:1px solid #ece7df;color:#7a6e60;
+  cursor:pointer;font-family:'Outfit',sans-serif;transition:all .2s;
+}
+.sp-act-btn:hover{background:#ece7df}
+.sp-act-close{background:#fce8e8;border-color:#f5c6c6;color:#c0392b}
+.sp-act-close:hover{background:#f5c6c6}
+
+/* Modal */
+.sp-overlay{
+  position:fixed;inset:0;background:rgba(42,32,22,.35);
+  display:flex;align-items:center;justify-content:center;
+  z-index:10000;backdrop-filter:blur(6px);padding:20px;
+}
+.sp-modal{
+  width:100%;max-width:600px;max-height:88vh;
+  background:#fff;border-radius:18px;
+  box-shadow:0 24px 64px rgba(0,0,0,.15);
+  animation:fadeUp .3s ease;display:flex;flex-direction:column;overflow:hidden;
+}
+.sp-modal-head{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:18px 22px;border-bottom:1px solid #ece7df;
+}
+.sp-modal-head h2{font-size:17px;font-weight:700;color:#2a2016}
+.sp-modal-x{
+  width:30px;height:30px;border-radius:7px;background:#f5f1ec;
+  border:none;color:#9a8e7f;cursor:pointer;display:flex;align-items:center;justify-content:center;
+}
+.sp-modal-body{padding:22px;overflow-y:auto;flex:1}
+.sp-modal-foot{
+  display:flex;justify-content:flex-end;gap:10px;
+  padding:14px 22px;border-top:1px solid #ece7df;
+}
+
+/* Form */
+.sp-label{
+  display:block;font-size:12px;font-weight:600;color:#9a8e7f;
+  text-transform:uppercase;letter-spacing:.5px;margin-top:16px;margin-bottom:7px;
+}
+.sp-label:first-child{margin-top:0}
+.sp-req{color:#e74c3c}
+.sp-opt{color:#c4b8a8;font-weight:400;text-transform:none;letter-spacing:0;font-size:11.5px}
+
+.sp-type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.sp-type-btn{
+  padding:9px 10px;border-radius:9px;font-size:12.5px;font-weight:500;text-align:center;
+  background:#f9f6f2;border:1.5px solid #ece7df;color:#7a6e60;cursor:pointer;
+  font-family:'Outfit',sans-serif;transition:all .15s;
+}
+.sp-type-btn:hover{border-color:#d4c8b8}
+.sp-type-btn-on{background:#fdf5ec;border-color:#c9956b;color:#a57248;font-weight:600}
+
+.sp-vm-grid{display:flex;gap:7px;flex-wrap:wrap}
+.sp-vm-btn{
+  display:flex;align-items:center;gap:7px;
+  padding:9px 13px;border-radius:9px;font-size:12.5px;
+  background:#f9f6f2;border:1.5px solid #ece7df;color:#7a6e60;
+  cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;
+}
+.sp-vm-btn:hover{border-color:#d4c8b8}
+.sp-vm-btn-on{background:#eef5fc;border-color:#a3ccee;color:#2d7dd2}
+.sp-vm-ip{font-size:10.5px;color:#c4b8a8;font-family:'Source Code Pro',monospace;margin-left:auto}
+.sp-no-vm{font-size:12.5px;color:#c4b8a8;font-style:italic}
+
+.sp-form-ta{
+  width:100%;background:#f9f6f2;border:1.5px solid #ece7df;border-radius:11px;
+  padding:12px 14px;color:#3a3226;font-size:13.5px;font-family:'Outfit',sans-serif;
+  resize:vertical;line-height:1.6;transition:border-color .2s;
+}
+.sp-form-ta:focus{border-color:#c9956b;outline:none}
+.sp-form-ta::placeholder{color:#c4b8a8}
+
+.sp-upload{
+  padding:18px;border-radius:11px;border:2px dashed #ddd4c8;
+  background:#fcfaf7;cursor:pointer;transition:all .2s;
+}
+.sp-upload:hover{border-color:#c9956b;background:#fdf8f3}
+.sp-upload-empty{display:flex;align-items:center;gap:8px;justify-content:center;color:#b8a898;font-size:13px}
+.sp-upload-file{display:flex;align-items:center;justify-content:space-between;color:#6b5e50;font-size:13px}
+.sp-upload-rm{background:none;border:none;color:#e74c3c;cursor:pointer;padding:2px;display:flex}
+
+.sp-cancel-btn{
+  padding:9px 18px;border-radius:9px;font-size:13.5px;font-weight:500;
+  background:#f5f1ec;border:1px solid #ece7df;color:#7a6e60;
+  cursor:pointer;font-family:'Outfit',sans-serif;transition:all .2s;
+}
+.sp-cancel-btn:hover{background:#ece7df}
+.sp-submit-btn{
+  padding:9px 22px;border-radius:9px;font-size:13.5px;font-weight:600;
+  background:linear-gradient(135deg,#c9956b,#a57248);
+  border:none;color:#fff;cursor:pointer;font-family:'Outfit',sans-serif;
+  box-shadow:0 3px 12px rgba(169,114,72,.25);transition:all .2s;
+}
+.sp-submit-btn:hover{transform:translateY(-1px);box-shadow:0 5px 16px rgba(169,114,72,.35)}
+
+/* Responsive */
+@media(max-width:768px){
+  .sp-main{padding:16px}
+  .sp-stats{gap:6px}
+  .sp-stat{min-width:60px;padding:12px 6px}
+  .sp-stat-num{font-size:20px}
+  .sp-stat-label{font-size:10px}
+  .sp-stat-icon{font-size:16px}
+  .sp-card{padding:14px 16px}
+  .sp-card-head{flex-direction:column;align-items:flex-start;gap:6px}
+  .sp-card-head-r{width:100%;justify-content:space-between}
+  .sp-type-grid{grid-template-columns:1fr 1fr}
+  .sp-modal{max-height:92vh;border-radius:14px}
+  .sp-modal-body{padding:16px}
+  .sp-header-inner{padding:12px 16px}
+  .sp-title{font-size:16px}
+  .sp-create-btn{padding:8px 14px;font-size:12.5px}
+  .sp-bubble{padding:10px 12px}
+  .sp-reply-box{padding:8px 10px}
+}
+@media(max-width:480px){
+  .sp-stats{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:6px}
+  .sp-stat{min-width:80px;flex:0 0 auto}
+  .sp-type-grid{grid-template-columns:1fr}
+  .sp-search-row{flex-direction:column;align-items:stretch}
+  .sp-result-count{text-align:right}
+}
+`;

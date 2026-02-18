@@ -67,6 +67,7 @@ import OTPVerify2FA from "./Components/User/OTPVerify2FA";
 import ChildUserPage from "./Components/User/ChildUserPage";
 import StripePaymentPage from "./StripePaymentPage";
 import MonitorGraph from "./Components/RegisteredUser/MonitorGraph";
+import VmResetPassword from "./Components/RegisteredUser/VmResetPassword";
 
 // import getMAC from "getmac";
 // import * as FingerprintJS from "fingerprintjs2";
@@ -84,16 +85,8 @@ const App = () => {
   }
   const FetchUser = () => {
     const storedUserData = localStorage.getItem("NEW_USER");
-    // const storedSocial = localStorage.getItem("SocialLogin");
-    // ocalStorage.setItem("SocialLogin", true);
     return storedUserData ? JSON.parse(storedUserData) : null;
   };
-
-  // useEffect(() => {
-  //   const client = new ClientJS();
-  //   const fingerprint = client.getFingerprint();
-  //   console.log(fingerprint); // Unique fingerprint
-  // }, []);
 
   const sendTokenToServer = async () => {
     if (localStorage.getItem("NewfcmUPNET") !== null) {
@@ -206,7 +199,6 @@ const App = () => {
     amount: 1099,
     currency: "usd",
     appearance: {
-      /*...*/
     },
   };
 
@@ -240,11 +232,11 @@ const App = () => {
                 <div>
                   <Routes>
                     <>
-                      {/* Common Route */}
                       <Route
                         path="/"
                         element={<Home ip={userIP} user={newUser} />}
                       />
+                      <Route path="/vm-reset/:token" element={<VmResetPassword />} />
                       <Route
                         path="/solutions"
                         element={<SolutionsPage ip={userIP} />}

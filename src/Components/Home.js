@@ -60,18 +60,12 @@ const Home = (props) => {
     };
   }, [currentPage, totalPages]);
 
-  // Update currentPage based on scroll position
   const handleScroll = () => {
     const scrollPosition = window.scrollY;
     const pageHeight = window.innerHeight;
     const nextPage = Math.ceil(
       (scrollPosition + pageHeight * scrollThreshold) / pageHeight
     );
-
-    // console.log("Scroll Position:", scrollPosition);
-    // console.log("Page Height:", pageHeight);
-    // console.log("Next Page:", nextPage);
-
     if (nextPage >= 1 && nextPage <= totalPages && nextPage !== currentPage) {
       setCurrentPage(nextPage);
     }
@@ -88,8 +82,6 @@ const Home = (props) => {
             ? `url(./main-bg.jpg)`
             : `url(./main-bg.jpg)`,
           backgroundSize: "cover",
-          // backgroundPosition: "center",
-          // backgroundColor: "#141414",
           backgroundRepeat: "round",
           backgroundBlendMode: "overlay",
         }}
@@ -164,9 +156,7 @@ const Home = (props) => {
             </Modal>
           )}
           callback={(data) => {
-            // if (data.isInstallSuccess) {
-            //   localStorage.setItem("login_with", "Install");
-            // }
+
           }}
         />
 

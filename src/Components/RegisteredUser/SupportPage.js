@@ -1,110 +1,62 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import instance, {
+  apiDecrypteRequest,
+  apiEncryptRequest,
+  decryptData,
+} from "../../Api";
+import { useAuth } from "../../AuthContext";
 
-// ── Mock Data & API Simulation ──────────────────────────────────────────
-const MOCK_USER = {
-  id: "usr_001",
-  name: "Rahul Sharma",
-  email: "rahul@example.com",
-  phone: "+91 98765 43210",
+// get machines
+const getMachines = async (userId) => {
+  const encrypted = await apiEncryptRequest({ user_id: userId });
+  const res = await instance.post("/machines", encrypted);
+  return decryptData(res.data);
 };
 
-const MOCK_MACHINES = [
-  { vm_id: "vm_101", vm_name: "Web Server #1", public_ip: "103.21.58.12", ip_address: "10.0.0.1" },
-  { vm_id: "vm_102", vm_name: "DB Server", public_ip: "103.21.58.13", ip_address: "10.0.0.2" },
-  { vm_id: "vm_103", vm_name: "App Server", public_ip: null, ip_address: "10.0.0.3" },
-  { vm_id: "vm_104", vm_name: "Staging", public_ip: "103.21.58.15", ip_address: "10.0.0.4" },
-];
-
-const MOCK_ENQUIRIES = [
-  {
-    id: 1, enquiry_unique_id: "TKT-20260201-001", type: "Performance Issue",
-    enquiry: "Server response time has increased significantly over the past 48 hours. Average latency went from 120ms to 800ms. We've already tried restarting services but the issue persists.",
-    status: "progress", archived: null, vm_id: "vm_101", vm_name: "Web Server #1",
-    image: null, createdAt: "2026-02-01 14:30",
-  },
-  {
-    id: 2, enquiry_unique_id: "TKT-20260203-002", type: "Network Issue",
-    enquiry: "Intermittent packet loss observed between App Server and DB Server. Connectivity drops every 15 minutes causing failed deployments.",
-    status: "open", archived: null, vm_id: "vm_102,vm_103", vm_name: "DB Server, App Server",
-    image: null, createdAt: "2026-02-03 09:15",
-  },
-  {
-    id: 3, enquiry_unique_id: "TKT-20260205-003", type: "Billing Query",
-    enquiry: "I was charged twice for the February billing cycle. Please review and refund the duplicate payment of ₹4,999.",
-    status: "completed", archived: null, vm_id: null, vm_name: null,
-    image: null, createdAt: "2026-02-05 11:00",
-  },
-  {
-    id: 4, enquiry_unique_id: "TKT-20260128-004", type: "Installation Issue",
-    enquiry: "Unable to install Docker on the staging server. Getting permission denied errors even with sudo access.",
-    status: "archived", archived: "archived", vm_id: "vm_104", vm_name: "Staging",
-    image: null, createdAt: "2026-01-28 16:45",
-  },
-  {
-    id: 5, enquiry_unique_id: "TKT-20260207-005", type: "Other",
-    enquiry: "Request to increase storage allocation on Web Server #1 from 50GB to 100GB before month end.",
-    status: "open", archived: null, vm_id: "vm_101", vm_name: "Web Server #1",
-    image: null, createdAt: "2026-02-07 08:20",
-  },
-  {
-    id: 6, enquiry_unique_id: "TKT-20260208-006", type: "Sales",
-    enquiry: "Interested in upgrading to the Enterprise plan for our team of 25 engineers. Need a custom quote.",
-    status: "progress", archived: null, vm_id: null, vm_name: null,
-    image: null, createdAt: "2026-02-08 10:00",
-  },
-];
-
-const MOCK_REPLIES = [
-  [
-    { id: 101, enquiry_id: 1, reply: "Server has been slow since yesterday evening. Restarted services but no improvement.", admin_reply: null, image: null, created_at: "2026-02-01 15:00" },
-    { id: 102, enquiry_id: 1, reply: null, admin_reply: "We've identified high CPU usage on your instance. Our team is investigating the root cause. We may need temporary SSH access.", image: null, created_at: "2026-02-01 16:30" },
-    { id: 103, enquiry_id: 1, reply: "Sure, I can provide credentials. Let me know when your team is ready.", admin_reply: null, image: null, created_at: "2026-02-01 17:00" },
-  ],
-  [
-    { id: 201, enquiry_id: 2, reply: "Packet loss is affecting our production deployments. This is critical and blocking our release.", admin_reply: null, image: null, created_at: "2026-02-03 09:30" },
-  ],
-  [
-    { id: 301, enquiry_id: 3, reply: "Please check transaction ID: TXN-9876543. Duplicate charge of ₹4,999.", admin_reply: null, image: null, created_at: "2026-02-05 11:15" },
-    { id: 302, enquiry_id: 3, reply: null, admin_reply: "We've verified the duplicate charge. Refund initiated — will reflect in 3-5 business days. Apologies for the inconvenience.", image: null, created_at: "2026-02-05 14:00" },
-  ],
-  [
-    { id: 401, enquiry_id: 4, reply: "Tried multiple approaches but Docker installation keeps failing.", admin_reply: null, image: null, created_at: "2026-01-28 17:00" },
-    { id: 402, enquiry_id: 4, reply: null, admin_reply: "Issue resolved. The server needed a kernel update before Docker could be installed. All set now.", image: null, created_at: "2026-01-29 10:00" },
-  ],
-  [
-    { id: 501, enquiry_id: 5, reply: "Current usage is at 47GB out of 50GB. Need the upgrade urgently.", admin_reply: null, image: null, created_at: "2026-02-07 08:30" },
-  ],
-  [
-    { id: 601, enquiry_id: 6, reply: "We need a plan that supports auto-scaling and dedicated support. What are the options?", admin_reply: null, image: null, created_at: "2026-02-08 10:15" },
-    { id: 602, enquiry_id: 6, reply: null, admin_reply: "Thanks for your interest! I'm connecting you with our sales team. They'll reach out within 24 hours with a custom quote.", image: null, created_at: "2026-02-08 11:00" },
-  ],
-];
-
-/*
-  ── To connect your REAL API, replace these functions: ───────────────────
-  - api.getMachines  → instance.post("/machines", encryptedPayload) + decrypt
-  - api.getTickets   → instance.post("/enquirys", payload) + decrypt
-  - api.createTicket → instance.post("/create-enquiry", formData) + decrypt
-  - api.replyTicket  → instance.post("/reply_enquiry", formData)
-  - api.archiveTicket→ instance.post("/archived_enquiry", payload)
-*/
-const api = {
-  getMachines: () => new Promise(r => setTimeout(() => r(MOCK_MACHINES), 500)),
-  getTickets: () => new Promise(r => setTimeout(() => r({ enquiries: [...MOCK_ENQUIRIES], enquiry_replys: [...MOCK_REPLIES] }), 700)),
-  createTicket: (data) => new Promise(r => setTimeout(() => r({
-    status: true,
-    ticket: {
-      ...data, id: Date.now(),
-      enquiry_unique_id: `TKT-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}-${String(Math.floor(Math.random() * 999)).padStart(3, "0")}`,
-      status: "open", archived: null,
-      createdAt: new Date().toLocaleString(),
-    }
-  }), 900)),
-  replyTicket: () => new Promise(r => setTimeout(() => r({ status: true }), 600)),
-  archiveTicket: () => new Promise(r => setTimeout(() => r({ status: true }), 400)),
+// get tickets
+const getTickets = async (userId) => {
+  const encrypted = {
+    user_id: userId,
+  };
+  const res = await instance.post("/enquirys", encrypted);
+  //console.log("RAW RESPONSE:", res.data);
+  return decryptData(res.data);
 };
 
-// ── SVG Icons ───────────────────────────────────────────────────────────
+
+
+// create ticket
+const createTicket = async (data) => {
+  const formData = new FormData();
+  Object.keys(data).forEach((k) => {
+    if (data[k]) formData.append(k, data[k]);
+  });
+  const res = await instance.post("/create-enquiry", formData);
+  return decryptData(res.data);
+};
+
+// reply ticket
+const replyTicket = async (data) => {
+  const formData = new FormData();
+  Object.keys(data).forEach((k) => {
+    if (data[k]) formData.append(k, data[k]);
+  });
+  const res = await instance.post("/reply_enquiry", formData);
+  //console.log("reply RAW RESPONSE:", res.data);
+  return res.data;
+};
+
+
+
+// archive / close ticket
+const archiveTicket = async (data) => {
+  const res = await instance.post("/archived_enquiry", data);
+  //console.log("ARCHIVE RAW RESPONSE:", res.data);
+  if (!res.data) return null;
+  return res.data;
+};
+
+// // ── SVG Icons ───────────────────────────────────────────────────────────
 const I = {
   Plus: () => <svg width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>,
   Search: () => <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>,
@@ -121,135 +73,180 @@ const I = {
   Check: () => <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" /></svg>,
 };
 
-// ── Status Config ───────────────────────────────────────────────────────
+/* ───────────────── CONFIG ───────────────── */
+
 const ST = {
-  open: { label: "Open", color: "#e67e22", bg: "#fef3e2", dot: "#f5a623" },
-  progress: { label: "In Progress", color: "#2d7dd2", bg: "#e8f2fc", dot: "#5ba4e6" },
-  completed: { label: "Completed", color: "#27ae60", bg: "#e6f7ee", dot: "#52d689" },
-  archived: { label: "Archived", color: "#95a5a6", bg: "#f0f1f2", dot: "#b4bec0" },
+  open: { label: "Open" },
+  progress: { label: "In Progress" },
+  completed: { label: "Completed" },
+  archived: { label: "Archived" },
 };
 
-const TYPES = ["Performance Issue", "Network Issue", "Installation Issue", "Sales", "Billing Query", "Other"];
+const TYPES = [
+  "Performance Issue",
+  "Network Issue",
+  "Installation Issue",
+  "Sales",
+  "Billing Query",
+  "Other",
+];
+
 const OPTIONAL_VM = ["Sales", "Billing Query", "Other"];
 
-// ── Component ───────────────────────────────────────────────────────────
+const TABS = [
+  { key: "all", label: "All" },
+  { key: "open", label: "Open" },
+  { key: "inProgress", label: "In Progress" },
+  { key: "closed", label: "Completed" },
+  { key: "archived", label: "Archived" },
+];
+
+/* ───────────────── COMPONENT ───────────────── */
+
 export default function SupportPage() {
+  const { smuser } = useAuth();
+
   const [machines, setMachines] = useState([]);
   const [enquiries, setEnquiries] = useState([]);
   const [replyArr, setReplyArr] = useState([]);
   const [loading, setLoading] = useState(true);
+
   const [tab, setTab] = useState("all");
   const [search, setSearch] = useState("");
   const [modal, setModal] = useState(false);
   const [expanded, setExpanded] = useState(null);
+
   const [replyText, setReplyText] = useState("");
   const [replyImg, setReplyImg] = useState(null);
+
+  // ✅ toast object (JSX uses toast.ok & toast.msg)
   const [toast, setToast] = useState(null);
 
   const [fType, setFType] = useState("");
   const [fMsg, setFMsg] = useState("");
   const [fVMs, setFVMs] = useState([]);
   const [fImg, setFImg] = useState(null);
+
   const fRef = useRef(null);
   const rRef = useRef(null);
 
+  /* ───────── helpers ───────── */
+
   const notify = useCallback((msg, ok = true) => {
     setToast({ msg, ok });
-    setTimeout(() => setToast(null), 3200);
+    setTimeout(() => setToast(null), 3000);
   }, []);
 
-  const load = useCallback(async () => {
+  const resetForm = () => {
+    setFType("");
+    setFMsg("");
+    setFVMs([]);
+    setFImg(null);
+  };
+
+  /* ───────── LOAD DATA ───────── */
+
+const load = useCallback(async () => {
+    if (!smuser?.id) return;
+
     setLoading(true);
     try {
-      const [m, t] = await Promise.all([api.getMachines(), api.getTickets()]);
-      setMachines(m); setEnquiries(t.enquiries); setReplyArr(t.enquiry_replys);
-    } catch { notify("Failed to load data.", false); }
+      const [m, t] = await Promise.all([
+        getMachines(smuser.id),
+        getTickets(smuser.id),
+      ]);
+
+      setMachines(m?.vm ? Object.values(m.vm) : []);
+      setEnquiries(t?.enquiries || []);
+      setReplyArr((t?.enquiry_replys || []).flat());
+    } catch (err) {
+      console.error("SUPPORT API ERROR:", err);
+      notify("Failed to load support data", false);
+    }
     setLoading(false);
-  }, [notify]);
+  }, [notify, smuser]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    load();
+  }, [load]);
 
-  const getReplies = id => replyArr.flat().filter(r => r.enquiry_id === id);
+  /* ───────── derived helpers ───────── */
+
+  const getReplies = (id) =>
+    replyArr.filter((r) => r.enquiry_id === id);
+
+  const toggleVM = (id) => {
+    setFVMs((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
+
+  /* ───────── ACTIONS ───────── */
 
   const create = async () => {
-    if (!fType) return notify("Select an issue type.", false);
-    if (!fMsg.trim()) return notify("Describe your issue.", false);
-    if (!OPTIONAL_VM.includes(fType) && fVMs.length === 0) return notify("Select at least one machine.", false);
-    setLoading(true);
-    try {
-      const res = await api.createTicket({
-        type: fType, enquiry: fMsg, vm_id: fVMs.join(","),
-        vm_name: fVMs.map(id => machines.find(m => m.vm_id === id)?.vm_name).filter(Boolean).join(", "),
-        image: fImg,
-      });
-      if (res.status) {
-        setEnquiries(p => [{ ...res.ticket, image: null }, ...p]);
-        setReplyArr(p => [...p, [{ id: Date.now(), enquiry_id: res.ticket.id, reply: "Ticket created. Awaiting response.", admin_reply: null, image: null, created_at: new Date().toLocaleString() }]]);
-        resetForm(); setModal(false);
-        notify("Ticket created successfully!");
-      }
-    } catch { notify("Failed to create ticket.", false); }
-    setLoading(false);
+    if (!fType || !fMsg) return notify("Fill all required fields", false);
+
+    await createTicket({
+      user_id: smuser.id,
+      name: smuser.name,
+      user_email: smuser.email,
+      user_mobile: smuser.phone,
+      type: fType,
+      vm_id: fVMs.join(","),
+      msg: fMsg,
+      file: fImg,
+    });
+
+    resetForm();
+    setModal(false);
+    notify("Ticket created");
+    load();
   };
 
-  const reply = async (tid) => {
-    if (!replyText.trim()) return notify("Write a reply first.", false);
-    setLoading(true);
-    try {
-      await api.replyTicket({ reply_message: replyText, enquiry_id: tid });
-      const nr = { id: Date.now(), enquiry_id: tid, reply: replyText, admin_reply: null, image: replyImg ? URL.createObjectURL(replyImg) : null, created_at: new Date().toLocaleString() };
-      setReplyArr(p => {
-        const u = p.map(a => Array.isArray(a) && a.some(r => r.enquiry_id === tid) ? [...a, nr] : a);
-        if (!u.some(a => Array.isArray(a) && a.some(r => r.enquiry_id === tid))) u.push([nr]);
-        return u;
-      });
-      setReplyText(""); setReplyImg(null);
-      notify("Reply sent!");
-    } catch { notify("Failed to send reply.", false); }
-    setLoading(false);
+  const reply = async (id) => {
+    if (!replyText) return;
+
+    await replyTicket({
+      id: id,
+      enquiry_id: id,
+      user_id: smuser.id,
+      reply_message: replyText,
+      file: replyImg,
+    });
+
+    setReplyText("");
+    setReplyImg(null);
+    load();
   };
 
-  const changeStatus = async (tk, st) => {
-    setLoading(true);
-    try {
-      await api.archiveTicket({ enquiry_id: tk.id, status: st });
-      setEnquiries(p => p.map(e => e.id === tk.id ? { ...e, status: st, archived: st === "archived" ? "archived" : e.archived } : e));
-      notify(`Ticket moved to ${ST[st]?.label || st}.`);
-    } catch { notify("Failed to update.", false); }
-    setLoading(false);
+  const changeStatus = async (tk, status) => {
+    await archiveTicket({
+      enquiry_id: tk.id,
+      user_id: smuser.id,
+      status,
+    });
+    load();
   };
-
-  const resetForm = () => { setFType(""); setFMsg(""); setFVMs([]); setFImg(null); };
-  const toggleVM = id => setFVMs(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
 
   const filtered = enquiries
-    .filter(e => {
+    .filter((e) => {
       if (tab === "all") return true;
       if (tab === "inProgress") return e.status === "progress";
       if (tab === "closed") return e.status === "completed";
       return e.status === tab;
     })
-    .filter(e =>
-      e.enquiry_unique_id.toLowerCase().includes(search.toLowerCase()) ||
-      e.enquiry.toLowerCase().includes(search.toLowerCase()) ||
-      e.type.toLowerCase().includes(search.toLowerCase())
+    .filter((e) =>
+      e.enquiry?.toLowerCase().includes(search.toLowerCase())
     );
 
   const counts = {
     all: enquiries.length,
-    open: enquiries.filter(e => e.status === "open").length,
-    inProgress: enquiries.filter(e => e.status === "progress").length,
-    closed: enquiries.filter(e => e.status === "completed").length,
-    archived: enquiries.filter(e => e.status === "archived" || e.archived === "archived").length,
+    open: enquiries.filter((e) => e.status === "open").length,
+    inProgress: enquiries.filter((e) => e.status === "progress").length,
+    closed: enquiries.filter((e) => e.status === "completed").length,
+    archived: enquiries.filter((e) => e.status === "archived").length,
   };
 
-  const TABS = [
-    { key: "all", label: "All", icon: "📋" },
-    { key: "open", label: "Open", icon: "🟠" },
-    { key: "inProgress", label: "In Progress", icon: "🔵" },
-    { key: "closed", label: "Completed", icon: "🟢" },
-    { key: "archived", label: "Archived", icon: "📦" },
-  ];
 
   return (
     <div className="sp-root mt-5">
@@ -258,7 +255,6 @@ export default function SupportPage() {
       {toast && <div className={`sp-toast ${toast.ok ? "sp-toast-ok" : "sp-toast-err"}`}>{toast.ok ? "✓" : "✕"} {toast.msg}</div>}
       {loading && <div className="sp-loader-overlay"><div className="sp-loader" /></div>}
 
-      {/* Header */}
       <header className="sp-header">
         <div className="sp-header-inner">
           <div className="sp-header-left">
@@ -330,7 +326,7 @@ export default function SupportPage() {
                     {tk.vm_name && <span className="sp-vm-pill"><I.Server />{tk.vm_name}</span>}
                   </div>
                   <p className="sp-card-desc">{tk.enquiry}</p>
-
+                  {tk.image  && <img src={tk.image } alt="" className="sp-bubble-img" />}
                   {open && (
                     <div className="sp-expanded">
                       <hr className="sp-hr" />
@@ -343,7 +339,14 @@ export default function SupportPage() {
                                 <span className="sp-bubble-who">{m.admin_reply ? "🛡️ Support" : "You"}</span>
                                 <span className="sp-bubble-time">{m.created_at}</span>
                               </div>
-                              <p className="sp-bubble-text">{m.admin_reply || m.reply}</p>
+                             {m.admin_reply ? (
+                                <div
+                                  className="sp-bubble-text"
+                                  dangerouslySetInnerHTML={{ __html: m.admin_reply }}
+                                />
+                              ) : (
+                                <p className="sp-bubble-text">{m.reply}</p>
+                              )}
                               {m.image && <img src={m.image} alt="" className="sp-bubble-img" />}
                             </div>
                           ))}
@@ -403,7 +406,7 @@ export default function SupportPage() {
                   </button>
                 ))}
                 {machines.filter(m => m.public_ip || m.ip_address).length === 0 && <p className="sp-no-vm">No machines available.</p>}
-              </div>
+              </div> 
 
               <label className="sp-label">Description <span className="sp-req">*</span></label>
               <textarea className="sp-form-ta" rows={5} placeholder="Describe your issue in detail..." value={fMsg} onChange={e => setFMsg(e.target.value)} />
@@ -447,7 +450,7 @@ const CSS = `
 .sp-root{
   font-family:'Outfit',sans-serif;
   background:#faf8f5;
-  min-height:100vh;
+  min-height:60vh;
   color:#3a3226;
 }
 
@@ -469,7 +472,7 @@ const CSS = `
 }
 .sp-loader{
   width:36px;height:36px;border:3px solid #ece7df;
-  border-top-color:#c9956b;border-radius:50%;animation:spin .7s linear infinite;
+  border-top-color:#E97730;border-radius:50%;animation:spin .7s linear infinite;
 }
 
 /* Header */
@@ -515,7 +518,7 @@ const CSS = `
   box-shadow:0 1px 4px rgba(0,0,0,.03);
 }
 .sp-stat:hover{border-color:#d4c8b8;box-shadow:0 3px 12px rgba(0,0,0,.06)}
-.sp-stat-active{border-color:#c9956b;background:#fdf8f3;box-shadow:0 3px 14px rgba(169,114,72,.1)}
+.sp-stat-active{border-color:#E97730;background:#fdf8f3;box-shadow:0 3px 14px rgba(169,114,72,.1)}
 .sp-stat-icon{font-size:20px;line-height:1}
 .sp-stat-num{font-size:26px;font-weight:700;color:#2a2016;font-family:'Source Code Pro',monospace}
 .sp-stat-label{font-size:11.5px;color:#9a8e7f;font-weight:500;text-transform:uppercase;letter-spacing:.6px}
@@ -528,7 +531,7 @@ const CSS = `
   background:#fff;border:1.5px solid #ece7df;color:#9a8e7f;
   transition:border-color .2s;
 }
-.sp-search-box:focus-within{border-color:#c9956b}
+.sp-search-box:focus-within{border-color:#E97730}
 .sp-search-input{
   flex:1;background:none;border:none;color:#3a3226;
   font-size:13.5px;font-family:'Outfit',sans-serif;
@@ -549,7 +552,7 @@ const CSS = `
 /* Card */
 .sp-card{
   background:#fff;border-radius:14px;
-  border:1px solid #ece7df;border-left:4px solid var(--accent,#c9956b);
+  border:1px solid #ece7df;border-left:4px solid var(--accent,#E97730);
   padding:18px 22px;animation:fadeUp .35s ease;
   transition:box-shadow .2s;
   box-shadow:0 1px 4px rgba(0,0,0,.03);
@@ -619,7 +622,7 @@ const CSS = `
   cursor:pointer;display:flex;align-items:center;justify-content:center;
   position:relative;transition:all .2s;
 }
-.sp-attach-btn:hover{border-color:#c9956b;color:#c9956b}
+.sp-attach-btn:hover{border-color:#E97730;color:#E97730}
 .sp-attach-dot{position:absolute;top:-3px;right:-3px;width:7px;height:7px;background:#e74c3c;border-radius:50%}
 .sp-reply-input{
   flex:1;background:none;border:none;color:#3a3226;
@@ -629,12 +632,11 @@ const CSS = `
 .sp-reply-input:focus{outline:none}
 .sp-send-btn{
   width:38px;height:38px;border-radius:9px;flex-shrink:0;
-  background:linear-gradient(135deg,#c9956b,#a57248);
+  background:linear-gradient(135deg,#E97730,#a57248);
   border:none;color:#fff;cursor:pointer;display:flex;
   align-items:center;justify-content:center;
-  box-shadow:0 2px 10px rgba(169,114,72,.25);transition:all .2s;
 }
-.sp-send-btn:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(169,114,72,.35)}
+.sp-send-btn:hover{transform:translateY(-1px);box-shadow:0 4px 14px #E97730)}
 
 /* Actions */
 .sp-actions{display:flex;gap:8px;flex-wrap:wrap}
@@ -691,7 +693,7 @@ const CSS = `
   font-family:'Outfit',sans-serif;transition:all .15s;
 }
 .sp-type-btn:hover{border-color:#d4c8b8}
-.sp-type-btn-on{background:#fdf5ec;border-color:#c9956b;color:#a57248;font-weight:600}
+.sp-type-btn-on{background:#fdf5ec;border-color:#E97730;color:#a57248;font-weight:600}
 
 .sp-vm-grid{display:flex;gap:7px;flex-wrap:wrap}
 .sp-vm-btn{
@@ -710,14 +712,14 @@ const CSS = `
   padding:12px 14px;color:#3a3226;font-size:13.5px;font-family:'Outfit',sans-serif;
   resize:vertical;line-height:1.6;transition:border-color .2s;
 }
-.sp-form-ta:focus{border-color:#c9956b;outline:none}
+.sp-form-ta:focus{border-color:#E97730;outline:none}
 .sp-form-ta::placeholder{color:#c4b8a8}
 
 .sp-upload{
   padding:18px;border-radius:11px;border:2px dashed #ddd4c8;
   background:#fcfaf7;cursor:pointer;transition:all .2s;
 }
-.sp-upload:hover{border-color:#c9956b;background:#fdf8f3}
+.sp-upload:hover{border-color:#E97730;background:#fdf8f3}
 .sp-upload-empty{display:flex;align-items:center;gap:8px;justify-content:center;color:#b8a898;font-size:13px}
 .sp-upload-file{display:flex;align-items:center;justify-content:space-between;color:#6b5e50;font-size:13px}
 .sp-upload-rm{background:none;border:none;color:#e74c3c;cursor:pointer;padding:2px;display:flex}
@@ -730,7 +732,7 @@ const CSS = `
 .sp-cancel-btn:hover{background:#ece7df}
 .sp-submit-btn{
   padding:9px 22px;border-radius:9px;font-size:13.5px;font-weight:600;
-  background:linear-gradient(135deg,#c9956b,#a57248);
+  background:#E97730;
   border:none;color:#fff;cursor:pointer;font-family:'Outfit',sans-serif;
   box-shadow:0 3px 12px rgba(169,114,72,.25);transition:all .2s;
 }

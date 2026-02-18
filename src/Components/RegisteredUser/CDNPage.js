@@ -915,39 +915,6 @@ const CDNPage = () => {
           >
             CDNs{" "}
           </div>
-
-          {/* <div
-            style={{
-              position: "absolute",
-              marginLeft: "5%",
-              marginTop: showCdnForm ? "4rem" : "9rem",
-              paddingBottom: "50px",
-            }}
-          >
-            {statusButtons.map((title, idx) => (
-              <Button
-                key={idx}
-                style={{
-                  background: `${
-                    activeStatusButton === title ? "#f47c20" : "#035189"
-                  }`,
-                  border: "none",
-                  fontSize: "20px",
-                  padding: "5px 15px",
-                  color: "#fff",
-                  fontWeight: "600",
-                  borderRadius: "10px",
-                  marginBottom: "10px",
-                }}
-                onClick={() => {
-                  setActiveStatusButton(title);
-                }}
-              >
-                {title}
-              </Button>
-            ))}
-          </div> */}
-
           {cdnList && cdnList.length > 0 && (
             <div
               className="input-container"
@@ -995,7 +962,6 @@ const CDNPage = () => {
             </div>
           )}
 
-          {/* {activeStatusButton == "Active" && ( */}
           <div
             style={{
               marginTop: "6rem",
@@ -1634,7 +1600,6 @@ const CDNPage = () => {
               <div></div>
             )}
           </div>
-          {/* )} */}
 
           {activeStatusButton == "Disabled" && (
             <div
@@ -1920,6 +1885,7 @@ const CDNPage = () => {
           )}
         </div>
       ) : (
+
         //web view
 
         <div className="features-page-solution" style={{ padding: "5rem" }}>
@@ -1928,6 +1894,7 @@ const CDNPage = () => {
               CDN <span></span>
             </div>
           )}
+
           {isLoginByParentUser == 1 && !showCdnForm && (
             <div
               style={{
@@ -1953,6 +1920,7 @@ const CDNPage = () => {
               </Button>
             </div>
           )}
+
           {isLoginByParentUser == 1 && showCdnForm && (
             <Row>
               <div className="col-md-2"></div>
@@ -2269,6 +2237,7 @@ const CDNPage = () => {
               <div className="col-md-2"></div>
             </Row>
           )}
+
           <div
             className="heading-dotted-support"
             style={{
@@ -2285,57 +2254,56 @@ const CDNPage = () => {
                 : "1rem",
             }}
           >
-            CDNs{" "}
           </div>
-         
+
           {cdnList &&
             cdnList.filter((item) => item.status === 1).length > 0 && (
-              <div
-                className="input-container"
+            <div
+              className="input-container"
+              style={{
+                marginLeft: "82%",
+                position: "relative",
+                border: "2px solid #035189",
+                width: "18rem",
+                marginTop: "60px",
+                height: "55px",
+              }}
+            >
+              <input
+                type="text"
+                name="search"
+                className="input-signup input-tickets"
+                placeholder="Search Website"
+                value={searchText}
                 style={{
-                  marginLeft: "82%",
-                  position: "relative",
-                  border: "2px solid #035189",
-                  width: "18rem",
-                  marginTop: "60px",
-                  height: "55px",
+                  fontSize: "24px",
+                  color: "black",
+                  textAlign: "center",
+                  width: "10px",
                 }}
-              >
-                <input
-                  type="text"
-                  name="search"
-                  className="input-signup input-tickets"
-                  placeholder="Search Website"
-                  value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+              />
+              {searchText && (
+                <button
                   style={{
-                    fontSize: "24px",
-                    color: "black",
-                    textAlign: "center",
-                    width: "10px",
+                    backgroundColor: "transparent",
+                    border: "none",
                   }}
-                  onChange={(e) => setSearchText(e.target.value)}
-                />
-                {searchText && (
-                  <button
+                  onClick={() => setSearchText("")}
+                >
+                  <FaX
                     style={{
-                      backgroundColor: "transparent",
-                      border: "none",
+                      //marginBottom: "2px",
+                      color: "#154e7a",
+                      display: "inline-block",
+                      fontSize: "19px",
                     }}
-                    onClick={() => setSearchText("")}
-                  >
-                    <FaX
-                      style={{
-                        //marginBottom: "2px",
-                        color: "#154e7a",
-                        display: "inline-block",
-                        fontSize: "19px",
-                      }}
-                    />
-                  </button>
-                )}
-              </div>
-            )}
-          {/* {activeStatusButton == "Active" && ( */}
+                  />
+                </button>
+              )}
+            </div>
+          )}
+
           <div
             style={{
               marginTop: isLoginByParentUser == 1 ? "2rem" : "2rem",
@@ -2952,7 +2920,7 @@ const CDNPage = () => {
               <div></div>
             )}
           </div>
-          {/* )} */}
+
           {activeStatusButton == "Disabled" && (
             <div
               style={{

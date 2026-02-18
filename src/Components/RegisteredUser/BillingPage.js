@@ -53,17 +53,17 @@ const BillingPage = () => {
     try {
       const encryptedResponse = await apiEncryptRequest(payload);
       const loginUserResponse = await instance.post("/bill", encryptedResponse);
-      ////console.log(loginUserResponse.data, "====loginUserResponse");
+      //////console.log(loginUserResponse.data, "====loginUserResponse");
 
       const loginResponse = await decryptData(loginUserResponse.data);
       const userDetails = loginResponse;
       const user = loginResponse.user;
       const vm = loginResponse.vm;
 
-      // console.log(loginResponse, "==!==!==BILLLINGG");
-      // console.log(userDetails, "==!==!==vvmArraym");
-      // console.log(user, "==!==!==user");
-      // console.log(vm, "==!==!==vm");
+      // //console.log(loginResponse, "==!==!==BILLLINGG");
+      // //console.log(userDetails, "==!==!==vvmArraym");
+      // //console.log(user, "==!==!==user");
+      // //console.log(vm, "==!==!==vm");
       const vmArray = Object.keys(vm).map((key) => vm[key]);
       setAllVMS(vmArray);
 
@@ -71,7 +71,7 @@ const BillingPage = () => {
       const cdnArray = Object.keys(cdn).map((key) => cdn[key]);
       setAllCDN(cdnArray);
 
-      // console.log(vmArray, "==!==!==vvmArraym");
+      // //console.log(vmArray, "==!==!==vvmArraym");
       setBillingData(vmArray);
       setFilteredServerData(vmArray);
       setFilteredCDNData(cdnArray);
@@ -89,10 +89,10 @@ const BillingPage = () => {
 
   const filterByStatus = (dataArray, vmid) => {
     if (vmid === "") {
-      // console.log(dataArray, vmid, "filterByStatus");
+      // //console.log(dataArray, vmid, "filterByStatus");
       return dataArray;
     } else {
-      // console.log(dataArray, vmid, "filterByStatus");
+      // //console.log(dataArray, vmid, "filterByStatus");
       return dataArray.filter((item) => item.vm_id === vmid);
     }
   };
@@ -478,7 +478,7 @@ const BillingPage = () => {
                 onChange={(e) => {
                   // setActiveID(e.target.value);
                   // handleChangeMachine(e.target.value);
-                  ////console.log(e.target.value);
+                  //////console.log(e.target.value);
                 }}
               >
                 {/* <option value={activeId}>Select</option> */}
@@ -1594,7 +1594,7 @@ const BillingPage = () => {
                         handleSearchChange
 
                       // handleChangeMachine(e.target.value);
-                      ////console.log(e.target.value);
+                      //////console.log(e.target.value);
                     }
                   >
                     {/* <option value={activeId}>Select</option> */}
@@ -1787,7 +1787,7 @@ const BillingPage = () => {
                   onChange={(e) => {
                     setShowvm(e.target.value);
                     // handleChangeMachine(e.target.value);
-                    ////console.log(e.target.value);
+                    //////console.log(e.target.value);
                   }}
                 >
                   {/* <option value={activeId}>Select</option> }

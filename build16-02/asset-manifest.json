@@ -1,0 +1,25 @@
+{
+  "files": {
+    "main.css": "/static/css/main.67926152.css",
+    "main.js": "/static/js/main.f2348753.js",
+    "static/js/213.fd7e81c6.chunk.js": "/static/js/213.fd7e81c6.chunk.js",
+    "static/js/455.1baf8175.chunk.js": "/static/js/455.1baf8175.chunk.js",
+    "static/js/453.1e2f3d1c.chunk.js": "/static/js/453.1e2f3d1c.chunk.js",
+    "static/media/lexend-deca-latin-400-normal.woff": "/static/media/lexend-deca-latin-400-normal.f3e40c80804e32f88027.woff",
+    "static/media/lexend-deca-latin-ext-400-normal.woff": "/static/media/lexend-deca-latin-ext-400-normal.6238553a07e37728c042.woff",
+    "static/media/lexend-deca-latin-400-normal.woff2": "/static/media/lexend-deca-latin-400-normal.f1399a81a47fc70aeef0.woff2",
+    "static/media/lexend-deca-latin-ext-400-normal.woff2": "/static/media/lexend-deca-latin-ext-400-normal.101b9ebdf0cca265b51f.woff2",
+    "static/media/lexend-deca-vietnamese-400-normal.woff": "/static/media/lexend-deca-vietnamese-400-normal.b9cce44059d8a9eaaf8c.woff",
+    "static/media/lexend-deca-vietnamese-400-normal.woff2": "/static/media/lexend-deca-vietnamese-400-normal.62c0e07d2353afb0be07.woff2",
+    "index.html": "/index.html",
+    "main.67926152.css.map": "/static/css/main.67926152.css.map",
+    "main.f2348753.js.map": "/static/js/main.f2348753.js.map",
+    "213.fd7e81c6.chunk.js.map": "/static/js/213.fd7e81c6.chunk.js.map",
+    "455.1baf8175.chunk.js.map": "/static/js/455.1baf8175.chunk.js.map",
+    "453.1e2f3d1c.chunk.js.map": "/static/js/453.1e2f3d1c.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.67926152.css",
+    "static/js/main.f2348753.js"
+  ]
+}

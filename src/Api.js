@@ -24,47 +24,36 @@ window.getUserIP = async () => {
   try {
     const response = await fetch("http://ip-api.com/json/"); // "https://ipinfo.io"
     const data = await response.json();
-    // this.setState({ ip: data.IPv4 });
-    // console.log(data.IPv4, "IP RES");
-    // return data.IPv4;
     return data;
   } catch (error) {
     return { IPv4: "Unknown", country_name: "Unknown" };
   }
-  // try {
-  //   const response = await fetch("https://api.ipdata.co");
-  //   const data = await response.json();
-  //   return "103.240.168.48"; //data.ip;
-  // } catch (error) {
-  //   // console.error("Error fetching user IP:", error);
-  //   return "Unknown"; // Return 'Unknown' if there's an error
-  // }
 };
 
-window.fetchGeoIP = async (ip) => {
-  const username = "YOUR_ACCOUNT_ID"; // Replace with your actual MaxMind account ID
-  const password = "YOUR_LICENSE_KEY"; // Replace with your actual MaxMind license key
+// window.fetchGeoIP = async (ip) => {
+//   const username = "YOUR_ACCOUNT_ID"; // Replace with your actual MaxMind account ID
+//   const password = "YOUR_LICENSE_KEY"; // Replace with your actual MaxMind license key
 
-  try {
-    const response = await fetch(
-      `https://geoip.maxmind.com/geoip/v2.1/city/${ip}`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: "Basic " + btoa(`${username}:${password}`), // Encode credentials
-          Accept: "application/json",
-        },
-      }
-    );
+//   try {
+//     const response = await fetch(
+//       `https://geoip.maxmind.com/geoip/v2.1/city/${ip}`,
+//       {
+//         method: "GET",
+//         headers: {
+//           Authorization: "Basic " + btoa(`${username}:${password}`), // Encode credentials
+//           Accept: "application/json",
+//         },
+//       }
+//     );
 
-    if (!response.ok) throw new Error("Failed to fetch GeoIP data");
+//     if (!response.ok) throw new Error("Failed to fetch GeoIP data");
 
-    const data = await response.json();
-    console.log("GeoIP Data:", data);
-  } catch (error) {
-    console.error("Error fetching GeoIP data:", error);
-  }
-};
+//     const data = await response.json();
+//     console.log("GeoIP Data:", data);
+//   } catch (error) {
+//     console.error("Error fetching GeoIP data:", error);
+//   }
+// };
 
 window.fetchIPData = async () => {
   const apiKey = "b342806ff34d4c9786b6a2cb024654d6";
@@ -88,19 +77,16 @@ export const apiEncryptRequest = async (payload) => {
     const response = await instance.post("/encrypt", payload);
     return response.data;
   } catch (error) {
-    // console.error(`Error fetching data from ${""}:`, error);
-    throw error; // Re-throw the error so it can be handled by the caller
+    throw error; 
   }
 };
 
 export const apiDecrypteRequest = async (payload) => {
-  // console.error(`fetching data from ${"apiDecrypteRequest"}:`, payload);
   try {
     const response = await instance.post("/decrypte", payload);
     return response.data;
   } catch (error) {
-    // console.error(`Error fetching data from ${""}:`, error);
-    throw error; // Re-throw the error so it can be handled by the caller
+    throw error;
   }
 };
 
@@ -181,17 +167,7 @@ export const decryptData = async (encryptedJson) => {
   const cipher = "AES-256-CBC";
   const secretKey = "12345678901234567890123456789012";
   const iv = "1234567891234567";
-  // console.log(encryptedJson, "......encryptedJson");
-  // Decrypt the data
-  // const bytes = CryptoJS.AES.decrypt(
-  //   encryptedJson,
-  //   CryptoJS.enc.Hex.parse(secretKey),
-  //   {
-  //     iv: iv,
-  //     mode: CryptoJS.mode.CBC,
-  //     padding: CryptoJS.pad.Pkcs7,
-  //   }
-  // );
+ 
   const bytes = CryptoJS.AES.decrypt(
     encryptedJson,
     CryptoJS.enc.Utf8.parse(secretKey),

@@ -20,19 +20,11 @@ const StripePaymentPage = () => {
     mode: "payment",
     amount: amount,
     currency: "usd",
-    // Fully customizable with appearance API.
     appearance: {
-      /*...*/
     },
   };
 
   useEffect(() => {
-    // Fetch the clientSecret from your backend
-    // fetch("/create-payment-intent", {
-    //   method: "POST",
-    // })
-    //   .then((res) => res.json())
-    //   .then((data) => setClientSecret(data.clientSecret));
     const fetchSecret = async () => {
       try {
         const payload = {

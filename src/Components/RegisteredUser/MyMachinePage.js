@@ -53,7 +53,6 @@ const MyMachinePage = () => {
     return window.matchMedia("(max-width: 800px)").matches;
   }
   const toggleSwitch = (data) => {
-    //console.log(data);
     if (data.status === "on") {
       OnMachine(data.id);
     } else {
@@ -90,9 +89,7 @@ const MyMachinePage = () => {
 
   useEffect(() => {
     const storedMachineTime = localStorage.getItem("machineTime");
-    // console.log(storedMachineTime, "TIME<<<<");
     setMachineTime(storedMachineTime);
-    // Calculate active time by adding 15 minutes to stored time
     if (storedMachineTime) {
       const timeObj = new Date(storedMachineTime);
       timeObj.setMinutes(timeObj.getMinutes() + 30);
@@ -181,7 +178,6 @@ const MyMachinePage = () => {
           );
           const finalResponse = await decryptData(createMachineRes.data);
           const Details = finalResponse;
-          // //console.log(Details.status, "==!==!==Details");
           if (Details.status) {
             window.location.href = "/vm-machine";
           }
@@ -207,18 +203,10 @@ const MyMachinePage = () => {
             "/vm/rebuild_new",
             encryptedResponse
           );
-          // handleRedirect();
+
           const finalResponse = await decryptData(createMachineRes.data);
           const Details = finalResponse;
-          // console.log(Details, "==!==!==/vm/rebuild_new");
-          // if (Details.status) {
-          //   alert("New machine created successfully ");
-          //   window.location.href = "/vm-machine";
-          // }
-          // if (Details.code == 999) {
-          //   alert("Please try again later, Unable to create Machine!");
-          // }
-          // window.location.href = "/vm-machine";
+
         } catch (error) {
           toast((t) => (
             <AppToast
@@ -250,12 +238,11 @@ const MyMachinePage = () => {
         encryptedResponse
       );
       const loginResponse = await decryptData(loginUserResponse.data);
-      // console.log(loginResponse, "GetMachines");
       const userDetails = loginResponse;
       const user = loginResponse.user;
       const vm = loginResponse.vm;
       setMachineUser(user);
-      console.log(vm, "==!==!==vm");
+      //console.log(vm, "==!==!==vm");
       const vmArray = Object.keys(vm).map((key) => vm[key]);
       if (vmArray.find((item) => item.current_action_status === "PROCESSING")) {
         const progressVM = vmArray.find(
@@ -302,11 +289,9 @@ const MyMachinePage = () => {
         encryptedResponse
       );
       const loginResponse = await decryptData(loginUserResponse.data);
-      // console.log(loginResponse, "updatevmstatus");
     } catch (error) {
       console.error("Error during the login process:", error);
     }
-    // setLoading(false);
   };
 
   const updatenetworkstatus = async () => {
@@ -320,7 +305,6 @@ const MyMachinePage = () => {
         encryptedResponse
       );
       const loginResponse = await decryptData(loginUserResponse.data);
-      // console.log(loginResponse, "updatevmstatus");
     } catch (error) {
       console.error("Error during the login process:", error);
     }
@@ -336,13 +320,11 @@ const MyMachinePage = () => {
         isMobile={isMobile}
       />
     ));
-    // setLoading(true);
     const payload = {
       user_id: smuser.id,
       vm_id: machineId.vm_id,
       id: machineId.id,
     };
-    // console.log(payload, "------- deleteMachine");
     try {
       const encryptedResponse = await apiEncryptRequest(payload);
       const distroyResponse = await instance.post(
@@ -350,12 +332,10 @@ const MyMachinePage = () => {
         encryptedResponse
       );
       const Response = await decryptData(distroyResponse.data);
-      // console.log(Response.data, "====distroyResponse");
       const userDetails = Response;
       if (userDetails.status) {
         GetMachines();
       } else {
-        // toast();
         toast((t) => (
           <AppToast
             id={t.id}
@@ -376,7 +356,6 @@ const MyMachinePage = () => {
       user_id: smuser.id,
       vm_id: machineId,
     };
-    //console.log(payload, "------- VMC");
     const res = {
       status: true,
       info: {
@@ -406,13 +385,13 @@ const MyMachinePage = () => {
       user_id: smuser.id,
       vm_id: machineId,
     };
-    //console.log(payload, "ONNNN");
+    ////console.log(payload, "ONNNN");
     try {
       const encryptedResponse = await apiEncryptRequest(payload);
       const distroyResponse = await instance.post("/vm/on", encryptedResponse);
       const Response = await decryptData(distroyResponse.data);
       const userDetails = Response;
-      // console.log(userDetails, "ONMACHINE");
+      // //console.log(userDetails, "ONMACHINE");
       if (userDetails.status) {
         GetMachines();
       }
@@ -428,13 +407,13 @@ const MyMachinePage = () => {
       user_id: smuser.id,
       vm_id: machineId,
     };
-    //console.log(payload, "ONNNN");
+    ////console.log(payload, "ONNNN");
     try {
       const encryptedResponse = await apiEncryptRequest(payload);
       const distroyResponse = await instance.post("/vm/off", encryptedResponse);
       const Response = await decryptData(distroyResponse.data);
       const userDetails = Response;
-      // console.log(userDetails, "OFFMACHINE");
+      // //console.log(userDetails, "OFFMACHINE");
       if (userDetails.status) {
         GetMachines();
       }
@@ -450,7 +429,7 @@ const MyMachinePage = () => {
       user_id: smuser.id,
       //vm_id: machineId,
     };
-    // console.log(payload, "slaManagement Payload");
+    // //console.log(payload, "slaManagement Payload");
     try {
       const encryptedResponse = await apiEncryptRequest(payload);
       const distroyResponse = await instance.post(
@@ -458,7 +437,7 @@ const MyMachinePage = () => {
         encryptedResponse
       );
       const Response = await decryptData(distroyResponse.data);
-      // console.log(Response, "SlaManagment Response");
+      // //console.log(Response, "SlaManagment Response");
       if (Response.status) {
         setShowTermsCondition(true);
         setSLADesc(Response.sla);
@@ -481,7 +460,7 @@ const MyMachinePage = () => {
       finger_print: window.navigator.userAgent,
       //file: slaPdf
     };
-    // console.log(payload, "agreeSLAPdf Payload");
+    // //console.log(payload, "agreeSLAPdf Payload");
     try {
       const encryptedResponse = await apiEncryptRequest(payload);
       const termsacceptResponse = await instance.post(
@@ -491,7 +470,7 @@ const MyMachinePage = () => {
       const decTermsacceptResponseResponse = await decryptData(
         termsacceptResponse.data
       );
-      // console.log(decTermsacceptResponseResponse, "TermsacceptResponse");
+      // //console.log(decTermsacceptResponseResponse, "TermsacceptResponse");
       if (decTermsacceptResponseResponse.success) {
         GetMachines();
         toast((t) => (
@@ -535,9 +514,9 @@ const MyMachinePage = () => {
     };
     try {
       const loginUserResponse = await instance.post("/editprofile", payload);
-      //console.log(loginUserResponse.data, "====/vm/monitor");
+      ////console.log(loginUserResponse.data, "====/vm/monitor");
       const User = loginUserResponse.data.user;
-      console.log(User, "====User");
+      //console.log(User, "====User");
       const country = User.country;
 
       if (country === "India") {
@@ -555,13 +534,13 @@ const MyMachinePage = () => {
           setProfileVerified(true);
         }
       }
-      // console.log(User, "====/VMMMMMM");
+      // //console.log(User, "====/VMMMMMM");
     } catch (error) {}
     setLoading(false);
   };
 
   const filterByLocation = (dataArray, dropValue) => {
-    // console.log(dropValue, "drop");
+    // //console.log(dropValue, "drop");
     if (dropValue === "Global") {
       return dataArray;
     } else {

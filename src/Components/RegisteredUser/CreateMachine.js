@@ -267,7 +267,7 @@ const CreateMachine = (props) => {
             `https://upntcld.com/api/jump-server/details?id=${jumpServerId}`,
         );
         const data = await res.json();
-        console.log(data);
+        // console.log(data);
         setJumpServerDetails(data);
         setShowJumpServerPopup(true);
         } catch (error) {
@@ -570,7 +570,7 @@ const CreateMachine = (props) => {
                   handleRedirect();
                   const finalResponse = await decryptData(createMachineRes.data);
                   const Details = finalResponse;
-                  console.log(Details, "==!==!==/vm/store-vm");
+                  // console.log(Details, "==!==!==/vm/store-vm");
                   window.location.href = "/vm-machine";
               } catch (error) {
               }
@@ -740,7 +740,7 @@ const CreateMachine = (props) => {
         setSurcharge(surcharge);
         localStorage.setItem("surcharge", surcharge);
         // console.log(userDetails.reedem_points);
-        console.log(userDetails, "====loginUserResponse");
+        // console.log(userDetails, "====loginUserResponse");
 
         setIPPrice(userDetails.ip_price);
 
@@ -6949,10 +6949,10 @@ const CreateMachine = (props) => {
                                             setNewMachineConfigId(
                                               item.config_id,
                                             );
-                                            console.log(
-                                              "CHECK CONFIGID: item.config_id",
-                                              item.config_id,
-                                            );
+                                            // console.log(
+                                            //   "CHECK CONFIGID: item.config_id",
+                                            //   item.config_id,
+                                            // );
                                           }}
                                         >
                                           <div

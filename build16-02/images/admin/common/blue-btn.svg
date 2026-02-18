@@ -1,0 +1,26 @@
+<svg id="your-machine-btn" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="166" height="50" viewBox="0 0 166 50">
+  <defs>
+    <linearGradient id="linear-gradient" x1="0.5" x2="0.5" y2="1" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#4a92f8"/>
+      <stop offset="1" stop-color="#bdd3fe"/>
+    </linearGradient>
+    <clipPath id="clip-path">
+      <rect id="Rectangle_5" data-name="Rectangle 5" width="116" height="50" rx="25" fill="url(#linear-gradient)"/>
+    </clipPath>
+    <linearGradient id="linear-gradient-4" x1="0.538" y1="0.145" x2="0.485" y2="1.418" xlink:href="#linear-gradient"/>
+    <linearGradient id="linear-gradient-5" x1="0.566" y1="0.046" x2="0.644" y2="1.324" xlink:href="#linear-gradient"/>
+    <clipPath id="clip-path-2">
+      <rect id="Rectangle_748" data-name="Rectangle 748" width="166" height="50" rx="25" fill="url(#linear-gradient)"/>
+    </clipPath>
+  </defs>
+  <g id="Mask_Group_1" data-name="Mask Group 1" transform="translate(23)" clip-path="url(#clip-path)">
+    <rect id="Rectangle_4" data-name="Rectangle 4" width="116" height="50" rx="25" fill="url(#linear-gradient)"/>
+    <ellipse id="Ellipse_1" data-name="Ellipse 1" cx="50.294" cy="19.851" rx="50.294" ry="19.851" transform="matrix(0.966, 0.259, -0.259, 0.966, 0.875, 20.977)" fill="url(#linear-gradient-4)"/>
+    <ellipse id="Ellipse_2" data-name="Ellipse 2" cx="50.294" cy="19.851" rx="50.294" ry="19.851" transform="matrix(0.966, 0.259, -0.259, 0.966, 35.632, -34.715)" fill="url(#linear-gradient-5)"/>
+  </g>
+  <g id="Mask_Group_78" data-name="Mask Group 78" clip-path="url(#clip-path-2)">
+    <rect id="Rectangle_747" data-name="Rectangle 747" width="166" height="50" rx="25" fill="url(#linear-gradient)"/>
+    <path id="Path_42942" data-name="Path 42942" d="M51.817,0c28.562-.14,51.672,8.712,51.617,19.773S80.179,39.915,51.617,40.055-.055,31.343,0,20.282,23.254.142,51.817,0Z" transform="matrix(0.966, 0.259, -0.259, 0.966, -2.974, 20.943)" fill="url(#linear-gradient-4)"/>
+    <path id="Path_42943" data-name="Path 42943" d="M51.817,0c28.562-.14,51.672,8.712,51.617,19.773S80.179,39.915,51.617,40.055-.055,31.343,0,20.282,23.254.142,51.817,0Z" transform="matrix(0.966, 0.259, -0.259, 0.966, 79.164, -35.211)" fill="url(#linear-gradient-5)"/>
+  </g>
+</svg>

@@ -31,19 +31,14 @@ const MachineStatus = () => {
   const [loading, setLoading] = useState(true);
   const [newPass, setNewPass] = useState("");
   const [confPass, setConfPass] = useState("");
-
   const [machineData, setMachineData] = useState([]);
-
   const [showPass, setShowPass] = useState(false);
   const [showNewPass, setShowNewPass] = useState(false);
   const [showConfPass, setShowConfPass] = useState(false);
-
   const [changePass, setChangePass] = useState(false);
   const [vmRes, setVmRes] = useState(null);
   const [monitorData, setMonitorData] = useState([]);
   const vmDetails = location.state ? location.state.vmDetails : null;
-  //console.log(vmDetails);
-
   const [isHovered, setIsHovered] = useState(false);
   const [copied1, setCopied1] = useState(false);
   const [copied2, setCopied2] = useState(false);
@@ -52,17 +47,14 @@ const MachineStatus = () => {
   const [copied5, setCopied5] = useState(false);
   const [copied6, setCopied6] = useState(false);
   const [copied7, setCopied7] = useState(false);
-
   const [showVNCPass, setShowVNCPass] = useState(false);
   const [changeVNCPass, setChangeVNCPass] = useState(false);
   const [privateKey, setPrivateKey] = useState("");
-
   const [isFlipped, setIsFlipped] = useState(true);
   const [isFlippedIPView, setIsFlippedIPView] = useState(false);
   const [isFlippedHTTPView, setIsFlippedHTTPView] = useState(false);
   const [isShowBackupView, setIsShowBackupView] = useState(false);
   const [isShowVMView, setIsShowVMView] = useState(false);
-
   const [searchText, setSearchText] = useState("");
   const [deletePopup, SetDeletePopup] = useState(false);
   const [isShowVMRestorePopup, SetVMRestorePopup] = useState(false);
@@ -78,7 +70,6 @@ const MachineStatus = () => {
   const [isShowBackupPlanPopup, SetBackupPlanPopup] = useState(false);
   const [isShowCustomSSLPopup, SetCustomSSLPopup] = useState(false);
   const [progress, setProgress] = useState(0);
-
   const [setShowDownloadCSS, SetShowDownloadCSS] = useState(false);
   const [isSetUpInteractive, SetUpInteractive] = useState(false);
   const [domainName, setDomainName] = useState("");
@@ -90,11 +81,8 @@ const MachineStatus = () => {
   const [selectDomainIdForDelete, setSelectDomainIdForDelete] = useState("");
   const [portList, setPortList] = useState([]);
   const [urlPortList, setURLPortList] = useState([]);
-
   const [isShowCustomSupportPopup, setCustomSupportPopup] = useState(false);
-
   const initialPlaceholder = `What Kind of Application you want to Host on this Custom Port.\nWhat is the Use-case to Create Custom Port.\nPlease Describe in Brief about your Requirement.`;
-
   const [placeholder, setPlaceholder] = useState(initialPlaceholder);
   const [customReqtext, setCustomRequestText] = useState("");
   const [customProductTagText, setCustomProductTag] = useState("");
@@ -144,6 +132,10 @@ const MachineStatus = () => {
   const isJumpserverAlreadyAttached = Boolean(monitorData?.jumpserver_id);
   const [newUsername, setNewUsername] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [manualJumpIp, setManualJumpIp] = useState("");
+  const [users, setUsers] = useState([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+
   const thStyle = {
     border: "1px solid white",
     padding: "8px",
@@ -152,18 +144,8 @@ const MachineStatus = () => {
 
   const tdStyle = {
     border: "1px solid white",
-    padding: "10px",
+    padding: "5px",
     color: "white",
-  };
-
-  const inputStyle = {
-    width: "100%",
-    height: "45px",
-    borderRadius: "25px",
-    padding: "0 15px",
-    marginBottom: "15px",
-    border: "none",
-    outline: "none",
   };
 
   const buttonStyle = {
@@ -187,15 +169,69 @@ const MachineStatus = () => {
   });
 
   useEffect(() => {
-    console.log("ACTIVE BUTTON:", activeButton);
+
   }, [activeButton]);
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    try {
+      setLoadingUsers(true);
+
+      const res = await instance.post("/vm-users", {
+        user_id: smuser.id,
+        vm_id: monitorData.vm_id,
+      });
+
+      console.log(res.data.users);  
+      setUsers(res.data.users);
+
+    } catch (error) {
+      console.error("Failed to fetch users:", error);
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
+
+  const handleChangePassword = async (user) => {
+    try {
+      const newPassword = prompt(`Enter new password for ${user.username}`);
+
+      if (!newPassword) return;
+
+      const response = await fetch("/api/change-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: user.id,
+          password: newPassword,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        alert("Password changed successfully!");
+      } else {
+        alert("Failed to change password");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Something went wrong");
+    }
+  };
 
   const handleClick = () => {
     setIsFlipped(!isFlipped);
   };
+
   useEffect(() => {
     if (monitorData?.jumpserver_id) {
-      console.log("monitorData.jumpserver_id", monitorData.jumpserver_id);
+      //console.log("monitorData.jumpserver_id", monitorData.jumpserver_id);
       setSelectedJumpserverId(Number(monitorData.jumpserver_id));
     }
   }, [monitorData]);
@@ -406,7 +442,7 @@ const MachineStatus = () => {
               />
             ));
           }
-          //console.log(loginResponse, "==!==!==change-server-details");
+          ////console.log(loginResponse, "==!==!==change-server-details");
         } catch (error) {
           console.error(
             "Error during the change-server-details process:",
@@ -459,7 +495,7 @@ const MachineStatus = () => {
       );
       const Response = await decryptData(loginUserResponse.data);
 
-      //console.log(Response, "==!==!==stats");
+      ////console.log(Response, "==!==!==stats");
       setVmRes(Response);
       const vm = Response.vm;
       vmData = vm;
@@ -467,7 +503,7 @@ const MachineStatus = () => {
 
       setMonitorData(vm);
       setRateData(rateList);
-      // console.log(vm, "==!==!==stats");
+      // //console.log(vm, "==!==!==stats");
       setStaticIP("6351");
       setShowTick(false);
 
@@ -488,6 +524,7 @@ const MachineStatus = () => {
 
     if (!isRegenerateSSH) {
       GetMyMachines();
+
     }
 
     // Check backup status after 15 seconds
@@ -518,7 +555,7 @@ const MachineStatus = () => {
         user_id: smuser.id,
       });
 
-      console.log("RAW API RESPONSE >>>", res.data);
+      //console.log("RAW API RESPONSE >>>", res.data);
 
       if (res.data?.success && Array.isArray(res.data.jumpservers)) {
         // normalize + enforce types
@@ -543,18 +580,29 @@ const MachineStatus = () => {
     }
   };
 
-  const attachJumpserver = async () => {
-    // Prevent double click
+  const attachJumpserver = async (jumpserverId = null, customIp = null) => {
     if (loading) return;
 
-    // Validation
-    if (!selectedJumpserverId) {
-      toast.error("Please select a jumpserver");
+    if (!smuser?.id || !monitorData?.vm_id) {
+       toast((t) => (
+          <AppToast
+            id={t.id}
+            message={"Invalid user or VM data"}
+            isMobile={isMobile}
+          />
+        ));
+      // toast.error("Invalid user or VM data");
       return;
     }
 
-    if (!smuser?.id || !monitorData?.vm_id) {
-      toast.error("Invalid user or VM data");
+    if (!jumpserverId && !customIp) {
+       toast((t) => (
+          <AppToast
+            id={t.id}
+            message={"Select or enter Jumpserver IP"}
+            isMobile={isMobile}
+          />
+        ));
       return;
     }
 
@@ -564,59 +612,107 @@ const MachineStatus = () => {
       const payload = {
         user_id: smuser.id,
         vm_id: monitorData.vm_id,
-        jumpserver_id: selectedJumpserverId,
+        jumpserver_id: jumpserverId,   // may be null
+        custom_jump_ip: customIp,      // may be null
       };
 
-      // Encrypt request
       const encrypted = await apiEncryptRequest(payload);
-
-      // API call
       const res = await instance.post("/attach-jumpserver", encrypted);
-
-      // Decrypt response
-      const data = await decryptData(res.data);
+      const data = res.data;  
 
       if (data?.success) {
-        toast.success(data.message || "Jumpserver attached successfully");
+        toast.success(data.message);
 
-        // Store jump IP (if used in SSH panel)
-        // if (data.jump_ip) {
-        //   setJumpIp(data.jump_ip);
-        // }
-
-        // Reset selection
-        setSelectedJumpserverId(null);
-
-        // Switch to SSH tab
+        setManualJumpIp("");
         setActiveButton("SSH");
-
-        // Refresh machines
         await GetMyMachines();
       } else {
-        toast.error(data?.message || "Failed to attach jumpserver");
+        toast((t) => (
+          <AppToast
+            id={t.id}
+            message={ "Failed to attach"}
+            isMobile={isMobile}
+          />
+        ));
+        // toast.error(data?.message || "Failed to attach");
       }
     } catch (err) {
-      console.error("Attach Jumpserver Error:", err);
-
-      toast.error(
-        err?.response?.data?.message ||
-          err?.message ||
-          "Failed to attach jumpserver",
-      );
+      console.error(err);
+        toast((t) => (
+          <AppToast
+            id={t.id}
+            message={ "Failed to attach jumpserver"}
+            isMobile={isMobile}
+          />
+        ));
+      // toast.error("Failed to attach jumpserver");
     } finally {
       setLoading(false);
     }
   };
 
-  // const inputStyle = {
-  //   width: "100%",
-  //   height: "45px",
-  //   borderRadius: "25px",
-  //   padding: "0 15px",
-  //   marginBottom: "15px",
-  //   border: "none",
-  //   outline: "none",
-  // };
+  const detachJumpserver = async (jumpserverId) => {
+    if (loading) return;
+
+    try {
+      setLoading(true);
+
+      const payload = {
+        user_id: smuser.id,
+        vm_id: monitorData.vm_id,
+        jumpserver_id: jumpserverId,
+      };
+
+      const encrypted = await apiEncryptRequest(payload);
+      const res = await instance.post("/detach-jumpserver", encrypted);
+
+      const data = res.data;
+
+      if (data?.success) {
+         toast((t) => (
+          <AppToast
+            id={t.id}
+            message={ "Jumpserver Deactive successfully"}
+            isMobile={isMobile}
+          />
+        ));
+        // toast.success("Jumpserver detached successfully");
+        await GetMyMachines();
+      } else {
+         toast((t) => (
+          <AppToast
+            id={t.id}
+            message={ "Failed to Deactive"}
+            isMobile={isMobile}
+          />
+        ));
+        // toast.error(data?.message || "Failed to detach");
+      }
+    } catch (err) {
+      console.error(err);
+      
+       toast((t) => (
+          <AppToast
+            id={t.id}
+            message={ "Failed to detach jumpserver"}
+            isMobile={isMobile}
+          />
+        ));
+      // toast.error("Failed to detach jumpserver");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const inputStyle = {
+    width: "100%",
+    height: "45px",
+    borderRadius: "25px",
+    padding: "0 15px",
+    marginBottom: "15px",
+    border: "none",
+    outline: "none",
+  };
 
   const createVMUser = async () => {
     if (!newUsername || !newPassword) {
@@ -625,6 +721,7 @@ const MachineStatus = () => {
     }
 
     try {
+
       setLoading(true);
 
       const payload = {
@@ -652,32 +749,47 @@ const MachineStatus = () => {
       setLoading(false);
     }
   };
+  
+  const sendPasswordResetLink = async () => {
+  try {
+    const payload = {
+      user_id: smuser.id,
+      vm_id: monitorData.vm_id,
+    };
+
+    const encrypted = await apiEncryptRequest(payload);
+    const res = await instance.post("/send-vm-password-reset", encrypted);
+    const data = res.data;
+
+    if (data.success) {
+      toast.success("Password reset link sent to your email.");
+    } else {
+      toast.error(data.message || "Failed to send reset link");
+    }
+  } catch (err) {
+    console.error(err);
+    toast.error("Failed to send reset email");
+  }
+};
 
   const handleButtonClick = (button) => {
-    console.log("button", button);
 
-    // 1. Set active tab explicitly (NO toggle logic)
     setActiveButton(button);
-
-    // 2. Reset all other UI states
     setIsFlipped(false);
     setIsShowBackupView(false);
     setIsShowVMView(false);
     setIsShowProgressView(false);
-
-    // 3. Button-specific actions
     switch (button) {
+
       case "ATTACH_JUMPSERVER":
-        console.log("Attach jumpserver under VM");
         fetchJumpservers();
         break;
 
       case "CREATE_USER":
-        console.log("Create user under VM");
+          fetchUsers();
         break;
 
       case "SSH":
-        // nothing extra needed
         break;
 
       default:
@@ -878,7 +990,7 @@ const MachineStatus = () => {
         domain_name: domainName,
         domain_id: domainId,
       };
-      // console.log(payload, "PAYload");
+      // //console.log(payload, "PAYload");
       try {
         const encryptedResponse = await apiEncryptRequest(payload);
         const loginUserResponse = await instance.post(
@@ -905,7 +1017,7 @@ const MachineStatus = () => {
           ));
         }
 
-        //console.log(Response, "==!==!==domain Response");
+        ////console.log(Response, "==!==!==domain Response");
       } catch (error) {
         console.error("Error during the login process:", error);
       }
@@ -938,7 +1050,7 @@ const MachineStatus = () => {
         domain_name: selectDomainNameForDelete,
         domain_id: selectDomainIdForDelete,
       };
-      // console.log(payload, "PAYload");
+      // //console.log(payload, "PAYload");
       try {
         const encryptedResponse = await apiEncryptRequest(payload);
         const loginUserResponse = await instance.post(
@@ -966,7 +1078,7 @@ const MachineStatus = () => {
         }
 
         getVMDomains();
-        //console.log(Response, "==!==!==domain Response");
+        ////console.log(Response, "==!==!==domain Response");
       } catch (error) {
         console.error("Error during the login process:", error);
       }
@@ -1000,7 +1112,7 @@ const MachineStatus = () => {
         domain_name: domainName,
         domain_id: domainId,
       };
-      // console.log(payload, "PAYload");
+      // //console.log(payload, "PAYload");
       try {
         const encryptedResponse = await apiEncryptRequest(payload);
         const loginUserResponse = await instance.post(
@@ -1127,7 +1239,7 @@ const MachineStatus = () => {
       port_name: portName,
       id: ID,
     };
-    // console.log(payload, "PAYload");
+    // //console.log(payload, "PAYload");
     try {
       const encryptedResponse = await apiEncryptRequest(payload);
       const loginUserResponse = await instance.post(
@@ -1147,7 +1259,7 @@ const MachineStatus = () => {
       }
 
       generatePortList();
-      //console.log(Response, "==!==!==domain Response");
+      ////console.log(Response, "==!==!==domain Response");
     } catch (error) {
       console.error("Error during the login process:", error);
     }
@@ -1164,7 +1276,7 @@ const MachineStatus = () => {
         vm_id: vmDetails,
         id: portId,
       };
-      // console.log(payload, "PAYload");
+      // //console.log(payload, "PAYload");
       try {
         const encryptedResponse = await apiEncryptRequest(payload);
         const loginUserResponse = await instance.post(
@@ -1192,7 +1304,7 @@ const MachineStatus = () => {
         }
 
         generatePortList();
-        //console.log(Response, "==!==!==domain Response");
+        ////console.log(Response, "==!==!==domain Response");
       } catch (error) {
         console.error("Error during the login process:", error);
       }
@@ -1222,7 +1334,7 @@ const MachineStatus = () => {
         destination_port: customPortNumberText,
         port_name: customProductTagText,
       };
-      // console.log(payload, "PAYload");
+      // //console.log(payload, "PAYload");
       try {
         const encryptedResponse = await apiEncryptRequest(payload);
         const loginUserResponse = await instance.post(
@@ -1250,7 +1362,7 @@ const MachineStatus = () => {
           ));
         }
 
-        //console.log(Response, "==!==!==domain Response");
+        ////console.log(Response, "==!==!==domain Response");
       } catch (error) {
         console.error("Error during the login process:", error);
       }
@@ -1347,7 +1459,7 @@ const MachineStatus = () => {
       user_id: smuser.id,
       vm_id: vmDetails,
     };
-    // console.log(payload, "PAYload");
+    // //console.log(payload, "PAYload");
     try {
       const encryptedResponse = await apiEncryptRequest(payload);
       const loginUserResponse = await instance.post(
@@ -1360,7 +1472,7 @@ const MachineStatus = () => {
       setVMBackUpList(backUpList);
       setIsShowBackupView(true);
     } catch (error) {
-      console.log(error);
+      //console.log(error);
     }
     setLoading(false);
   };
@@ -1378,7 +1490,7 @@ const MachineStatus = () => {
         encryptedResponse,
       );
       const loginResponse = await decryptData(loginUserResponse.data);
-      // console.log(loginResponse, "GetMachines");
+      // //console.log(loginResponse, "GetMachines");
       const userDetails = loginResponse;
       const user = loginResponse.user;
       const vm = loginResponse.vm;
@@ -1394,7 +1506,7 @@ const MachineStatus = () => {
 
   const callBackUpRestoreOnSameVM = async () => {
     setLoading(true);
-    // console.log(isSelectedBackupForRestore, "VVV");
+    // //console.log(isSelectedBackupForRestore, "VVV");
 
     if (smuser.total_credit < restorePriceSameVm && restorePriceSameVm) {
       toast((t) => (
@@ -1426,7 +1538,7 @@ const MachineStatus = () => {
             amount: restorePriceSameVm,
             machine_price: restorePriceSameVm,
           };
-          // console.log(payload, "RESTORE PAYLOAD");
+          // //console.log(payload, "RESTORE PAYLOAD");
           try {
             const encryptedResponse = await apiEncryptRequest(payload);
             const loginUserResponse = await instance.post(
@@ -1434,7 +1546,7 @@ const MachineStatus = () => {
               encryptedResponse,
             );
             const loginResponse = await decryptData(loginUserResponse.data);
-            // console.log(loginResponse, "Restore Response");
+            // //console.log(loginResponse, "Restore Response");
             // vmbackupstatus();
 
             if (loginResponse.status) {
@@ -1491,7 +1603,7 @@ const MachineStatus = () => {
   // BACKUP RESTORE on NEW VM Api
   const callBackUpRestoreOnNewVM = async () => {
     setLoading(true);
-    // console.log(isSelectedBackupForRestore, "VVV");
+    // //console.log(isSelectedBackupForRestore, "VVV");
 
     const machine_price =
       restorePrice && monitorData && newMachineTime === "3"
@@ -1577,7 +1689,7 @@ const MachineStatus = () => {
           isSelectedBackupForRestore.filepath &&
           isSelectedBackupForRestore.filepath;
         const fileName = filePath.substring(filePath.lastIndexOf("/") + 1);
-        // console.log(fileName, "VVV");
+        // //console.log(fileName, "VVV");
 
         if (isSelectedBackupForRestore !== null && fileName !== null) {
           const payload = {
@@ -1612,7 +1724,7 @@ const MachineStatus = () => {
             uid: smuser.uid,
             time_period: selectedTimePeriod,
           };
-          // console.log(payload, "RESTORE PAYLOAD");
+          // //console.log(payload, "RESTORE PAYLOAD");
           try {
             const encryptedResponse = await apiEncryptRequest(payload);
             const loginUserResponse = await instance.post(
@@ -1682,7 +1794,7 @@ const MachineStatus = () => {
       vm_id: vmDetails,
       username: smuser.panel_email,
     };
-    // console.log(payload, "PAYload");
+    // //console.log(payload, "PAYload");
     try {
       const encryptedResponse = await apiEncryptRequest(payload);
       const loginUserResponse = await instance.post(
@@ -1695,7 +1807,7 @@ const MachineStatus = () => {
       const keys = Object.keys(progress);
       const lastKey = keys[keys.length - 1];
       const lastArray = progress[lastKey];
-      // console.log(lastArray, "LAST");
+      // //console.log(lastArray, "LAST");
 
       setIntializing(false);
 
@@ -1749,7 +1861,7 @@ const MachineStatus = () => {
         encryptedResponse,
       );
       const loginResponse = await decryptData(loginUserResponse.data);
-      // console.log(loginResponse, "====== Restore Price Response");
+      // //console.log(loginResponse, "====== Restore Price Response");
       setRestorePrice(loginResponse.restore_price);
     } catch (error) {
       console.error("Error during the login process:", error);
@@ -1770,7 +1882,7 @@ const MachineStatus = () => {
         encryptedResponse,
       );
       const loginResponse = await decryptData(loginUserResponse.data);
-      // console.log(loginResponse, "======Restore Price Response");
+      // //console.log(loginResponse, "======Restore Price Response");
       setRestorePriceForSameVM(loginResponse.restore_price);
     } catch (error) {
       console.error("Error during the login process:", error);
@@ -1786,7 +1898,7 @@ const MachineStatus = () => {
       vm_id: vmDetails,
       status: monitorData.backup_status == 1 ? "0" : "1",
     };
-    // console.log(payload, "PAYload");
+    // //console.log(payload, "PAYload");
     try {
       const encryptedResponse = await apiEncryptRequest(payload);
       const loginUserResponse = await instance.post(
@@ -1794,7 +1906,7 @@ const MachineStatus = () => {
         encryptedResponse,
       );
       const Response = await decryptData(loginUserResponse.data);
-      // console.log(Response, "backup On off Response===");
+      // //console.log(Response, "backup On off Response===");
       if (Response.status) {
         GetMyMachines();
         toast((t) => (
@@ -1806,7 +1918,7 @@ const MachineStatus = () => {
         ));
       }
 
-      //console.log(Response, "==!==!==domain Response");
+      ////console.log(Response, "==!==!==domain Response");
     } catch (error) {
       console.error("Error during the login process:", error);
     }
@@ -1819,7 +1931,7 @@ const MachineStatus = () => {
     const payload = {
       user_id: smuser.id,
     };
-    // console.log(payload, "PAYload");
+    // //console.log(payload, "PAYload");
     try {
       const encryptedResponse = await apiEncryptRequest(payload);
       const loginUserResponse = await instance.post(
@@ -1827,7 +1939,7 @@ const MachineStatus = () => {
         encryptedResponse,
       );
       const Response = await decryptData(loginUserResponse.data);
-      // console.log(Response, "==!==!==IP Price Response");
+      // //console.log(Response, "==!==!==IP Price Response");
       setIPPrice(Response.ip_price);
     } catch (error) {
       console.error("Error during the login process:", error);
@@ -1853,7 +1965,7 @@ const MachineStatus = () => {
           vm_id: vmDetails,
           amount: ipPrice,
         };
-        // console.log(payload, "PAYload");
+        // //console.log(payload, "PAYload");
         try {
           const encryptedResponse = await apiEncryptRequest(payload);
           const loginUserResponse = await instance.post(
@@ -1861,7 +1973,7 @@ const MachineStatus = () => {
             encryptedResponse,
           );
           const Response = await decryptData(loginUserResponse.data);
-          // console.log(Response, "backup On off Response===");
+          // //console.log(Response, "backup On off Response===");
           if (Response.status) {
             SetAssignDedicatedIPPopup(false);
             GetMyMachines();
@@ -1882,7 +1994,7 @@ const MachineStatus = () => {
             ));
           }
 
-          //console.log(Response, "==!==!==domain Response");
+          ////console.log(Response, "==!==!==domain Response");
         } catch (error) {
           console.error("Error during the login process:", error);
         }
@@ -1908,7 +2020,7 @@ const MachineStatus = () => {
       user_id: smuser.id,
       // vm_id: vmDetails,
     };
-    // console.log(payload, "PAYload");
+    // //console.log(payload, "PAYload");
     try {
       const encryptedResponse = await apiEncryptRequest(payload);
       const loginUserResponse = await instance.post(
@@ -1916,10 +2028,10 @@ const MachineStatus = () => {
         encryptedResponse,
       );
       const Response = await decryptData(loginUserResponse.data);
-      // console.log(Response, "==!==!==Backup List Response");
+      // //console.log(Response, "==!==!==Backup List Response");
 
       const backUpPLansList = Response?.backup_plans || [];
-      console.log(backUpPLansList, "==!==!==List ");
+      //console.log(backUpPLansList, "==!==!==List ");
       setVMBackUpPlansList(backUpPLansList);
     } catch (error) {
       console.error("Error during the login process:", error);
@@ -1945,7 +2057,7 @@ const MachineStatus = () => {
         amount: price,
         bpid: bpid,
       };
-      // console.log(payload, "PAYload");
+      // //console.log(payload, "PAYload");
       try {
         const encryptedResponse = await apiEncryptRequest(payload);
         const loginUserResponse = await instance.post(
@@ -1953,7 +2065,7 @@ const MachineStatus = () => {
           encryptedResponse,
         );
         const Response = await decryptData(loginUserResponse.data);
-        console.log(Response, "==!==!== Response");
+        //console.log(Response, "==!==!== Response");
 
         if (Response.status) {
           toast((t) => (
@@ -2022,7 +2134,7 @@ const MachineStatus = () => {
       privkey_pem: selectedPrivFile,
       fullchain_pem: selectedFullChainFile,
     };
-    // console.log(payload, "PAYload");
+    // //console.log(payload, "PAYload");
     try {
       const encryptedResponse = await apiEncryptRequest(payload);
       const loginUserResponse = await instance.post(
@@ -2030,7 +2142,7 @@ const MachineStatus = () => {
         encryptedResponse,
       );
       const Response = await decryptData(loginUserResponse.data);
-      console.log(Response, "==!==!== Response");
+      //console.log(Response, "==!==!== Response");
       if (Response.status) {
         toast((t) => (
           <AppToast id={t.id} message={Response.message} isMobile={isMobile} />
@@ -2103,11 +2215,8 @@ const MachineStatus = () => {
         position: "relative",
         backgroundImage: isMobile ? `url(./main-bg.jpg)` : `url(./main-bg.jpg)`,
         backgroundSize: "cover",
-        // backgroundPosition: "center",
-        // backgroundColor: "#141414",
         backgroundRepeat: "round",
         backgroundBlendMode: "overlay",
-        // backgroundColor: "white",
       }}
     >
       {/* Delete domain Popupview */}
@@ -2121,8 +2230,8 @@ const MachineStatus = () => {
             width: isMobile ? "23rem" : "27rem",
             backdropFilter: "blur(35px)",
             height: "20rem",
-            boxShadow: "0px 0px 10px rgba(0, 0, 0, 0.1)", // Box shadow added
-            borderRadius: "12px", // Assuming you want rounded corners
+            boxShadow: "0px 0px 10px rgba(0, 0, 0, 0.1)",
+            borderRadius: "12px",
             border: "2px solid #e97730",
             zIndex: "99999",
           }}
@@ -3639,7 +3748,6 @@ const MachineStatus = () => {
           <div
             style={{
               position: "relative",
-              // marginLeft: isMobile ? "11%" : "10%",
               marginTop: "16rem",
               display: "flex",
               flexWrap: "nowrap",
@@ -3682,7 +3790,7 @@ const MachineStatus = () => {
       {isMobile ? (
         <div className="" style={{ height: "50rem" }}>
           <div className="heading-dotted-support">
-            Server Stats <span></span>
+            Server Stats <span> ...</span>
           </div>
           <div
             style={{
@@ -7342,7 +7450,7 @@ const MachineStatus = () => {
           className="features-page-solution"
           style={{ height: "100%", padding: "5rem" }}
         >
-          <div className="heading-dotted-support">
+          <div className="heading-dotted-machine">
             Server Stats <span></span>
           </div>
           {isSetUpInteractive && (
@@ -7855,25 +7963,18 @@ const MachineStatus = () => {
                     )}
                 </div>
 
-                <div
-                  className="flip-card-container"
-                  style={{ marginLeft: "10px" }}
-                >
+                <div className="flip-card-container">
                   {activeButton === "ATTACH_JUMPSERVER" && (
                     <div
                       style={{
-                        marginTop: "40px",
-                        minHeight: "15rem",
-                        backgroundImage: `url("/images/blue-box-bg.svg")`,
-                        backgroundSize: "cover",
-                        width: "100%",
-                        padding: "25px",
-                        backgroundColor: "#07528b",
-                        position: "relative",
-                        zIndex: 10,
-                        pointerEvents: loading ? "none" : "auto",
-                        opacity: loading ? 0.7 : 1,
-                        transition: "0.2s",
+                          backgroundImage: `url("/images/blue-box-bg.svg")`,
+                          backgroundSize: "cover",
+                          width: "100%",
+                          padding: "55px 25px",
+                          position: "relative",
+                          backgroundColor: "#07528b",
+                          borderRadius: "12px", 
+                          marginTop: "5px",
                       }}
                     >
                       <div>
@@ -7885,198 +7986,145 @@ const MachineStatus = () => {
                             textAlign: "center",
                           }}
                         >
-                          {jumpservers?.length === 0 ? (
-                            <div
-                              style={{
-                                border: "1px solid white",
-                                padding: "10px",
-                                color: "white",
-                                fontSize: "16px",
-                                fontWeight: "600",
-                              }}
-                            >
-                              No Jumpserver Found
-                            </div>
-                          ) : (
-                            <table
-                              className="table"
-                              style={{
-                                borderCollapse: "collapse",
-                                width: "100%",
-                              }}
-                            >
-                              <thead>
-                                <tr>
-                                  <th style={thStyle}>Jumpserver</th>
-                                  <th style={thStyle}>Public IP</th>
-                                  <th style={thStyle}>Action</th>
-                                </tr>
-                              </thead>
+                              <div className="row" style={{ marginBottom: "20px" }}>
+                                <div className="col-md-3">
+                                  <input
+                                    type="text"
+                                    className="input-signup"
+                                    placeholder="Enter custom IP (optional)"
+                                    value={manualJumpIp}
+                                    onChange={(e) => setManualJumpIp(e.target.value)}
+                                    onClick={(e) => e.stopPropagation()}   // prevents parent click issue
+                                    style={{
+                                      color: "white",
+                                      border: "2px solid white",
+                                      borderRadius: "25px",
+                                      background: "transparent",
+                                      padding: "1px 8px",
+                                      fontSize: "20px",
+                                      width: "100%",
+                                    }}
+                                  />
+                                </div>
 
-                              <tbody>
-                                {jumpservers.map((js) => {
-                                  const isSelected =
-                                    selectedJumpserverId === Number(js.vm_id);
-
-                                  return (
-                                    <tr
-                                      key={js.vm_id}
-                                      onClick={() =>
-                                        setSelectedJumpserverId(
-                                          Number(js.vm_id),
-                                        )
-                                      }
-                                      style={{
-                                        cursor: "pointer",
-                                        backgroundColor: isSelected
-                                          ? "rgba(255,255,255,0.15)"
-                                          : "transparent",
-                                        transition: "0.2s",
-                                      }}
-                                    >
-                                      {/* Jumpserver Name */}
-                                      <td
-                                        style={{
-                                          ...tdStyle,
-                                          fontWeight: isSelected
-                                            ? "700"
-                                            : "500",
-                                        }}
-                                      >
-                                        {js.vm_name}
-                                      </td>
-
-                                      {/* Public IP */}
-                                      <td style={tdStyle}>{js.public_ip}</td>
-
-                                      {/* Action */}
-                                      <td
-                                        style={{
-                                          ...tdStyle,
-                                          textAlign: "center",
-                                        }}
-                                        onClick={(e) => e.stopPropagation()}
-                                      >
-                                        <div
-                                          style={{
-                                            display: "flex",
-                                            justifyContent: "center",
-                                          }}
-                                        >
-                                          <div
-                                            style={{
-                                              width: "140px",
-                                              height: "34px",
-                                              backgroundColor: "white",
-                                              borderRadius: "6px",
-                                              display: "flex",
-                                              justifyContent: "center",
-                                              alignItems: "center",
-                                              cursor:
-                                                loading ||
-                                                isJumpserverAlreadyAttached ||
-                                                !isSelected
-                                                  ? "not-allowed"
-                                                  : "pointer",
-                                              opacity:
-                                                loading ||
-                                                isJumpserverAlreadyAttached ||
-                                                !isSelected
-                                                  ? 0.6
-                                                  : 1,
-                                              transition: "0.2s",
-                                            }}
-                                            onClick={() => {
-                                              if (
-                                                !loading &&
-                                                !isJumpserverAlreadyAttached &&
-                                                isSelected
-                                              ) {
-                                                attachJumpserver();
-                                              }
-                                            }}
-                                          >
-                                            <span
+                                <div className="col-md-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => attachJumpserver(null, manualJumpIp)}
+                                    disabled={!manualJumpIp || loading}
+                                    style={{
+                                      padding: "6px 8px",
+                                      borderRadius: "25px",
+                                      backgroundColor: "#e97730",
+                                      border: "2px solid white",
+                                      color: "white",
+                                      width: "100%",
+                                      cursor: !manualJumpIp ? "not-allowed" : "pointer",
+                                    }}
+                                  >
+                                    Apply Custom IP
+                                  </button>
+                                </div>
+                              </div>
+                              {jumpservers?.length === 0 ? (
+                                <div
+                                  style={{
+                                    border: "1px solid white",
+                                    padding: "10px",
+                                    color: "white",
+                                    fontSize: "16px",
+                                    fontWeight: "600",
+                                  }}
+                                >
+                                  No Jumpserver Found
+                                </div>
+                              ) : (
+                                
+                                <table
+                                  className="table"
+                                  style={{
+                                    borderCollapse: "collapse",
+                                    width: "100%",
+                                  }}
+                                >
+                                  <thead>
+                                    <tr>
+                                      <th style={thStyle}>Jumpserver</th>
+                                      <th style={thStyle}>Public IP</th>
+                                      <th style={thStyle}>Action</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    
+                                    {jumpservers.map((js) => {
+                                      const isAlreadyAttached =
+                                        Number(monitorData?.jumpserver_id) === Number(js.id);
+                                      return (
+                                        <tr key={js.id}>
+                                          <td style={tdStyle}>{js.vm_name}</td>
+                                          <td style={tdStyle}>{js.public_ip}</td>
+                                          <td style={{ ...tdStyle, textAlign: "center", justifyItems:"center" }}>
+                                            <div
                                               style={{
-                                                fontSize: "15px",
-                                                color: "#035189",
-                                                fontWeight: "600",
+                                                width: "140px",
+                                                height: "30px",
+                                                backgroundColor: isAlreadyAttached ? "#ff4d4f" : "white",
+                                                borderRadius: "6px",
+                                                display: "flex",
+                                                justifyContent: "center",
+                                                alignItems: "center",
+                                                cursor: loading ? "not-allowed" : "pointer",
+                                                opacity: loading ? 0.6 : 1,
+                                                transition: "0.2s",
+                                              }}
+                                              onClick={() => {
+                                                if (loading) return;
+
+                                                if (isAlreadyAttached) {
+                                                  detachJumpserver(js.id);
+                                                } else {
+                                                  attachJumpserver(js.id, js.public_ip);
+                                                }
                                               }}
                                             >
-                                              {loading
-                                                ? "Attaching..."
-                                                : isJumpserverAlreadyAttached
-                                                  ? "Already Attached"
-                                                  : isSelected
-                                                    ? "Apply"
-                                                    : "Select"}
-                                            </span>
-                                          </div>
-                                        </div>
-                                      </td>
-                                    </tr>
-                                  );
-                                })}
-                              </tbody>
-                            </table>
-                          )}
+                                              <span
+                                                style={{
+                                                  fontSize: "15px",
+                                                  color: isAlreadyAttached ? "white" : "#035189",
+                                                  fontWeight: "600",
+                                                  justifyContent: "center",
+                                                  alignItems: "center",
+                                                }}
+                                              >
+                                                {
+                                                  loading
+                                                    ? "Processing..."
+                                                    : isAlreadyAttached
+                                                    ? "Deactive"
+                                                    : "Apply"
+                                                }
+                                              </span>
+                                            </div>
+                                          </td>
+                                        </tr>
+                                      );
+                                    })}
+                                  </tbody>
+                                </table>
+                              )}
                         </div>
                       </div>
                     </div>
                   )}
 
                   {activeButton === "CREATE_USER" && (
-                    // <div
-                    //   style={{
-                    //     minHeight: "15rem",
-                    //     backgroundImage: `url("/images/blue-box-bg.svg")`,
-                    //     backgroundSize: "cover",
-                    //     width: "100%",
-                    //     padding: "25px",
-                    //     backgroundColor: "#07528b",
-                    //     borderRadius: "12px",
-                    //   }}
-                    // >
-                    //   <div className="row align-items-center">
-                    //     <div className="col-md-3">
-                    //       <input
-                    //         type="text"
-                    //         placeholder="Username"
-                    //         value={newUsername}
-                    //         onChange={(e) => setNewUsername(e.target.value)}
-                    //         style={inputStyle}
-                    //       />
-                    //     </div>
-
-                    //     <div className="col-md-3">
-                    //       <input
-                    //         type="password"
-                    //         placeholder="Password"
-                    //         value={newPassword}
-                    //         onChange={(e) => setNewPassword(e.target.value)}
-                    //         style={inputStyle}
-                    //       />
-                    //     </div>
-
-                    //     <div className="col-md-3">
-                    //       <button
-                    //         type="button"
-                    //         onClick={createVMUser}
-                    //         style={buttonStyle}
-                    //       >
-                    //         Create User
-                    //       </button>
-                    //     </div>
-                    //   </div>
-                    // </div>
-
                     <div
                       style={{
                         minHeight: "15rem",
                         backgroundImage: `url("/images/blue-box-bg.svg")`,
                         backgroundSize: "cover",
                         width: "100%",
-                        padding: "25px",
+                        padding: "35px",
                         backgroundColor: "#07528b",
                         borderRadius: "12px",
                         position: "relative",
@@ -8087,15 +8135,16 @@ const MachineStatus = () => {
                           <input
                             type="text"
                             className="input-signup"
-                            placeholder="New Password"
+                            placeholder="Username"
                             value={newUsername}
                             style={{
-                              color: "white",
-                              border: "2px solid white",
-                              borderRadius: "25px",
-                              background: "transparent",
-                              flex: "1",
-                              padding: "5px",
+                                color: "white",
+                                border: "2px solid white",
+                                borderRadius: "25px",
+                                background: "transparent",
+                                padding: "1px 8px",
+                                fontSize: "20px",
+                                width: "100%",
                             }}
                             onChange={(e) => setNewUsername(e.target.value)}
                           />
@@ -8104,15 +8153,16 @@ const MachineStatus = () => {
                           <input
                             type="text"
                             className="input-signup"
-                            placeholder="Confirm Password"
+                            placeholder="Password"
                             value={newPassword}
                             style={{
                               color: "white",
                               border: "2px solid white",
                               borderRadius: "25px",
                               background: "transparent",
-                              flex: "1",
-                              padding: "5px",
+                              padding: "1px 8px",
+                              fontSize: "20px",
+                              width: "100%",
                             }}
                             onChange={(e) => setNewPassword(e.target.value)}
                           />
@@ -8127,6 +8177,67 @@ const MachineStatus = () => {
                           </button>
                         </div>
                       </div>
+
+                      <table
+                          className="table mt-3"
+                          style={{ borderCollapse: "collapse", width: "100%" }}
+                        >
+                          <thead>
+                            <tr>
+                              <th style={thStyle}>Username</th>
+                              <th style={thStyle}>Status</th>
+                              <th style={thStyle}>Action</th>
+                            </tr>
+                          </thead>
+
+                          <tbody>
+                            {loadingUsers ? (
+                              <tr>
+                                <td colSpan="3" style={tdStyle}>Loading...</td>
+                              </tr>
+                            ) : users.length === 0 ? (
+                              <tr>
+                                <td colSpan="3" style={tdStyle}>No Users Found</td>
+                              </tr>
+                            ) : (
+                              users.map((user) => (
+                                <tr key={user.id}>
+                                  <td style={tdStyle}>{user.username}</td>
+                                  <td style={tdStyle}>
+                                    {user.status === 1 ? "Active" : "Inactive"}
+                                  </td>
+                                  <td style={{ ...tdStyle, textAlign: "center",justifyItems: "center" }}>
+                                    <div
+                                      style={{
+                                        width: "130px",
+                                        height: "30px",
+                                        backgroundColor: "white",
+                                        borderRadius: "6px",
+                                        display: "flex",
+                                        justifyContent: "center",   // 🔥 fix here (not justifyItems)
+                                        alignItems: "center",
+                                        cursor: "pointer",
+                                      }}
+                                      onClick={() => handleChangePassword(user)}
+                                    >
+                                      <span
+                                        style={{
+                                          fontSize: "14px",
+                                          color: "#035189",
+                                          fontWeight: "600",
+                                        }}
+                                      >
+                                        Change Password
+                                      </span>
+                                    </div>
+                                  </td>
+                                </tr>
+                              ))
+                            )}
+                          </tbody>
+                      </table>
+
+
                     </div>
                   )}
 
@@ -8137,8 +8248,6 @@ const MachineStatus = () => {
                       style={{ marginTop: changePass ? "45px" : "5px" }}
                     >
                       <div className="flip-card-inner">
-                        {/* SSH View */}
-                        {/* Front Side */}
                         <div className="flip-card-front">
                           <div
                             style={{
@@ -8150,7 +8259,6 @@ const MachineStatus = () => {
                               position: "relative",
                               backgroundColor: "#07528b",
                               borderRadius: "12px",
-                              // flexWrap: "wrap",
                             }}
                           >
                             <button
@@ -8221,8 +8329,6 @@ const MachineStatus = () => {
                                         marginLeft: "20px",
                                       }}
                                     >
-                                      {" "}
-                                      {/* IP : {vmRes && vmRes.ip} */}
                                       IP :{" "}
                                       {monitorData && monitorData.public_ip}
                                     </p>
@@ -8375,7 +8481,11 @@ const MachineStatus = () => {
                                   </div>
                                 </div>
                               </div>
-                              <div onClick={() => setChangePass(!changePass)}>
+
+                              <div
+                                  onClick={() => sendPasswordResetLink()}
+                                  style={{ cursor: "pointer" }}
+                                >
                                 <p
                                   style={{
                                     marginTop: "10px",
@@ -8503,27 +8613,7 @@ const MachineStatus = () => {
                                     }}
                                     onChange={(e) => setNewPass(e.target.value)}
                                   />
-                                  {/* {showNewPass ? (
-                                    <FaEyeSlash
-                                      onClick={() => setShowNewPass(false)}
-                                      style={{
-                                        color: "white",
-                                        width: "20px",
-                                        position: "absolute",
-                                        left: "16.5%",
-                                      }}
-                                    />
-                                  ) : (
-                                    <FaEye
-                                      onClick={() => setShowNewPass(true)}
-                                      style={{
-                                        color: "white",
-                                        width: "20px",
-                                        position: "absolute",
-                                        left: "16.5%",
-                                      }}
-                                    />
-                                  )} */}
+                                  
                                 </div>
                                 <div
                                   style={{
@@ -8873,205 +8963,8 @@ const MachineStatus = () => {
                               </div>
                             )}
 
-                            {/* {changeVNCPass && (
-                          <div
-                            style={{
-                              marginLeft: "100px",
-                              position: "relative",
-                              display: "flex",
-                              flexWrap: "wrap",
-                              zIndex: "1",
-                            }}
-                          >
-                            <div
-                              style={{
-                                width: "15rem",
-                                marginTop: "10px",
-                                display: "flex",
-                                alignItems: "center",
-                                border: "2px solid white",
-                                borderRadius: "25px",
-                                padding: "5px",
-                                height: "50px",
-                              }}
-                            >
-                              <input
-                                type={showNewPass ? "text" : "password"}
-                                id="VNC Password"
-                                className="input-signup"
-                                name="VNC Password"
-                                placeholder="VNC New Password"
-                                value={newPass}
-                                style={{
-                                  color: "white",
-                                  border: "none",
-                                  outline: "none",
-                                  background: "transparent",
-                                  flex: "1",
-                                  padding: "5px",
-                                }}
-                                onChange={(e) => setNewPass(e.target.value)}
-                              />
-                              {showNewPass ? (
-                                <FaEyeSlash
-                                  onClick={() => setShowNewPass(false)}
-                                  style={{ color: "white", width: "20px" }}
-                                />
-                              ) : (
-                                <FaEye
-                                  onClick={() => setShowNewPass(true)}
-                                  style={{ color: "white", width: "20px" }}
-                                />
-                              )}
-                            </div>
-                            <div
-                              style={{
-                                marginLeft: "20px",
-                                width: "17rem",
-                                marginTop: "10px",
-                                display: "flex",
-                                alignItems: "center",
-                                border: "2px solid white",
-                                borderRadius: "25px",
-                                padding: "5px",
-                                height: "50px",
-                              }}
-                            >
-                              <input
-                                type={showConfPass ? "text" : "password"}
-                                id="VNC Confirm Password"
-                                className="input-signup"
-                                name="VNC Confirm Password"
-                                placeholder="VNC Confirm Password"
-                                value={confPass}
-                                style={{
-                                  color: "white",
-                                  border: "none",
-                                  outline: "none",
-                                  background: "transparent",
-                                  flex: "1",
-                                  padding: "5px",
-                                }}
-                                onChange={(e) => setConfPass(e.target.value)}
-                              />
-                              {/* {showConfPass ? (
-                                <FaEyeSlash
-                                  onClick={() => setShowConfPass(false)}
-                                  style={{ color: "white", width: "20px" }}
-                                />
-                              ) : (
-                                <FaEye
-                                  onClick={() => setShowConfPass(true)}
-                                  style={{ color: "white", width: "20px" }}
-                                />
-                              )} }
-                            </div>
-                            <div
-                              className="log-in"
-                              style={{
-                                marginTop: "10px",
-                                marginLeft: "-8rem",
-                                justifyContent: "center",
-                              }}
-                              // onClick={() => UpdateMachinePass()}
-                            >
-                              <a className="media-link">
-                                <div
-                                  className="media-banner"
-                                  style={{
-                                    width: "auto",
-                                    height: "50px",
-                                    // marginTop: "10px",
-                                    marginLeft: "10rem",
-
-                                    position: "absolute",
-
-                                    marginTop: "-28px",
-                                  }}
-                                >
-                                  <img
-                                    className="normal-banner"
-                                    src="/images/signup-btn-bg.png"
-                                    alt=""
-                                    style={{
-                                      marginTop: "-6px",
-                                      width: "8rem",
-                                      height: "4rem",
-                                    }}
-                                  />
-                                  <img
-                                    className="hover-img-banner"
-                                    src="/images/search-btn-hover.png"
-                                    alt="/images/search-btn-hover.png"
-                                    style={{
-                                      marginTop: "-6px",
-                                      width: "8rem",
-                                      height: "4rem",
-                                    }}
-                                  />
-                                  <span
-                                    className="login-text"
-                                    style={{
-                                      fontSize: "20px",
-                                      color: "#07528B",
-                                      marginTop: "0px",
-                                    }}
-                                    onClick={() => UpdateMachinePass()}
-                                  >
-                                    Submit
-                                  </span>
-                                </div>
-                              </a>
-                            </div>
                           </div>
-                        )} */}
-                          </div>
-
-                          {/* Back Side */}
-                          {/* <div
-                        className="flip-card-back"
-                        style={{ backgroundColor: "white" }}
-                      >
-                        <div
-                          className="stat"
-                          style={
-                            {
-                              //maxWidth: "15rem",
-                              //marginTop: "20px",
-                            }
-                          }
-                        >
-                          <button
-                            style={{
-                              position: "absolute",
-                              //top: "9%",
-                              left: "90%",
-                              fontWeight: "700",
-                              color: "white",
-                              height: "55px",
-                              width: "7rem",
-                              backgroundColor: "#e97730",
-                              outline: "4px solid #e97730",
-                              border: "4px solid #ffff",
-                              borderColor: "white",
-                              borderRadius: "30px",
-                            }}
-                            onMouseOver={(e) =>
-                              (e.target.style.color = "#07528B")
-                            } // Change color on hover
-                            onMouseOut={(e) => (e.target.style.color = "white")}
-                            onClick={() => ""}
-                          >
-                            Reload
-                          </button>
                         </div>
-                      </div> */}
-                        </div>
-
-                        {/* <div className="flip-card-back">
-                        <h2>SSH Back</h2>
-                        <p>SSH configuration details go here</p>
-                      </div> */}
                       </div>
                     </div>
                   )}
@@ -12064,12 +11957,14 @@ const MachineStatus = () => {
           </div>
         </div>
       )}
+
       <div className="apptoast-align">
         <Toaster
           position={isMobile ? "top-center" : "bottom-right"}
           reverseOrder={false}
         />
       </div>
+
       {loading && (
         <div className="loading-overlay" style={{ zIndex: "9999999999999999" }}>
           {showTick ? (

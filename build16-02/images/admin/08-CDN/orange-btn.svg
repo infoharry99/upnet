@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="117" height="50" viewBox="0 0 117 50">
+  <defs>
+    <linearGradient id="linear-gradient" x1="0.5" x2="0.5" y2="1" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#4a92f8"/>
+      <stop offset="1" stop-color="#bdd3fe"/>
+    </linearGradient>
+    <clipPath id="clip-path">
+      <rect id="Rectangle_5" data-name="Rectangle 5" width="117" height="50" rx="25" fill="url(#linear-gradient)"/>
+    </clipPath>
+    <linearGradient id="linear-gradient-2" x1="0.5" x2="0.5" y2="1" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#ffab6e"/>
+      <stop offset="1" stop-color="#ffd8bc"/>
+    </linearGradient>
+    <linearGradient id="linear-gradient-3" x1="0.538" y1="0.145" x2="0.485" y2="1.418" xlink:href="#linear-gradient-2"/>
+    <linearGradient id="linear-gradient-4" x1="0.566" y1="0.046" x2="0.644" y2="1.324" xlink:href="#linear-gradient-2"/>
+  </defs>
+  <g id="orange-btn" clip-path="url(#clip-path)">
+    <rect id="Rectangle_4" data-name="Rectangle 4" width="117" height="50" rx="25" fill="url(#linear-gradient-2)"/>
+    <path id="Path_43187" data-name="Path 43187" d="M50.831.07c28.056,0,50.8,8.946,50.8,19.993s-22.747,20-50.8,20.009S.026,31.126.028,20.08,22.775.075,50.831.07Z" transform="matrix(0.966, 0.259, -0.259, 0.966, 0.665, 21.132)" fill="url(#linear-gradient-3)"/>
+    <path id="Path_43186" data-name="Path 43186" d="M50.831.07c28.056,0,50.8,8.946,50.8,19.993s-22.747,20-50.8,20.009S.026,31.126.028,20.08,22.775.075,50.831.07Z" transform="matrix(0.966, 0.259, -0.259, 0.966, 35.782, -35.022)" fill="url(#linear-gradient-4)"/>
+  </g>
+</svg>

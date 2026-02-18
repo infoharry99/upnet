@@ -12,8 +12,6 @@ import { useNavigate } from "react-router-dom";
 import Loader from "../common/Loader";
 import { FaSearch } from "react-icons/fa";
 
-// import RangeSlider from "./common/RangeSlider";
-
 const Notification = () => {
   function isMobileDevice() {
     return window.matchMedia("(max-width: 800px)").matches;
@@ -46,7 +44,7 @@ const Notification = () => {
   const [searchText, setSearchText] = useState("");
 
   const handleViewInvoice = (data) => {
-    // console.log(data);
+    // //console.log(data);
     const item = {
       id: data.paymnet_id,
       orderid: data.order_id,
@@ -58,23 +56,23 @@ const Notification = () => {
   };
 
   const ArchiveCall = async (notifiID) => {
-    // console.log(notifiID, "IDs");
+    // //console.log(notifiID, "IDs");
     setLoading(true);
     const payload = {
       user_id: smuser.id,
       notification_id: notifiID,
     };
-    //console.log(payload, "ONNNN");
+    ////console.log(payload, "ONNNN");
     try {
       const encryptedResponse = await apiEncryptRequest(payload);
       const distroyResponse = await instance.post(
         "/notificationarchive",
         encryptedResponse
       );
-      //console.log(distroyResponse.data, "==notificationarchive");
+      ////console.log(distroyResponse.data, "==notificationarchive");
       GetNotification();
       const Response = await decryptData(distroyResponse.data);
-      console.log(Response, "====notificationarchive");
+      //console.log(Response, "====notificationarchive");
     } catch (error) {
       console.error("Error during the login process:", error);
     }
@@ -88,15 +86,15 @@ const Notification = () => {
     };
     try {
       // const encryptedResponse = await apiEncryptRequest(payload);
-      // ////console.log(encryptedResponse, "=encryptedResponse");
+      // //////console.log(encryptedResponse, "=encryptedResponse");
       const notificationResponse = await instance.post(
         "/notification",
         payload
       );
-      ////console.log(notificationResponse.data, "====notificationResponse");
+      //////console.log(notificationResponse.data, "====notificationResponse");
       const allnotificationarchive =
         notificationResponse.data.allnotificationarchive;
-      ////console.log(allnotificationarchive, "====allnotificationarchive");
+      //////console.log(allnotificationarchive, "====allnotificationarchive");
       setAllNotiArchive(allnotificationarchive);
 
       const allnotificationnative =
@@ -121,7 +119,7 @@ const Notification = () => {
         const payData = allnotificationnative.filter((item) =>
           [9, 10].includes(item.use_history_type)
         );
-        ////console.log(payData, "-------payData");
+        //////console.log(payData, "-------payData");
         setBillNoti(billData);
         setadminNoti(vmDataAdmin);
         setVmNoti(vmData);
@@ -148,7 +146,7 @@ const Notification = () => {
         const payData = allnotificationcloud.filter((item) =>
           [9, 10].includes(item.use_history_type)
         );
-        ////console.log(payData.reverse(), "-------payData");
+        //////console.log(payData.reverse(), "-------payData");
         setBillNoti(billData);
         setadminNoti(vmDataAdmin);
         setVmNoti(vmData);
@@ -159,7 +157,7 @@ const Notification = () => {
         setSelectAllId(allnotificationcloud.id);
       }
 
-      ////console.log(allnotificationcloud);
+      //////console.log(allnotificationcloud);
     } catch (error) {
       console.error("Error during the login process:", error);
     }
@@ -173,7 +171,7 @@ const Notification = () => {
     };
     try {
       const eeeeeeee = await instance.post("/invoiceview", payload);
-      ////console.log(eeeeeeee.data, "====eeeeeeee");
+      //////console.log(eeeeeeee.data, "====eeeeeeee");
     } catch (error) {
       console.error("Error during the login process:", error);
     }
@@ -190,7 +188,7 @@ const Notification = () => {
 
   const changeCurrency = (value) => {
     // Add your currency change logic here
-    //console.log("Currency changed to:", value);
+    ////console.log("Currency changed to:", value);
   };
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -211,7 +209,7 @@ const Notification = () => {
   };
 
   const filterByDate = () => {
-    // console.log(activeButton, "BUTT");
+    // //console.log(activeButton, "BUTT");
     const filtered = allNotification.filter((item) => {
       const itemDate = new Date(item.created_at);
       const start = new Date(startDate);

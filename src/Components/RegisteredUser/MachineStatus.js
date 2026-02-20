@@ -7974,13 +7974,12 @@ const MachineStatus = () => {
                           position: "relative",
                           backgroundColor: "#07528b",
                           borderRadius: "12px", 
-                          marginTop: "5px",
                       }}
                     >
                       <div>
                         <div
                           style={{
-                            maxHeight: "260px",
+                            maxHeight: "300px",
                             overflowY: "auto",
                             overflowX: "hidden",
                             textAlign: "center",

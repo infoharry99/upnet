@@ -19,41 +19,14 @@ export const CAPTCHKEY = {
 };
 
 window.getUserIP = async () => {
-  // return "103.240.168.48";
-
   try {
-    const response = await fetch("http://ip-api.com/json/"); // "https://ipinfo.io"
+    const response = await fetch("http://ip-api.com/json/"); 
     const data = await response.json();
     return data;
   } catch (error) {
     return { IPv4: "Unknown", country_name: "Unknown" };
   }
 };
-
-// window.fetchGeoIP = async (ip) => {
-//   const username = "YOUR_ACCOUNT_ID"; // Replace with your actual MaxMind account ID
-//   const password = "YOUR_LICENSE_KEY"; // Replace with your actual MaxMind license key
-
-//   try {
-//     const response = await fetch(
-//       `https://geoip.maxmind.com/geoip/v2.1/city/${ip}`,
-//       {
-//         method: "GET",
-//         headers: {
-//           Authorization: "Basic " + btoa(`${username}:${password}`), // Encode credentials
-//           Accept: "application/json",
-//         },
-//       }
-//     );
-
-//     if (!response.ok) throw new Error("Failed to fetch GeoIP data");
-
-//     const data = await response.json();
-//     console.log("GeoIP Data:", data);
-//   } catch (error) {
-//     console.error("Error fetching GeoIP data:", error);
-//   }
-// };
 
 window.fetchIPData = async () => {
   const apiKey = "b342806ff34d4c9786b6a2cb024654d6";
@@ -65,7 +38,7 @@ window.fetchIPData = async () => {
       throw new Error("Network response was not ok");
     }
     const data = await response.json();
-    return data; // Return the fetched data
+    return data; 
   } catch (error) {
     console.error("Error fetching IP data:", error);
     return null;
@@ -93,7 +66,7 @@ export const apiDecrypteRequest = async (payload) => {
 export const encryptData = async (data) => {
   const cipher = "AES-256-CBC";
   const secretKey = "12345678901234567890123456789012";
-  const iv = "1234567891234567"; //CryptoJS.enc.Hex.parse("00000000000000000000000000000000");
+  const iv = "1234567891234567"; 
   const encrypted = CryptoJS.AES.encrypt(
     JSON.stringify(data),
     CryptoJS.enc.Hex.parse(secretKey),
@@ -108,7 +81,6 @@ export const encryptData = async (data) => {
 };
 
 export const currencyReturn = (data) => {
-  // console.log(data.price, data.symbol, data.rates);
   const { price, symbol, rates } = data;
   let finalString = "";
 
@@ -128,7 +100,6 @@ export const currencyReturn = (data) => {
 };
 
 export const currencyReturnOnlyAmount = (data) => {
-  // console.log(data.price, data.symbol, data.rates);
   const { price, symbol, rates } = data;
   let finalString = "";
 
